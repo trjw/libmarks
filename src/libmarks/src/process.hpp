@@ -22,6 +22,7 @@ class Process {
     void delete_args(char **, size_t);
     bool expect(const std::string&, FILE *);
     bool expect_file(char *, FILE *);
+    void print_stream(FILE *);
     void perform_wait();
 
 public:
@@ -34,6 +35,8 @@ public:
     bool expect_stderr(const std::string&);
     bool expect_stdout_file(char *);
     bool expect_stderr_file(char *);
+    void print_stdout();
+    void print_stderr();
     bool assert_exit_status(int);
     bool assert_signalled(bool);
     bool assert_signal(int);
