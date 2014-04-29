@@ -83,6 +83,16 @@ bool Process::expect_stderr_file(char *filePath)
     return expect_file(filePath, error);
 }
 
+std::string Process::readline_stdout()
+{
+    return readline(output);
+}
+
+std::string Process::readline_stderr()
+{
+    return readline(error);
+}
+
 void Process::print_stdout()
 {
     print_stream(output);
@@ -245,6 +255,17 @@ bool Process::expect(const std::string& expected, FILE *stream)
     }
 
     return true;
+}
+
+std::string Process::readline(FILE *stream)
+{
+    std::string line;
+    char c;
+
+    while((c = fgetc(stream)) != EOF && !feof(stream) && c != '\n')
+        line += c;
+
+    return line;
 }
 
 void Process::print_stream(FILE *stream)
