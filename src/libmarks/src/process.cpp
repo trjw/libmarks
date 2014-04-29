@@ -51,15 +51,19 @@ bool Process::send(const std::string& message)
         return false;
     }
 
+    // Ensure input is sent to child.
+    fflush(input);
+
     // Full message was sent.
     return true;
 }
 
 bool Process::send_file(char *filePath)
 {
-    std::ifstream input (filePath);
+    std::ifstream data (filePath);
 
     // Write the contents of the file to the program.
+    data.close();
     return false;
 }
 
@@ -229,15 +233,29 @@ void Process::delete_args(char **args, size_t length)
 
 bool Process::expect_file(char *filePath, FILE *stream)
 {
-    std::ifstream expected (filePath);
+    std::ifstream expectedOutput (filePath);
+
+    if (!expectedOutput.is_open()) {
+        // TODO: Raise error - error opening file
+        return false;
+    }
+
+    char expected, received;
 
     // Char by char, check expected output against received output.
-    while (expected.good() && !feof(output) && (expected.get() == fgetc(stream)));
+    do {
+        expected = expectedOutput.get();
+        received = fgetc(stream);
+    } while (expectedOutput.good() && received != EOF && !feof(stream) &&
+            expected == received);
 
     // If output was same as expected, then both should be at end of file.
-    if (expected.eof() && feof(output))
+    if (expectedOutput.eof() && feof(stream)) {
+        expectedOutput.close();
         return true;
+    }
 
+    expectedOutput.close();
     return false;
 }
 
@@ -273,7 +291,8 @@ void Process::print_stream(FILE *stream)
     char *buf = new char[80];
 
     while (!feof(stream)) {
-        fgets(buf, 80, stream);
+        if (fgets(buf, 80, stream) == NULL)
+            break;
         std::cout << buf;
     }
 
