@@ -83,11 +83,13 @@ bool Process::expect_stderr_file(char *filePath)
     return expect_file(filePath, error);
 }
 
-void Process::print_stdout() {
+void Process::print_stdout()
+{
     print_stream(output);
 }
 
-void Process::print_stderr() {
+void Process::print_stderr()
+{
     print_stream(error);
 }
 
@@ -225,7 +227,8 @@ bool Process::expect(const std::string& expected, FILE *stream)
     return true;
 }
 
-void Process::print_stream(FILE *stream) {
+void Process::print_stream(FILE *stream)
+{
     char *buf = new char[80];
 
     while (!feof(stream)) {
