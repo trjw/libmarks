@@ -148,9 +148,17 @@ int Process::get_signal()
     return signalNum;
 }
 
+void Process::send_signal(int signalVal)
+{
+    // TODO: Check range allowed for child pid
+    if (childPid <= 0 || kill(childPid, signalVal) == -1) {
+        // TODO: raise exception on failure
+    }
+}
+
 void Process::send_kill()
 {
-    kill(childPid, SIGTERM);
+    send_signal(SIGKILL);
     perform_wait();
 }
 

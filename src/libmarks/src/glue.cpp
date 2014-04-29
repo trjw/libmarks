@@ -98,6 +98,7 @@ BOOST_PYTHON_MODULE(process)
         .def("assert_exit_status", &Process::assert_exit_status)
         .def("assert_signalled", &Process::assert_signalled)
         .def("assert_signal", &Process::assert_signal)
+        .def("send_signal", &Process::send_signal)
         .def("kill", &Process::send_kill)
     ;
 

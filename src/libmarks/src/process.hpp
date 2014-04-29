@@ -47,5 +47,6 @@ public:
     bool get_abnormal_exit();
     bool get_signalled();
     int get_signal();
+    void send_signal(int);
     void send_kill();
 };
