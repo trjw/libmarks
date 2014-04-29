@@ -81,6 +81,10 @@ BOOST_PYTHON_MODULE(process)
         .from_python<std::vector<std::string> >();
 
     class_<Process>("Process", "Process class docstring", init<std::vector<std::string> >(args("argv")))
+        .add_property("exit_status", &Process::get_exit_status)
+        .add_property("abnormal_exit", &Process::get_abnormal_exit)
+        .add_property("signalled", &Process::get_signalled)
+        .add_property("signal", &Process::get_signal)
         .def("send", &Process::send)
         .def("send_file", &Process::send_file)
         .def("expect_stdout", &Process::expect_stdout)

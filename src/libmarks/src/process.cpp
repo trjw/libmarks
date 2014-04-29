@@ -114,6 +114,26 @@ bool Process::assert_signal(int expected)
     return signalled && signalNum == expected;
 }
 
+int Process::get_exit_status()
+{
+    return exitStatus;
+}
+
+bool Process::get_abnormal_exit()
+{
+    return abnormalExit;
+}
+
+bool Process::get_signalled()
+{
+    return signalled;
+}
+
+int Process::get_signal()
+{
+    return signalNum;
+}
+
 void Process::send_kill()
 {
     kill(childPid, SIGTERM);

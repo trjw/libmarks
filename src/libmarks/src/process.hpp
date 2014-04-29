@@ -40,5 +40,9 @@ public:
     bool assert_exit_status(int);
     bool assert_signalled(bool);
     bool assert_signal(int);
+    int get_exit_status();
+    bool get_abnormal_exit();
+    bool get_signalled();
+    int get_signal();
     void send_kill();
 };
