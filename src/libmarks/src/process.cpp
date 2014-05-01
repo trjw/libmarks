@@ -7,6 +7,7 @@
 #include <csignal>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <fcntl.h>
 
 #include "process.hpp"
 
@@ -16,17 +17,16 @@ Process::Process(std::vector<std::string> argv):
     abnormalExit(false), signalled(false)
 {
     // Create pipes
-    if (pipe(fdIn) != 0 || pipe(fdOut) != 0 || pipe(fdErr) != 0) {
-        std::cerr << "Pipe failed.\n";
-        // exit(1);
+    if (pipe(fdIn) != 0 || pipe(fdOut) != 0 ||
+            pipe(fdErr) != 0 || pipe(fdCheck) != 0) {
+        throw 1;
     }
 
     // Fork
     childPid = fork();
 
     if (childPid < 0) {
-        std::cerr << "Fork failed.\n";
-        // exit(1);
+        throw 1;
     } else if (childPid == 0) {
         // Child process.
         setup_child(argv);
@@ -39,8 +39,7 @@ Process::Process(std::vector<std::string> argv):
 Process::~Process()
 {
     if (!finished) {
-        // TODO: Should this kill the process, or just wait?
-        perform_wait();
+        send_kill();
     }
 }
 
@@ -153,66 +152,97 @@ void Process::send_signal(int signalVal)
     // TODO: Check range allowed for child pid
     if (childPid <= 0 || kill(childPid, signalVal) == -1) {
         // TODO: raise exception on failure
+        throw 1;
     }
 }
 
 void Process::send_kill()
 {
-    send_signal(SIGKILL);
-    perform_wait();
+    if (!finished) {
+        send_signal(SIGKILL);
+        perform_wait();
+    }
 }
 
 /* Private */
 void Process::setup_parent()
 {
-    if (close(fdIn[READ]) != 0 || close(fdOut[WRITE]) != 0 ||
-            close(fdErr[WRITE]) != 0) {
-        std::cerr << "Failed to close child pipes.\n";
-        // exit(2);
+    // Close the ends of the pipes that are being used in the child.
+    if (close(fdIn[READ]) == -1 || close(fdOut[WRITE]) == -1 ||
+            close(fdErr[WRITE]) == -1 || close(fdCheck[WRITE]) == -1) {
+        throw 1;
     }
 
+    // Attempt to read on check pipe. If data is available, then exec failed.
+    char buf[5];
+    if (read(fdCheck[READ], buf, 5) != 0) {
+        perform_wait();
+        throw 1;
+    }
+
+    // Close the check pipe, now we are finished with it.
+    if (close(fdCheck[READ]) == -1)
+        throw 1;
+
+    // Open the remaining pipes as files, for ease of use.
     input = fdopen(fdIn[WRITE], "w"); // Input from parent to child.
     output = fdopen(fdOut[READ], "r"); // stdout from child to parent.
     error = fdopen(fdErr[READ], "r"); // stderr from child to parent.
 
     if (input == NULL || output == NULL || error == NULL) {
-        std::cerr << "Failed to open pipes as files.\n";
-        // exit(2);
+        throw 1;
     }
 }
 
 void Process::setup_child(std::vector<std::string> argv)
 {
-    // TODO: Close on exec
+    bool do_exec = true;
+
+    // Set up child input (stdin)
     if (close(fdIn[WRITE]) == -1 ||
             dup2(fdIn[READ], STDIN_FILENO) == -1 ||
             close(fdIn[READ]) == -1) {
-        std::cerr << "Child failed to initialise stdin.\n";
-        exit(-1);
+        do_exec = false;
     }
 
+    // Set up child output (stdout).
     if (close(fdOut[READ]) == -1 ||
             dup2(fdOut[WRITE], STDOUT_FILENO) == -1 ||
             close(fdOut[WRITE]) == -1) {
-        std::cerr << "Child failed to initialise stdout.\n";
-        exit(-1);
+        do_exec = false;
     }
 
+    // Set up child error (stderr).
     if (close(fdErr[READ]) == -1 ||
             dup2(fdErr[WRITE], STDERR_FILENO) == -1 ||
             close(fdErr[WRITE]) == -1) {
-        std::cerr << "Child failed to initialise stderr.\n";
-        exit(-1);
+        do_exec = false;
     }
 
+    if (close(fdCheck[READ]) == -1)
+        do_exec = false;
+
+    // Set up close-on-exec for the check pipe.
+    int flags = fcntl(fdCheck[WRITE], F_GETFD);
+    if (flags == -1)
+        do_exec = false;
+
+    flags |= FD_CLOEXEC;
+
+    if (fcntl(fdCheck[WRITE], F_SETFD, flags) == -1)
+        do_exec = false;
+
     // Execute the program.
-    char **args = create_args(argv);
-    execvp(args[0], args);
-    perror("exec failed");
-    delete_args(args, argv.size());
+    if (do_exec) {
+        char **args = create_args(argv);
+        execvp(args[0], args);
+
+        delete_args(args, argv.size());
+    }
 
     // Exec failed if program reaches this point.
-    std::cerr << "Child failed to exec.\n";
+    write(fdCheck[WRITE], "fail", 4);
+    close(fdCheck[WRITE]);
     exit(-1);
 }
 
@@ -245,7 +275,7 @@ bool Process::expect_file(char *filePath, FILE *stream)
 
     if (!expectedOutput.is_open()) {
         // TODO: Raise error - error opening file
-        return false;
+        throw 1;
     }
 
     char expected, received;
@@ -335,5 +365,7 @@ void Process::perform_wait()
 
         if (error != NULL)
             fclose(output);
+
+        finished = true;
     }
 }

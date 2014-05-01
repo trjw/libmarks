@@ -9,7 +9,7 @@
 #define WRITE 1
 
 class Process {
-    int fdIn[2], fdOut[2], fdErr[2];
+    int fdIn[2], fdOut[2], fdErr[2], fdCheck[2];
     pid_t childPid;
     FILE *input, *output, *error;
     bool finished;
