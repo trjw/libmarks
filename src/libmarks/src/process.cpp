@@ -4,6 +4,7 @@
 #include <vector>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <csignal>
 #include <unistd.h>
 #include <sys/wait.h>
@@ -248,11 +249,13 @@ void Process::setup_child(std::vector<std::string> argv)
 
 char **Process::create_args(std::vector<std::string> argv)
 {
-    char **args = new char*[argv.size()];
-    for (int i = 0; i < argv.size(); ++i) {
+    // Create args array, including space for the NULL array terminator.
+    char **args = new char*[argv.size() + 1];
+
+    // Copy the args to the new array.
+    for(size_t i = 0; i < argv.size(); i++){
         args[i] = new char[argv[i].length() + 1];
-        argv[i].copy(args[i], argv[i].length());
-        args[i][argv[i].length()] = '\0';
+        strcpy(args[i], argv[i].c_str());
     }
 
     // argv array for exec* needs to be null terminated.
