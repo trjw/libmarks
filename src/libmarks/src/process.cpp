@@ -266,7 +266,8 @@ char **Process::create_args(std::vector<std::string> argv)
 
 void Process::delete_args(char **args, size_t length)
 {
-    for (int i = 0; i < length; ++i) {
+    // Count to length + 1, to accommodate NULL array terminator.
+    for (int i = 0; i < length + 1; ++i) {
         delete [] args[i];
     }
     delete [] args;
