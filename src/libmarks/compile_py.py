@@ -21,7 +21,7 @@ def compile(source_dir, dest_dir):
 
         # Create all dirs within dest_dir
         for d in dirs:
-            os.mkdir(os.path.join(dest_dir, d))
+            os.mkdir(os.path.join(dest_dir, curr_dir, d))
 
 
 if __name__ == '__main__':
