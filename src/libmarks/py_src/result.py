@@ -65,7 +65,7 @@ class PrintedTestResult(TestResult):
 
     def stop_test_run(self):
         super(PrintedTestResult, self).stop_test_run()
-        print("\nTests finished")
+        print("Tests finished")
 
     def add_failure(self, test, error):
         super(PrintedTestResult, self).add_failure(test, error)
