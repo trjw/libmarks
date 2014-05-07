@@ -30,12 +30,13 @@ class _TestWrapper(object):
 class TestCase(object):
 
     failure_exception = AssertionError
+    default_test_method = 'run_test'
 
     def __init__(self, test_method_name='run_test'):
         try:
             getattr(self, test_method_name)
         except AttributeError:
-            if test_method_name != 'run_test':
+            if test_method_name != self.default_test_method:
                 raise ValueError(
                     "test method %s does not exist in %s" %
                     (strclass(self.__class__), test_method_name))
