@@ -48,6 +48,14 @@ class TestCase(object):
     def tear_down(self):
         pass
 
+    @classmethod
+    def setup_class(self):
+        pass
+
+    @classmethod
+    def tear_down_class(self):
+        pass
+
     def id(self):
         return "%s.%s" % (strclass(self.__class__), self._test_method)
 
