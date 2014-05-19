@@ -133,7 +133,7 @@ class TestCase(object):
         Assert that the standard error of the process matches the
         contents of the given file.
         """
-        if not process.expect_stdout_file(file_path):
+        if not process.expect_stderr_file(file_path):
             msg = msg or "stderr mismatch"
             raise self.failure_exception(msg)
 
