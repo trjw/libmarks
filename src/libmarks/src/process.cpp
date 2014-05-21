@@ -13,28 +13,18 @@
 #include "process.hpp"
 
 /* Public */
+Process::Process(std::vector<std::string> argv, std::string inputFile):
+    input(NULL), output(NULL), error(NULL), finished(false),
+    abnormalExit(false), signalled(false)
+{
+    init(argv, inputFile);
+}
+
 Process::Process(std::vector<std::string> argv):
     input(NULL), output(NULL), error(NULL), finished(false),
     abnormalExit(false), signalled(false)
 {
-    // Create pipes
-    if (pipe(fdIn) != 0 || pipe(fdOut) != 0 ||
-            pipe(fdErr) != 0 || pipe(fdCheck) != 0) {
-        throw 1;
-    }
-
-    // Fork
-    childPid = fork();
-
-    if (childPid < 0) {
-        throw 1;
-    } else if (childPid == 0) {
-        // Child process.
-        setup_child(argv);
-    } else {
-        // Parent process.
-        setup_parent();
-    }
+    init(argv);
 }
 
 Process::~Process()
@@ -46,6 +36,11 @@ Process::~Process()
 
 bool Process::send(const std::string& message)
 {
+    if (input == NULL) {
+        // No input pipe (pipe was not created, as input file was specified).
+        return false;
+    }
+
     if (fprintf(input, "%s", message.c_str()) != message.length()) {
         // Sending failed.
         return false;
@@ -60,11 +55,30 @@ bool Process::send(const std::string& message)
 
 bool Process::send_file(char *filePath)
 {
+    if (input == NULL) {
+        // No input pipe (pipe was not created, as input file was specified).
+        return false;
+    }
+
     std::ifstream data (filePath);
 
     // Write the contents of the file to the program.
     data.close();
     return false;
+}
+
+bool Process::finish_input()
+{
+    if (input == NULL) {
+        // No input pipe (pipe was not created, as input file was specified).
+        return false;
+    }
+
+    if (fclose(input) != 0) {
+        return false;
+    }
+
+    return true;
 }
 
 bool Process::expect_stdout(const std::string& expected)
@@ -166,11 +180,45 @@ void Process::send_kill()
 }
 
 /* Private */
-void Process::setup_parent()
+void Process::init(std::vector<std::string> argv, std::string inputFile)
+{
+    bool useInputPipe = inputFile == "";
+
+    // Create pipe for stdin only if there is no input file.
+    if (useInputPipe && pipe(fdIn) != 0) {
+        throw 1;
+    }
+
+    // Create the remaining pipes.
+    if (pipe(fdOut) != 0 || pipe(fdErr) != 0 || pipe(fdCheck) != 0) {
+        throw 1;
+    }
+
+    // Fork
+    childPid = fork();
+
+    if (childPid < 0) {
+        throw 1;
+    } else if (childPid == 0) {
+        // Child process.
+        setup_child(argv, inputFile);
+    } else {
+        // Parent process.
+        setup_parent(useInputPipe);
+    }
+}
+
+void Process::init(std::vector<std::string> argv)
+{
+    init(argv, "");
+}
+
+void Process::setup_parent(bool useInputPipe)
 {
     // Close the ends of the pipes that are being used in the child.
-    if (close(fdIn[READ]) == -1 || close(fdOut[WRITE]) == -1 ||
-            close(fdErr[WRITE]) == -1 || close(fdCheck[WRITE]) == -1) {
+    if ((useInputPipe && close(fdIn[READ]) == -1) ||
+            close(fdOut[WRITE]) == -1 || close(fdErr[WRITE]) == -1 ||
+            close(fdCheck[WRITE]) == -1) {
         throw 1;
     }
 
@@ -185,25 +233,38 @@ void Process::setup_parent()
     if (close(fdCheck[READ]) == -1)
         throw 1;
 
+    // Open child stdin as a file, if pipe was created.
+    if (useInputPipe) {
+        input = fdopen(fdIn[WRITE], "w"); // Input from parent to child.
+    }
+
     // Open the remaining pipes as files, for ease of use.
-    input = fdopen(fdIn[WRITE], "w"); // Input from parent to child.
     output = fdopen(fdOut[READ], "r"); // stdout from child to parent.
     error = fdopen(fdErr[READ], "r"); // stderr from child to parent.
 
-    if (input == NULL || output == NULL || error == NULL) {
+    if ((useInputPipe && input == NULL) || output == NULL || error == NULL) {
         throw 1;
     }
 }
 
-void Process::setup_child(std::vector<std::string> argv)
+void Process::setup_child(std::vector<std::string> argv, std::string inputFile)
 {
     bool do_exec = true;
 
     // Set up child input (stdin)
-    if (close(fdIn[WRITE]) == -1 ||
-            dup2(fdIn[READ], STDIN_FILENO) == -1 ||
-            close(fdIn[READ]) == -1) {
-        do_exec = false;
+    if (inputFile != "") {
+        // Open file as stdin for child.
+        int fd = open(inputFile.c_str(), O_RDONLY);
+        if (fd == -1 || dup2(fd, STDIN_FILENO) == -1 || close(fd) == -1) {
+            do_exec = false;
+        }
+    } else {
+        // Finish pipe creation.
+        if (close(fdIn[WRITE]) == -1 ||
+                dup2(fdIn[READ], STDIN_FILENO) == -1 ||
+                close(fdIn[READ]) == -1) {
+            do_exec = false;
+        }
     }
 
     // Set up child output (stdout).

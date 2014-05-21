@@ -16,8 +16,10 @@ class Process {
     int exitStatus, signalNum;
     bool abnormalExit, signalled;
 
-    void setup_parent();
-    void setup_child(std::vector<std::string>);
+    void init(std::vector<std::string>, std::string);
+    void init(std::vector<std::string>);
+    void setup_parent(bool);
+    void setup_child(std::vector<std::string>, std::string);
     char **create_args(std::vector<std::string>);
     void delete_args(char **, size_t);
     bool expect(const std::string&, FILE *);
@@ -27,11 +29,12 @@ class Process {
     void perform_wait();
 
 public:
-    Process (std::vector<std::string>);
-    Process(){}
+    Process(std::vector<std::string>);
+    Process(std::vector<std::string>, std::string);
     ~Process();
     bool send(const std::string&);
     bool send_file(char *);
+    bool finish_input();
     bool expect_stdout(const std::string&);
     bool expect_stderr(const std::string&);
     bool expect_stdout_file(char *);
