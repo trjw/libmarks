@@ -26,6 +26,7 @@ class Process {
     bool expect_file(char *, FILE *);
     std::string readline(FILE *);
     void print_stream(FILE *);
+    bool close_stream(FILE **);
     void perform_wait();
 
 public:

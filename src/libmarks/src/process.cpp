@@ -74,11 +74,7 @@ bool Process::finish_input()
         return false;
     }
 
-    if (fclose(input) != 0) {
-        return false;
-    }
-
-    return true;
+    return close_stream(&input);
 }
 
 bool Process::expect_stdout(const std::string& expected)
@@ -402,6 +398,21 @@ void Process::print_stream(FILE *stream)
     delete [] buf;
 }
 
+bool Process::close_stream(FILE **stream)
+{
+    int status = 0;
+    if (*stream != NULL) {
+        status = fclose(*stream);
+        *stream = NULL;
+    }
+
+    if (status != 0) {
+        return false;
+    }
+
+    return true;
+}
+
 void Process::perform_wait()
 {
     if (!finished) {
@@ -422,14 +433,9 @@ void Process::perform_wait()
         }
 
         // Close the files.
-        if (input != NULL)
-            fclose(input);
-
-        if (output != NULL)
-            fclose(output);
-
-        if (error != NULL)
-            fclose(output);
+        close_stream(&input);
+        close_stream(&output);
+        close_stream(&error);
 
         finished = true;
     }
