@@ -163,7 +163,7 @@ void Process::send_signal(int signalVal)
     // TODO: Check range allowed for child pid
     if (childPid <= 0 || kill(childPid, signalVal) == -1) {
         // TODO: raise exception on failure
-        throw 1;
+        throw SignalException();
     }
 }
 
@@ -182,19 +182,19 @@ void Process::init(std::vector<std::string> argv, std::string inputFile)
 
     // Create pipe for stdin only if there is no input file.
     if (useInputPipe && pipe(fdIn) != 0) {
-        throw 1;
+        throw PipeException();
     }
 
     // Create the remaining pipes.
     if (pipe(fdOut) != 0 || pipe(fdErr) != 0 || pipe(fdCheck) != 0) {
-        throw 1;
+        throw PipeException();
     }
 
     // Fork
     childPid = fork();
 
     if (childPid < 0) {
-        throw 1;
+        throw ForkException();
     } else if (childPid == 0) {
         // Child process.
         setup_child(argv, inputFile);
@@ -215,19 +215,19 @@ void Process::setup_parent(bool useInputPipe)
     if ((useInputPipe && close(fdIn[READ]) == -1) ||
             close(fdOut[WRITE]) == -1 || close(fdErr[WRITE]) == -1 ||
             close(fdCheck[WRITE]) == -1) {
-        throw 1;
+        throw CloseException();
     }
 
     // Attempt to read on check pipe. If data is available, then exec failed.
     char buf[5];
     if (read(fdCheck[READ], buf, 5) != 0) {
         perform_wait();
-        throw 1;
+        throw ExecException();
     }
 
     // Close the check pipe, now we are finished with it.
     if (close(fdCheck[READ]) == -1)
-        throw 1;
+        throw CloseException();
 
     // Open child stdin as a file, if pipe was created.
     if (useInputPipe) {
@@ -239,7 +239,7 @@ void Process::setup_parent(bool useInputPipe)
     error = fdopen(fdErr[READ], "r"); // stderr from child to parent.
 
     if ((useInputPipe && input == NULL) || output == NULL || error == NULL) {
-        throw 1;
+        throw FdOpenException();
     }
 }
 
@@ -336,7 +336,7 @@ bool Process::expect_file(char *filePath, FILE *stream)
 
     if (!expectedOutput.is_open()) {
         // TODO: Raise error - error opening file
-        throw 1;
+        throw StreamException();
     }
 
     char expected, received;

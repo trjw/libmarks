@@ -70,6 +70,35 @@ struct iterable_converter
   }
 };
 
+/* Exception translation */
+void close_exception_translator(const CloseException& e) {
+    PyErr_SetString(PyExc_RuntimeError, "MARKS: Call to close() failed");
+}
+
+void exec_exception_translator(const ExecException& e) {
+    PyErr_SetString(PyExc_RuntimeError, "MARKS: Call to exec() failed");
+}
+
+void fdopen_exception_translator(const FdOpenException& e) {
+    PyErr_SetString(PyExc_RuntimeError, "MARKS: Call to fdopen() failed");
+}
+
+void fork_exception_translator(const ForkException& e) {
+    PyErr_SetString(PyExc_RuntimeError, "MARKS: Call to fork() failed");
+}
+
+void pipe_exception_translator(const PipeException& e) {
+    PyErr_SetString(PyExc_RuntimeError, "MARKS: Call to pipe() failed");
+}
+
+void signal_exception_translator(const SignalException& e) {
+    PyErr_SetString(PyExc_RuntimeError, "MARKS: Could not send signal to process");
+}
+
+void stream_exception_translator(const StreamException& e) {
+    PyErr_SetString(PyExc_RuntimeError, "MARKS: Unexpected error with stream");
+}
+
 
 BOOST_PYTHON_MODULE(process)
 {
@@ -79,6 +108,14 @@ BOOST_PYTHON_MODULE(process)
     iterable_converter()
         // Build-in type.
         .from_python<std::vector<std::string> >();
+
+    register_exception_translator<CloseException>(&close_exception_translator);
+    register_exception_translator<ExecException>(&exec_exception_translator);
+    register_exception_translator<FdOpenException>(&fdopen_exception_translator);
+    register_exception_translator<ForkException>(&fork_exception_translator);
+    register_exception_translator<PipeException>(&pipe_exception_translator);
+    register_exception_translator<SignalException>(&signal_exception_translator);
+    register_exception_translator<StreamException>(&stream_exception_translator);
 
     class_<Process>("Process", "Process class docstring", init<std::vector<std::string> >(args("argv")))
         .def(init<std::vector<std::string>, std::string>(args("argv", "input_file")))

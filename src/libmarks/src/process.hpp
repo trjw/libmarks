@@ -54,3 +54,12 @@ public:
     void send_signal(int);
     void send_kill();
 };
+
+/* Exceptions */
+struct CloseException {};
+struct ExecException {};
+struct FdOpenException {};
+struct ForkException {};
+struct PipeException {};
+struct SignalException {};
+struct StreamException {};
