@@ -1,6 +1,7 @@
 
 from .case import _TestWrapper
 from .result import TestResult
+from .util import strclass
 
 
 class TestSuite(object):
@@ -13,6 +14,15 @@ class TestSuite(object):
         self._test_class_failed_setup = []
 
         self.add_tests(tests)
+
+    def __repr__(self):
+        return "<{0} tests={1}>".format(strclass(self.__class__), list(self))
+
+    def __iter__(self):
+        return iter(self._tests)
+
+    def __call__(self, *args, **kwargs):
+        return self.run(*args, **kwargs)
 
     def add_test(self, test):
         # sanity checks
@@ -27,12 +37,6 @@ class TestSuite(object):
 
         for test in tests:
             self.add_test(test)
-
-    def __iter__(self):
-        return iter(self._tests)
-
-    def __call__(self, *args, **kwargs):
-        return self.run(*args, **kwargs)
 
     def run(self, result=None):
         original_result = result
