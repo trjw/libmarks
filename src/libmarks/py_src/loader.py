@@ -1,4 +1,4 @@
-
+import types
 from . import case, suite
 
 
@@ -30,7 +30,7 @@ class TestLoader(object):
         return name.startswith(prefix) and callable(getattr(test_case, name))
 
     def load_tests_from_test_case(self, test_case, prefix=None):
-        """Return a Test Suite with all tests within test_case"""
+        """Return a Test Suite with all tests contained in test_case"""
         if issubclass(test_case, self.suite_class):
             raise TypeError("Test cases should not be derived from TestSuite.")
 
@@ -42,6 +42,70 @@ class TestLoader(object):
                 test_case, test_case.default_test_method):
             case_names = [test_case.default_test_method]
         return self.suite_class(map(test_case, case_names))
+
+    def load_tests_from_module(self, module):
+        """Return a Test Suite with all tests contained in module"""
+        tests = []
+        for name in dir(module):
+            obj = getattr(module, name)
+            if isinstance(obj, type) and issubclass(obj, self.case_class):
+                tests.append(self.load_tests_from_test_case(obj))
+
+        tests = self.suite_class(tests)
+        return tests
+
+    def load_tests_from_name(self, name, module=None):
+        """Return a test suite or case based on the given name"""
+
+        path = name.split('.')
+        # If no module provided, find and load the closest module
+        if module is None:
+            while path:
+                try:
+                    module = __import__('.'.join(path))
+                    break
+                except ImportError:
+                    del path[-1]
+                    if not path:
+                        raise
+            path = name.split('.')[1:]
+
+        obj = module
+
+        # Find the object containing the test
+        for section in path:
+            parent, obj = obj, getattr(obj, section)
+
+        # Load the test(s) and return them
+        if isinstance(obj, types.ModuleType):
+            return self.load_tests_from_module(obj)
+        elif isinstance(obj, type) and issubclass(obj, self.case_class):
+            return self.load_tests_from_test_case(obj)
+        elif (isinstance(obj, types.UnboundMethodType) and
+              isinstance(parent, type) and
+              issubclass(parent, self.case_class)):
+            name = path[-1]
+            inst = parent(name)
+            return self.suite_class([inst])
+        elif isinstance(obj, self.suite_class):
+            return obj
+        elif hasattr(obj, '__call__'):
+            test = obj()
+            # TODO: Should this also load tests from a test case?
+            if isinstance(test, self.suite_class):
+                return test
+            elif isinstance(test, self.case_class):
+                return self.suite_class([test])
+            else:
+                raise TypeError(
+                    "calling {0} returned {1}, not a test".format(obj, test))
+        else:
+            raise TypeError("cannot make a test from: {0}".format(obj))
+
+    def load_tests_from_names(self, names, module=None):
+        """Return a test suite containing all tests in a module"""
+        suites = [self.load_tests_from_name(name, module) for name in names]
+        return self.suite_class(suites)
 
 
 default_test_loader = TestLoader()
