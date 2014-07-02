@@ -389,7 +389,7 @@ void Process::print_stream(FILE *stream)
 {
     char *buf = new char[80];
 
-    while (!feof(stream)) {
+    while (stream != NULL && !feof(stream)) {
         if (fgets(buf, 80, stream) == NULL)
             break;
         std::cout << buf;
