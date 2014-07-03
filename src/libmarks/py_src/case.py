@@ -1,8 +1,12 @@
 import contextlib
 import sys
+import os
 
 from .result import TestResult
 from .util import strclass
+
+
+BUFFER_SIZE = 8 * 1024
 
 
 class _TestWrapper(object):
@@ -180,3 +184,37 @@ class TestCase(object):
             msg = msg or "signal mismatch: expected %d, got %d" % (
                 signal, process.signal)
             raise self.failure_exception(msg)
+
+    def assert_files_equal(self, file1, file2, msg=None):
+        """
+        Assert that the given files contain exactly the same contents.
+        """
+        if os.path.exists(file1) and os.path.exists(file2):
+            # Files exist, so open and compare them
+            f1 = open(file1, 'rb')
+            f2 = open(file2, 'rb')
+
+            different = False
+            while True:
+                b1 = f1.read(BUFFER_SIZE)
+                b2 = f2.read(BUFFER_SIZE)
+
+                if b1 != b2:
+                    different = True
+                    break
+
+                if not b1:
+                    # Reached end of file, and they are the same
+                    break
+
+            f1.close()
+            f2.close()
+
+            if not different:
+                return
+
+            msg = msg or "file mismatch: contents do not exactly match"
+        else:
+            msg = msg or "file missing"
+
+        raise self.failure_exception(msg)
