@@ -27,7 +27,7 @@ class Process {
     std::string readline(FILE *);
     void print_stream(FILE *);
     bool close_stream(FILE **);
-    void perform_wait();
+    void perform_wait(bool);
 
 public:
     Process(std::vector<std::string>);
@@ -53,6 +53,7 @@ public:
     int get_signal();
     void send_signal(int);
     void send_kill();
+    bool check_signalled();
 };
 
 /* Exceptions */

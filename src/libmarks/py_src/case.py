@@ -119,6 +119,13 @@ class TestCase(object):
                 # One-off test, so finish tests.
                 result.stop_test_run()
 
+    def _check_signal(self, process, msg):
+        """Check if process was signalled, causing the current test to fail."""
+        if process.check_signalled():
+            msg = "Process received unexpected signal: {0}".format(
+                process.signal)
+        raise self.failure_exception(msg)
+
     def fail(self, msg=None):
         """Fail immediately, with the given message."""
         raise self.failure_exception(msg)
@@ -130,7 +137,7 @@ class TestCase(object):
         """
         if not process.expect_stdout_file(file_path):
             msg = msg or "stdout mismatch"
-            raise self.failure_exception(msg)
+            self._check_signal(process, msg)
 
     def assert_stderr_matches_file(self, process, file_path, msg=None):
         """
@@ -139,7 +146,7 @@ class TestCase(object):
         """
         if not process.expect_stderr_file(file_path):
             msg = msg or "stderr mismatch"
-            raise self.failure_exception(msg)
+            self._check_signal(process, msg)
 
     def assert_stdout(self, process, output, msg=None):
         """
@@ -148,7 +155,7 @@ class TestCase(object):
         """
         if not process.expect_stdout(output):
             msg = msg or "stdout mismatch"
-            raise self.failure_exception(msg)
+            self._check_signal(process, msg)
 
     def assert_stderr(self, process, output, msg=None):
         """
@@ -157,7 +164,7 @@ class TestCase(object):
         """
         if not process.expect_stderr(output):
             msg = msg or "stderr mismatch"
-            raise self.failure_exception(msg)
+            self._check_signal(process, msg)
 
     def assert_exit_status(self, process, status, msg=None):
         """

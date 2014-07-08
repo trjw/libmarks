@@ -120,21 +120,21 @@ void Process::print_stderr()
 bool Process::assert_exit_status(int expected)
 {
     if (!finished)
-        perform_wait();
+        perform_wait(true);
     return !abnormalExit && exitStatus == expected;
 }
 
 bool Process::assert_signalled(bool expected)
 {
     if (!finished)
-        perform_wait();
+        perform_wait(true);
     return signalled == expected;
 }
 
 bool Process::assert_signal(int expected)
 {
     if (!finished)
-        perform_wait();
+        perform_wait(true);
     return signalled && signalNum == expected;
 }
 
@@ -171,8 +171,19 @@ void Process::send_kill()
 {
     if (!finished) {
         send_signal(SIGKILL);
-        perform_wait();
+        perform_wait(true);
     }
+}
+
+/**
+ * Check if the child process was signalled, via a non-blocking call to
+ * `waitpid`.
+ * @return true if process is finished and was signalled, false otherwise.
+ */
+bool Process::check_signalled()
+{
+    perform_wait(false);
+    return finished && signalled;
 }
 
 /* Private */
@@ -221,7 +232,7 @@ void Process::setup_parent(bool useInputPipe)
     // Attempt to read on check pipe. If data is available, then exec failed.
     char buf[5];
     if (read(fdCheck[READ], buf, 5) != 0) {
-        perform_wait();
+        perform_wait(true);
         throw ExecException();
     }
 
@@ -413,12 +424,26 @@ bool Process::close_stream(FILE **stream)
     return true;
 }
 
-void Process::perform_wait()
+void Process::perform_wait(bool block)
 {
     if (!finished) {
-        // Wait on the child and reap it once it is complete
+        // Set up options for waitpid, based on whether we should wait
+        // for the process to complete or not.
+        int options = 0;
+        if (!block) {
+            options = WNOHANG;
+        }
+
+        // Wait on the child and reap it once it is complete.
         int status;
-        waitpid(childPid, &status, 0);
+        int result = waitpid(childPid, &status, options);
+
+        if (!block && result == 0) {
+            // Child is not finished, so do not check status.
+            return;
+        }
+
+        // TODO: Check for other results of waitpid.
 
         // Check for the exit status of the child
         if (WIFEXITED(status)) {

@@ -139,6 +139,7 @@ BOOST_PYTHON_MODULE(process)
         .def("assert_signal", &Process::assert_signal)
         .def("send_signal", &Process::send_signal)
         .def("kill", &Process::send_kill)
+        .def("check_signalled", &Process::check_signalled)
     ;
 
 }
