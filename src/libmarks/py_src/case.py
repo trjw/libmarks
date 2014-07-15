@@ -9,6 +9,18 @@ from .util import strclass
 BUFFER_SIZE = 8 * 1024
 
 
+def marks(category, mark=None, category_marks=None):
+    """Assign marks to a test or suite of tests, grouped by a category."""
+    def decorator(test_item):
+        if mark is None and category_marks is None:
+            raise ValueError("One of mark or category_marks must be defined")
+        test_item.__marks_category__ = category
+        test_item.__marks_mark__ = mark
+        test_item.__marks_category_marks__ = category_marks
+        return test_item
+    return decorator
+
+
 class _TestWrapper(object):
     def __init__(self):
         self.success = True
@@ -82,6 +94,10 @@ class TestCase(object):
                 else:
                     result.add_error(test_case, exc_info)
 
+    @property
+    def test_method(self):
+        return getattr(self, self._test_method)
+
     def run(self, result=None):
         original_result = result
         if result is None:
@@ -89,8 +105,6 @@ class TestCase(object):
             result.start_test_run()
 
         result.start_test(self)
-
-        test_method = getattr(self, self._test_method)
 
         wrapper = _TestWrapper()
         try:
@@ -101,7 +115,7 @@ class TestCase(object):
             if wrapper.success:
                 # Run the test method.
                 with wrapper.test_executer(self, result):
-                    test_method()
+                    self.test_method()
 
                 # Perform tear down.
                 with wrapper.test_executer(self, result):

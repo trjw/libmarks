@@ -35,6 +35,9 @@ class TestProgram(object):
                             help='a list of any number of test modules, '
                             'classes and test methods.')
 
+        parser.add_argument('-m', '--mark', dest='mark', action='store_true',
+                            help='Calculate marks for the given tests')
+
         self._parser = parser
 
     def parse_arguments(self, argv):
@@ -48,6 +51,10 @@ class TestProgram(object):
         else:
             self.test_names = None
         self.create_tests()
+
+        if self.mark:
+            # Perform marking
+            self.runner_class = runner.MarkingTestRunner
 
     def create_tests(self):
         if self.test_names is None:

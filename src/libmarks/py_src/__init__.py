@@ -5,12 +5,12 @@ Based on Python unittest framework.
 """
 
 __all__ = [
-    'main', 'Process', 'TestCase', 'TestSuite', 'TestLoader',
+    'main', 'marks', 'Process', 'TestCase', 'TestSuite', 'TestLoader',
     'default_test_loader', 'TestResult'
 ]
 
 from .process import Process
-from .case import TestCase
+from .case import TestCase, marks
 from .suite import TestSuite
 from .loader import TestLoader, default_test_loader
 from .result import TestResult
