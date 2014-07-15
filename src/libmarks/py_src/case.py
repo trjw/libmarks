@@ -4,7 +4,7 @@ import os
 
 from .result import TestResult
 from .util import strclass
-
+from .process import Process
 
 BUFFER_SIZE = 8 * 1024
 
@@ -47,6 +47,7 @@ class TestCase(object):
 
     failure_exception = AssertionError
     default_test_method = 'run_test'
+    process_class = Process
 
     def __init__(self, test_method_name='run_test'):
         try:
@@ -97,6 +98,10 @@ class TestCase(object):
     @property
     def test_method(self):
         return getattr(self, self._test_method)
+
+    def process(self, *args, **kwargs):
+        """Create a Process of the type specified for this test case"""
+        return self.process_class(*args, **kwargs)
 
     def run(self, result=None):
         original_result = result
