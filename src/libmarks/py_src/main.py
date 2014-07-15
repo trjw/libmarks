@@ -2,10 +2,12 @@ import argparse
 import os
 import sys
 
-from . import loader, result
+from . import loader, runner
 
 
 class TestProgram(object):
+
+    runner_class = runner.BasicTestRunner
 
     def __init__(
             self, module='__main__', test_loader=loader.default_test_loader):
@@ -55,11 +57,8 @@ class TestProgram(object):
                 self.test_names, self.module)
 
     def run_tests(self):
-        self.result = result.PrintedTestResult()
-
-        self.result.start_test_run()
-        self.test.run(self.result)
-        self.result.stop_test_run()
+        runner = self.runner_class()
+        runner.run(self.test)
 
 
 main = TestProgram
