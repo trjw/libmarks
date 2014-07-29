@@ -31,7 +31,7 @@ process.so: $(TARGETS)
 # $(CC) -dynamiclib $(TARGETS) -L$(BOOST_LIB) -lboost_python -L$(PYTHON_LIB)/config -lpython$(PYTHON_VERSION) -o process.so
 
 glue.o: glue.cpp process.hpp
-	$(CC) $(PYTHON_INCLUDES) -I$(BOOST_INC) -fPIC -c glue.cpp
+	$(CC) $(PYTHON_INCLUDES) -I$(BOOST_INC) -fPIC -pthread -c glue.cpp
 
 process.o: process.cpp process.hpp
-	$(CC) $(PYTHON_INCLUDES) -I$(BOOST_INC) -fPIC -c process.cpp
+	$(CC) $(PYTHON_INCLUDES) -I$(BOOST_INC) -fPIC -pthread -c process.cpp

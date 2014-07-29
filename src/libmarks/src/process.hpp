@@ -2,19 +2,21 @@
 #include <vector>
 #include <cstdio>
 #include <sys/wait.h>
-
+#include <pthread.h>
 
 /* File descriptor ends for pipes */
 #define READ 0
 #define WRITE 1
 
 class Process {
+protected:
     int fdIn[2], fdOut[2], fdErr[2], fdCheck[2];
     pid_t childPid;
     FILE *input, *output, *error;
     bool finished;
     int exitStatus, signalNum;
     bool abnormalExit, signalled;
+    bool timeout;
 
     void init(std::vector<std::string>, std::string);
     void init(std::vector<std::string>);
@@ -54,7 +56,25 @@ public:
     void send_signal(int);
     void send_kill();
     bool check_signalled();
+    bool get_timeout();
 };
+
+class TimeoutProcess: public Process {
+private:
+    int timeout_duration;
+    pthread_t thread;
+    void init_timeout();
+
+public:
+    TimeoutProcess(std::vector<std::string>, int);
+    TimeoutProcess(std::vector<std::string>, int, std::string);
+    ~TimeoutProcess();
+    int get_timeout_duration();
+    void perform_timeout();
+};
+
+/* Timeout thread */
+void *timeout_thread(void *);
 
 /* Exceptions */
 struct CloseException {};

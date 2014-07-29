@@ -9,20 +9,21 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <fcntl.h>
+#include <pthread.h>
 
 #include "process.hpp"
 
 /* Public */
 Process::Process(std::vector<std::string> argv, std::string inputFile):
     input(NULL), output(NULL), error(NULL), finished(false),
-    abnormalExit(false), signalled(false)
+    abnormalExit(false), signalled(false), timeout(false)
 {
     init(argv, inputFile);
 }
 
 Process::Process(std::vector<std::string> argv):
     input(NULL), output(NULL), error(NULL), finished(false),
-    abnormalExit(false), signalled(false)
+    abnormalExit(false), signalled(false), timeout(false)
 {
     init(argv);
 }
@@ -184,6 +185,11 @@ bool Process::check_signalled()
 {
     perform_wait(false);
     return finished && signalled;
+}
+
+bool Process::get_timeout()
+{
+    return timeout;
 }
 
 /* Private */
@@ -464,4 +470,69 @@ void Process::perform_wait(bool block)
 
         finished = true;
     }
+}
+
+/** Timeout Process **/
+/* Public */
+TimeoutProcess::TimeoutProcess(std::vector<std::string> argv, int timeout, std::string inputFile):
+    Process(argv, inputFile), timeout_duration(timeout)
+{
+    init_timeout();
+}
+
+TimeoutProcess::TimeoutProcess(std::vector<std::string> argv, int timeout):
+    Process(argv, ""), timeout_duration(timeout)
+{
+    init_timeout();
+}
+
+TimeoutProcess::~TimeoutProcess()
+{
+    if (!finished) {
+        // Kill the Process.
+        send_kill();
+    }
+
+    // Ensure the thread is cancelled.
+    pthread_cancel(thread);
+
+    // Join the thread.
+    pthread_join(thread, NULL);
+}
+
+int TimeoutProcess::get_timeout_duration()
+{
+    return timeout_duration;
+}
+
+void TimeoutProcess::perform_timeout()
+{
+    if (!finished) {
+        send_signal(SIGKILL);
+        perform_wait(true);
+        timeout = true;
+    }
+}
+
+/* Private */
+void TimeoutProcess::init_timeout()
+{
+    // Create thread to perform timeout
+    if (pthread_create(&thread, NULL, timeout_thread, (void *) this) != 0) {
+        // Error
+    }
+}
+
+/* Timeout thread */
+void *timeout_thread(void *arg) {
+    TimeoutProcess *tp = (TimeoutProcess *) arg;
+
+    // Sleep for timeout length
+    sleep(tp->get_timeout_duration());
+
+    // If process is not finished, kill process
+    tp->perform_timeout();
+
+    // End thread
+    pthread_exit(NULL);
 }
