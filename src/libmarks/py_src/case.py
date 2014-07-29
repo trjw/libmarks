@@ -133,16 +133,16 @@ class TestCase(object):
         wrapper = _TestWrapper()
         try:
             # Perform setup.
-            with wrapper.test_executer(self, result):
+            with wrapper.test_executer(self):
                 self.setup()
 
             if wrapper.success:
                 # Run the test method.
-                with wrapper.test_executer(self, result):
+                with wrapper.test_executer(self, is_test=True):
                     self.test_method()
 
                 # Perform tear down.
-                with wrapper.test_executer(self, result):
+                with wrapper.test_executer(self):
                     self.tear_down()
 
             # Process wrapper.
