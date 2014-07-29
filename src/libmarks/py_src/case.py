@@ -70,7 +70,7 @@ class TestCase(object):
 
         # Change the process class to one that supports timeout if
         # timeout is set.
-        if self.timeout and isinstance(self.process_class, Process):
+        if self.timeout and self.process_class == Process:
             self.process_class = TimeoutProcess
 
     def setup(self):
