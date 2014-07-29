@@ -391,13 +391,24 @@ bool Process::expect(const std::string& expected, FILE *stream)
     return true;
 }
 
+/**
+ * Read a line from a stream, stopping when a new line character or end of file
+ * is reached.
+ * An empty string indicates end of file was reached.
+ * @param  stream The stream to read from.
+ * @return        The line read from the stream, including the newline character.
+ */
 std::string Process::readline(FILE *stream)
 {
     std::string line;
     char c;
 
-    while((c = fgetc(stream)) != EOF && !feof(stream) && c != '\n')
+    while((c = fgetc(stream)) != EOF && !feof(stream)) {
         line += c;
+        if (c == '\n') {
+            break;
+        }
+    }
 
     return line;
 }
