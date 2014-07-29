@@ -4,7 +4,7 @@ import os
 
 from .result import TestResult
 from .util import strclass
-from .process import Process
+from .process import Process, TimeoutProcess
 
 BUFFER_SIZE = 8 * 1024
 
@@ -46,10 +46,15 @@ class _TestWrapper(object):
 class TestCase(object):
 
     failure_exception = AssertionError
+    """The exception to treat as a test failure"""
     default_test_method = 'run_test'
+    """Default name for the test method"""
     process_class = Process
+    """Class for a Process"""
+    timeout = None
+    """Timeout duration, in seconds"""
 
-    def __init__(self, test_method_name='run_test'):
+    def __init__(self, test_method_name='run_test', timeout=None):
         try:
             getattr(self, test_method_name)
         except AttributeError:
@@ -59,6 +64,14 @@ class TestCase(object):
                     (strclass(self.__class__), test_method_name))
         else:
             self._test_method = test_method_name
+
+        if timeout:
+            self.timeout = timeout
+
+        # Change the process class to one that supports timeout if
+        # timeout is set.
+        if self.timeout and isinstance(self.process_class, Process):
+            self.process_class = TimeoutProcess
 
     def setup(self):
         pass
@@ -101,6 +114,12 @@ class TestCase(object):
 
     def process(self, *args, **kwargs):
         """Create a Process of the type specified for this test case"""
+
+        # Add the timeout to the init args.
+        if self.timeout:
+            kwargs.setdefault('timeout', self.timeout)
+
+        # Return the new process
         return self.process_class(*args, **kwargs)
 
     def run(self, result=None):
@@ -143,6 +162,12 @@ class TestCase(object):
         if process.check_signalled():
             msg = "Process received unexpected signal: {0}".format(
                 process.signal)
+        self._check_timeout(process, msg)
+
+    def _check_timeout(self, process, msg):
+        """Check if process was timed out, causing the test to fail."""
+        if process.timeout:
+            msg = "Timeout occurred"
         raise self.failure_exception(msg)
 
     def fail(self, msg=None):
@@ -192,7 +217,7 @@ class TestCase(object):
         if not process.assert_exit_status(status):
             msg = msg or "exit status mismatch: expected %d, got %d" % (
                 status, process.exit_status)
-            raise self.failure_exception(msg)
+            self._check_timeout(process, msg)
 
     def assert_signalled(self, process, msg=None):
         """
@@ -200,7 +225,7 @@ class TestCase(object):
         """
         if not process.assert_signalled():
             msg = msg or "program did not receive signal"
-            raise self.failure_exception(msg)
+            self._check_timeout(process, msg)
 
     def assert_signal(self, process, signal, msg=None):
         """
@@ -209,7 +234,7 @@ class TestCase(object):
         if not process.assert_signal(signal):
             msg = msg or "signal mismatch: expected %d, got %d" % (
                 signal, process.signal)
-            raise self.failure_exception(msg)
+            self._check_timeout(process, msg)
 
     def assert_files_equal(self, file1, file2, msg=None):
         """
