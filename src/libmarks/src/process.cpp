@@ -356,6 +356,11 @@ bool Process::expect_file(char *filePath, FILE *stream)
         throw StreamException();
     }
 
+    if (stream == NULL) {
+        // Trying to access a stream after the process has finished.
+        throw StreamFinishedException();
+    }
+
     char expected, received;
 
     // Char by char, check expected output against received output.
@@ -377,6 +382,11 @@ bool Process::expect_file(char *filePath, FILE *stream)
 
 bool Process::expect(const std::string& expected, FILE *stream)
 {
+    if (stream == NULL) {
+        // Trying to access a stream after the process has finished.
+        throw StreamFinishedException();
+    }
+
     if (expected.length() == 0) {
         // TODO: Should this raise an exception?
         return false;
@@ -400,6 +410,11 @@ bool Process::expect(const std::string& expected, FILE *stream)
  */
 std::string Process::readline(FILE *stream)
 {
+    if (stream == NULL) {
+        // Trying to access a stream after the process has finished.
+        throw StreamFinishedException();
+    }
+
     std::string line;
     char c;
 
@@ -415,6 +430,11 @@ std::string Process::readline(FILE *stream)
 
 void Process::print_stream(FILE *stream)
 {
+    if (stream == NULL) {
+        // Trying to access a stream after the process has finished.
+        throw StreamFinishedException();
+    }
+
     char *buf = new char[80];
 
     while (stream != NULL && !feof(stream)) {

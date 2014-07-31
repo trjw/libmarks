@@ -84,3 +84,4 @@ struct ForkException {};
 struct PipeException {};
 struct SignalException {};
 struct StreamException {};
+struct StreamFinishedException {};

@@ -99,6 +99,10 @@ void stream_exception_translator(const StreamException& e) {
     PyErr_SetString(PyExc_RuntimeError, "MARKS: Unexpected error with stream");
 }
 
+void stream_finished_exception_translator(const StreamFinishedException& e) {
+    PyErr_SetString(PyExc_RuntimeError, "MARKS: Tried to read stream after child finished");
+}
+
 
 BOOST_PYTHON_MODULE(process)
 {
@@ -116,6 +120,7 @@ BOOST_PYTHON_MODULE(process)
     register_exception_translator<PipeException>(&pipe_exception_translator);
     register_exception_translator<SignalException>(&signal_exception_translator);
     register_exception_translator<StreamException>(&stream_exception_translator);
+    register_exception_translator<StreamFinishedException>(&stream_finished_exception_translator);
 
     class_<Process>("Process", "Process class docstring", init<std::vector<std::string> >(args("argv")))
         .def(init<std::vector<std::string>, std::string>(args("argv", "input_file")))
