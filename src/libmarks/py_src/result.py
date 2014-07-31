@@ -1,4 +1,5 @@
 from __future__ import division, print_function
+import sys
 from . import util
 
 
@@ -64,6 +65,7 @@ class PrintedTestResult(TestResult):
     def start_test(self, test):
         super(PrintedTestResult, self).start_test(test)
         print("{0:60}".format(test.id()), end='')
+        sys.stdout.flush()
 
     def stop_test(self, test):
         super(PrintedTestResult, self).stop_test(test)
