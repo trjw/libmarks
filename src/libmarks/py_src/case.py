@@ -80,11 +80,11 @@ class TestCase(object):
         pass
 
     @classmethod
-    def setup_class(self):
+    def setup_class(cls):
         pass
 
     @classmethod
-    def tear_down_class(self):
+    def tear_down_class(cls):
         pass
 
     def id(self):

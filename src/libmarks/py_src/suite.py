@@ -62,31 +62,35 @@ class TestSuite(object):
 
     def _setup_class(self, test, result):
         class_ = test.__class__
-        if class_ in self._test_class_setup:
+        if (class_ in self._test_class_setup or
+                class_ in self._test_class_failed_setup):
             return
 
         wrapper = _TestWrapper()
 
-        # Perform setup.
-        with wrapper.test_executer(self, result):
-            class_.setup_class()
 
-        # TODO: Add error.
-        # if wrapper.success:
-        #     self._test_class_setup.append(class_)
-        # else:
-        #     self._test_class_failed_setup.append(class_)
+        if getattr(class_, 'setup_class', None):
+            # Perform setup.
+            with wrapper.test_executer(self):
+                class_.setup_class()
+
+            # TODO: Add error.
+            if wrapper.success:
+                self._test_class_setup.append(class_)
+            else:
+                self._test_class_failed_setup.append(class_)
 
     def _tear_down_class(self, class_, result):
         wrapper = _TestWrapper()
 
-        # Perform setup.
-        with wrapper.test_executer(self, result):
-            class_.tear_down_class()
+        if getattr(class_, 'tear_down_class', None):
+            # Perform tear down.
+            with wrapper.test_executer(self):
+                class_.tear_down_class()
 
-        # TODO: Add error.
-        # if not wrapper.success:
-        #     result.add_error()
+            # TODO: Add error.
+            # if not wrapper.success:
+            #     result.add_error()
 
     def _tear_down_classes(self, result):
         for class_ in self._test_class_setup:
