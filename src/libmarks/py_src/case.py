@@ -73,6 +73,9 @@ class TestCase(object):
         if self.timeout and self.process_class == Process:
             self.process_class = TimeoutProcess
 
+        # Counter for processes within a test
+        self._process_count = 0
+
     def setup(self):
         pass
 
@@ -126,6 +129,12 @@ class TestCase(object):
         # Instantiate the new process.
         p = self.process_class(argv, *args, **kwargs)
 
+        # Store the process count on the process.
+        p.count = self._process_count
+
+        # Increment the process count, ready for the next process.
+        self._process_count += 1
+
         return p
 
     def run(self, result=None):
@@ -135,6 +144,9 @@ class TestCase(object):
             result.start_test_run()
 
         result.start_test(self)
+
+        # Reset count for processes within test
+        self._process_count = 0
 
         wrapper = _TestWrapper()
         try:
