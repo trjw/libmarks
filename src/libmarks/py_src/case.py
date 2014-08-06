@@ -112,15 +112,21 @@ class TestCase(object):
     def test_method(self):
         return getattr(self, self._test_method)
 
-    def process(self, *args, **kwargs):
-        """Create a Process of the type specified for this test case"""
 
+    def process(self, argv, input_file=None, *args, **kwargs):
+        """Create a Process of the type specified for this test case"""
         # Add the timeout to the init args.
         if self.timeout:
             kwargs.setdefault('timeout', self.timeout)
 
-        # Return the new process
-        return self.process_class(*args, **kwargs)
+        # Include the input file if it is set.
+        if input_file is not None:
+            kwargs['input_file'] = input_file
+
+        # Instantiate the new process.
+        p = self.process_class(argv, *args, **kwargs)
+
+        return p
 
     def run(self, result=None):
         original_result = result
