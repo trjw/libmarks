@@ -88,13 +88,13 @@ class TestCase(object):
         pass
 
     def id(self):
-        return "%s.%s" % (strclass(self.__class__), self._test_method)
+        return "{}.{}".format(strclass(self.__class__), self._test_method)
 
     def __str__(self):
-        return "%s (%s)" % (self._test_method, strclass(self.__class__))
+        return "{} ({})".format(self._test_method, strclass(self.__class__))
 
     def __repr__(self):
-        return "<%s test_method=%s>" % (
+        return "<{} test_method={}>".format(
             strclass(self.__class__), self._test_method)
 
     def __call__(self, *args, **kwargs):
@@ -215,7 +215,7 @@ class TestCase(object):
         Assert that the exit status of the process matches the given status.
         """
         if not process.assert_exit_status(status):
-            msg = msg or "exit status mismatch: expected %d, got %d" % (
+            msg = msg or "exit status mismatch: expected {}, got {}".format(
                 status, process.exit_status)
             self._check_timeout(process, msg)
 
@@ -232,7 +232,7 @@ class TestCase(object):
         Assert that the signal of the process matches the given signal.
         """
         if not process.assert_signal(signal):
-            msg = msg or "signal mismatch: expected %d, got %d" % (
+            msg = msg or "signal mismatch: expected {}, got {}".format(
                 signal, process.signal)
             self._check_timeout(process, msg)
 
