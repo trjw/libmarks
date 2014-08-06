@@ -258,7 +258,11 @@ class TestCase(object):
         """
         Assert that the given files contain exactly the same contents.
         """
-        if os.path.exists(file1) and os.path.exists(file2):
+        if not os.path.exists(file1):
+            msg = msg or "file missing: {}".format(file1)
+        elif not os.path.exists(file2):
+            msg = msg or "file missing: {}".format(file1)
+        else:
             # Files exist, so open and compare them
             f1 = open(file1, 'rb')
             f2 = open(file2, 'rb')
@@ -283,7 +287,5 @@ class TestCase(object):
                 return
 
             msg = msg or "file mismatch: contents do not exactly match"
-        else:
-            msg = msg or "file missing"
 
         raise self.failure_exception(msg)
