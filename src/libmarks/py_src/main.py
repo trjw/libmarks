@@ -36,7 +36,7 @@ class TestProgram(object):
                             'classes and test methods.')
 
         parser.add_argument('-m', '--mark', dest='mark', action='store_true',
-                            help='Calculate marks for the given tests')
+                            help=argparse.SUPPRESS)
 
         self._parser = parser
 
