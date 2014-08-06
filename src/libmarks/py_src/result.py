@@ -204,3 +204,25 @@ class MarkingTestResult(object):
         return "<{0} run={1} successes={2} errors={3} failures={4}>".format(
             util.strclass(self.__class__), self.tests_run,
             len(self.successes), len(self.errors), len(self.failures))
+
+
+class DetailTestResult(TestResult):
+
+    def start_test_run(self):
+        super(DetailTestResult, self).start_test_run()
+        print("Running tests - detail mode\n")
+
+    def start_test(self, test):
+        super(DetailTestResult, self).start_test(test)
+        if sys.stdout.isatty():
+            print("\033[1m==> {0}:\033[0m".format(test.id()))
+        else:
+            print("==> {0}:".format(test.id()))
+
+    def stop_test(self, test):
+        super(DetailTestResult, self).stop_test(test)
+        print()
+
+    def stop_test_run(self):
+        super(DetailTestResult, self).stop_test_run()
+        print("Ran {} tests in detail mode.".format(self.tests_run))

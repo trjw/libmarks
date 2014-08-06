@@ -44,3 +44,13 @@ class MarkingTestRunner(BasicTestRunner):
             result.received_marks / result.total_marks))
 
         return result
+
+
+class DetailTestRunner(BasicTestRunner):
+
+    result_class = result.DetailTestResult
+
+    def run(self, test):
+        # Set details flag.
+        test.__marks_details__ = True
+        super(DetailTestRunner, self).run(test)

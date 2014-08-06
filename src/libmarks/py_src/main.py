@@ -38,6 +38,10 @@ class TestProgram(object):
         parser.add_argument('-m', '--mark', dest='mark', action='store_true',
                             help=argparse.SUPPRESS)
 
+        parser.add_argument('-d', '--detail', dest='detail',
+                            action='store_true',
+                            help='Show details for the test(s) being run')
+
         self._parser = parser
 
     def parse_arguments(self, argv):
@@ -55,6 +59,9 @@ class TestProgram(object):
         if self.mark:
             # Perform marking
             self.runner_class = runner.MarkingTestRunner
+        elif self.detail:
+            # Run detail mode
+            self.runner_class = runner.DetailTestRunner
 
     def create_tests(self):
         if self.test_names is None:

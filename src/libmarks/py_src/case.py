@@ -1,3 +1,4 @@
+from __future__ import print_function
 import contextlib
 import sys
 import os
@@ -115,6 +116,23 @@ class TestCase(object):
     def test_method(self):
         return getattr(self, self._test_method)
 
+    def _stdout_filename(self, p):
+        """
+        Generate filename for standard out (stdout) output from a process.
+
+        Remove module '__main__' from the ID, as it is not useful in most
+        cases.
+        """
+        return "{}.{}.out".format(self.id().replace('__main__.', ''), p.count)
+
+    def _stderr_filename(self, p):
+        """
+        Generate filename for standard error (stderr) output from a process.
+
+        Remove module '__main__' from the ID, as it is not useful in most
+        cases.
+        """
+        return "{}.{}.err".format(self.id().replace('__main__.', ''), p.count)
 
     def process(self, argv, input_file=None, *args, **kwargs):
         """Create a Process of the type specified for this test case"""
@@ -126,6 +144,10 @@ class TestCase(object):
         if input_file is not None:
             kwargs['input_file'] = input_file
 
+        if getattr(self, '__marks_details__', False):
+            # Ensure a real process is not created in export mode.
+            self.process_class = DummyProcess
+
         # Instantiate the new process.
         p = self.process_class(argv, *args, **kwargs)
 
@@ -134,6 +156,15 @@ class TestCase(object):
 
         # Increment the process count, ready for the next process.
         self._process_count += 1
+
+        if getattr(self, '__marks_details__', False):
+            # Print out command for running the process, including streams.
+            print("Starting Process {}...".format(p.count))
+            print("\t{}".format(' '.join(argv)), end='')
+            if input_file is not None:
+                print(' < {}'.format(input_file), end='')
+            print(' > {} 2> {}'.format(
+                self._stdout_filename(p), self._stderr_filename(p)))
 
         return p
 
@@ -197,6 +228,13 @@ class TestCase(object):
         Assert that the standard output of the process matches the
         contents of the given file.
         """
+        if getattr(self, '__marks_details__', False):
+            # Print out command to compare stdout.
+            print("Compare stdout from Process {}:".format(process.count))
+            print("\tdiff {} {}".format(
+                self._stdout_filename(process), file_path))
+            return
+
         if not process.expect_stdout_file(file_path):
             msg = msg or "stdout mismatch"
             self._check_signal(process, msg)
@@ -206,6 +244,13 @@ class TestCase(object):
         Assert that the standard error of the process matches the
         contents of the given file.
         """
+        if getattr(self, '__marks_details__', False):
+            # Print out command to compare stderr.
+            print("Compare stderr from Process {}:".format(process.count))
+            print("\tdiff {} {}".format(
+                self._stderr_filename(process), file_path))
+            return
+
         if not process.expect_stderr_file(file_path):
             msg = msg or "stderr mismatch"
             self._check_signal(process, msg)
@@ -215,6 +260,12 @@ class TestCase(object):
         Assert that the standard output of the process contains the given
         output.
         """
+        if getattr(self, '__marks_details__', False):
+            # Print out the expected output from stdout.
+            print("Expect output (Process {} [stdout]):".format(process.count))
+            print(output)
+            return
+
         if not process.expect_stdout(output):
             msg = msg or "stdout mismatch"
             self._check_signal(process, msg)
@@ -224,6 +275,12 @@ class TestCase(object):
         Assert that the standard error of the process contains the given
         output.
         """
+        if getattr(self, '__marks_details__', False):
+            # Print out the expected output from stdout.
+            print("Expect output (Process {} [stderr]):".format(process.count))
+            print(output)
+            return
+
         if not process.expect_stderr(output):
             msg = msg or "stderr mismatch"
             self._check_signal(process, msg)
@@ -232,6 +289,12 @@ class TestCase(object):
         """
         Assert that the exit status of the process matches the given status.
         """
+        if getattr(self, '__marks_details__', False):
+            # Print out the expected exit status for the process.
+            print("Expect exit status (Process {}): {}".format(
+                process.count, status))
+            return
+
         if not process.assert_exit_status(status):
             msg = msg or "exit status mismatch: expected {}, got {}".format(
                 status, process.exit_status)
@@ -241,6 +304,11 @@ class TestCase(object):
         """
         Assert that the process received a signal.
         """
+        if getattr(self, '__marks_details__', False):
+            # Print that the process is expected to receive a signal.
+            print("Expect Process {} to receive signal".format(process.count))
+            return
+
         if not process.assert_signalled():
             msg = msg or "program did not receive signal"
             self._check_timeout(process, msg)
@@ -249,6 +317,12 @@ class TestCase(object):
         """
         Assert that the signal of the process matches the given signal.
         """
+        if getattr(self, '__marks_details__', False):
+            # Print out the expected signal for the process.
+            print("Expect signal (Process {}): {}".format(
+                process.count, signal))
+            return
+
         if not process.assert_signal(signal):
             msg = msg or "signal mismatch: expected {}, got {}".format(
                 signal, process.signal)
@@ -258,6 +332,12 @@ class TestCase(object):
         """
         Assert that the given files contain exactly the same contents.
         """
+        if getattr(self, '__marks_details__', False):
+            # Print out the command to check the two files.
+            print("Check files are the same:")
+            print("\tdiff {} {}".format(file1, file2))
+            return
+
         if not os.path.exists(file1):
             msg = msg or "file missing: {}".format(file1)
         elif not os.path.exists(file2):
@@ -289,3 +369,15 @@ class TestCase(object):
             msg = msg or "file mismatch: contents do not exactly match"
 
         raise self.failure_exception(msg)
+
+
+class DummyProcess(object):
+
+    """A dummy process class, for use with the export process functionality"""
+
+    def __init__(self, argv, input_file=None, **kwargs):
+        self.argv = argv
+        self.input_file = input_file
+
+    def finish_input(self):
+        pass

@@ -68,6 +68,9 @@ class TestSuite(object):
 
         wrapper = _TestWrapper()
 
+        # Add details flag, if set.
+        if getattr(self, '__marks_details__', False):
+            class_.__marks_details__ = True
 
         if getattr(class_, 'setup_class', None):
             # Perform setup.
