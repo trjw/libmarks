@@ -12,16 +12,35 @@ def compile(source_dir, dest_dir):
         if curr_dir == '.':
             curr_dir = ''
 
-        # Compile all py files and put them in dest_dir
+        # Ignore hidden directories (starting with .)
+        if curr_dir.startswith('.'):
+            continue
+
+        # Filter for Python files
         py_files = fnmatch.filter(files, '*.py')
+        if len(py_files) == 0:
+           continue
+
+        # Directory contains Python files, so create in destination
+        try:
+            os.mkdir(os.path.join(dest_dir, curr_dir))
+        except OSError:
+            # Directory already exists
+            pass
+
+        # Compile all py files and put them in dest_dir
         for f in py_files:
             py_compile.compile(
                 os.path.join(root, f),
                 os.path.join(dest_dir, curr_dir, f + 'c'))
 
         # Create all dirs within dest_dir
-        for d in dirs:
-            os.mkdir(os.path.join(dest_dir, curr_dir, d))
+        # for d in dirs:
+        #    try:
+        #        os.mkdir(os.path.join(dest_dir, curr_dir, d))
+        #    except OSError:
+        #        # Directory already exists
+        #        pass
 
 
 if __name__ == '__main__':
