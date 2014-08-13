@@ -39,7 +39,7 @@ class TestProgram(object):
                             help=argparse.SUPPRESS)
 
         parser.add_argument('--update', dest='update', action='store_true',
-                            help='Update files for the given test(s)')
+                            help=argparse.SUPPRESS)
 
         parser.add_argument('-d', '--detail', dest='detail',
                             action='store_true',
