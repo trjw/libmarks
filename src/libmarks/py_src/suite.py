@@ -8,11 +8,6 @@ class TestSuite(object):
 
     def __init__(self, tests=()):
         self._tests = []
-
-        # Classes
-        self._test_class_setup = []
-        self._test_class_failed_setup = []
-
         self.add_tests(tests)
 
     def __repr__(self):
@@ -38,7 +33,7 @@ class TestSuite(object):
         for test in tests:
             self.add_test(test)
 
-    def run(self, result=None):
+    def run(self, result=None, child=False):
         original_result = result
         if result is None:
             result = TestResult()
@@ -47,11 +42,12 @@ class TestSuite(object):
         try:
             for test in self:
                 self._setup_class(test, result)
-                if test.__class__ not in self._test_class_failed_setup:
-                    test.run(result)
+                if not result.class_setup_failed(test.__class__):
+                    test.run(result, child=True)
 
             # Tear down classes
-            self._tear_down_classes(result)
+            if not child:
+                self._tear_down_classes(result)
 
             return result
         finally:
@@ -62,8 +58,7 @@ class TestSuite(object):
 
     def _setup_class(self, test, result):
         class_ = test.__class__
-        if (class_ in self._test_class_setup or
-                class_ in self._test_class_failed_setup):
+        if result.class_setup_run(class_):
             return
 
         wrapper = _TestWrapper()
@@ -76,11 +71,11 @@ class TestSuite(object):
             with wrapper.test_executer(self):
                 class_.setup_class()
 
-            # TODO: Add error.
-            if wrapper.success:
-                self._test_class_setup.append(class_)
-            else:
-                self._test_class_failed_setup.append(class_)
+            # TODO: Add error if setup failed.
+
+        # Record result for all test classes. If no setup_class() method
+        # available, then treat as success.
+        result.add_class_setup(class_, wrapper.success)
 
     def _tear_down_class(self, class_, result):
         wrapper = _TestWrapper()
@@ -95,7 +90,7 @@ class TestSuite(object):
             #     result.add_error()
 
     def _tear_down_classes(self, result):
-        for class_ in self._test_class_setup:
+        for class_ in result.test_classes():
             self._tear_down_class(class_, result)
 
     def _apply_flags(self, class_):

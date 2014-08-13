@@ -18,6 +18,9 @@ class TestResult(object):
         self.successes = []
         self.tests_run = 0
 
+        # Record test classes.
+        self._test_class_setup = {}
+
     def start_test_run(self):
         """Run before the testing starts."""
         pass
@@ -33,6 +36,22 @@ class TestResult(object):
     def stop_test_run(self):
         """Run after all of the testing is complete."""
         pass
+
+    def add_class_setup(self, class_, success=True):
+        """Record a test class setup as complete."""
+        self._test_class_setup[class_] = success
+
+    def class_setup_run(self, class_):
+        """Check if setup for a class has occurred."""
+        return class_ in self._test_class_setup
+
+    def class_setup_failed(self, class_):
+        """Check if setup for a test class failed."""
+        return not self._test_class_setup.get(class_, True)
+
+    def test_classes(self):
+        """Return list of test classes that have been setup."""
+        return self._test_class_setup.keys()
 
     def add_failure(self, test, error):
         """Record a test failure."""

@@ -174,7 +174,7 @@ class TestCase(object):
 
         return p
 
-    def run(self, result=None):
+    def run(self, result=None, **kwargs):
         original_result = result
         if result is None:
             result = TestResult()
