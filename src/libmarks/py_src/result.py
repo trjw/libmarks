@@ -94,14 +94,11 @@ class PrintedTestResult(TestResult):
         print("OK")
 
 
-class MarkingTestResult(object):
+class MarkingTestResult(TestResult):
     """Container of test result information."""
 
     def __init__(self):
-        self.failures = []
-        self.errors = []
-        self.successes = []
-        self.tests_run = 0
+        super(MarkingTestResult, self).__init__()
         self.marks = {}
         """Contains test case results grouped into categories."""
         self.tests_passed = 0
@@ -139,18 +136,6 @@ class MarkingTestResult(object):
                 "Category '{0}' cannot have both category marks and "
                 "individual test marks".format(category))
 
-    def start_test_run(self):
-        """Run before the testing starts."""
-        pass
-
-    def start_test(self, test):
-        """Record a test as having started."""
-        self.tests_run += 1
-
-    def stop_test(self, test):
-        """Record a test as having finished."""
-        pass
-
     def stop_test_run(self):
         """Run after all of the testing is complete."""
         for category in self.marks:
@@ -179,31 +164,22 @@ class MarkingTestResult(object):
 
     def add_failure(self, test, error):
         """Record a test failure."""
-        self.failures.append((test, self._exc_info_pretty_print(error, test)))
+        super(MarkingTestResult, self).add_failure(test, error)
         self._record_test(test, RESULT_FAILURE)
 
     def add_error(self, test, error):
         """Record a test error."""
-        self.errors.append((test, self._exc_info_pretty_print(error, test)))
+        super(MarkingTestResult, self).add_error(test, error)
         self._record_test(test, RESULT_ERROR)
 
     def add_success(self, test):
         """Record a test success."""
-        self.successes.append((test, None))
+        super(MarkingTestResult, self).add_success(test)
 
         test_method = test.test_method
         mark = (getattr(test_method, '__marks_mark__', 0)
                 or getattr(test.__class__, '__marks_mark__', RESULT_SUCCESS))
         self._record_test(test, mark)
-
-    def _exc_info_pretty_print(self, exc_info, test):
-        exc_type, value, tb = exc_info
-        return str(value)
-
-    def __repr__(self):
-        return "<{0} run={1} successes={2} errors={3} failures={4}>".format(
-            util.strclass(self.__class__), self.tests_run,
-            len(self.successes), len(self.errors), len(self.failures))
 
 
 class UpdateTestResult(TestResult):
