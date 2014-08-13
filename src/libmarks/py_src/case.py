@@ -250,20 +250,35 @@ class TestCase(object):
                 self._stdout_filename(process), file_path))
             return
 
-        if getattr(self, '__marks_update__', False):
-            # Save output instead of comparing it
-            with open(file_path, 'wb') as f:
+        if getattr(self, '__marks_update__', False) or self.flag_set('save'):
+            # Save stdout output to file.
+            filename = file_path
+            if self.flag_set('save'):
+                filename = self._stdout_filename(process)
+
+            with open(filename, 'wb') as f:
                 while True:
                     line = process.readline_stdout()
                     f.write(line)
                     if line == '':
                         break
+
+        if getattr(self, '__marks_update__', False):
             print("\tstandard output file updated: {0}".format(file_path))
             return
 
-        if not process.expect_stdout_file(file_path):
-            msg = msg or "stdout mismatch"
-            self._check_signal(process, msg)
+        # Set error message, if not set already.
+        msg = msg or "stdout mismatch"
+        result = None
+
+        if self.flag_set('save'):
+            result = self._compare_files(
+                self._stdout_filename(process), file_path, msg=msg)
+        elif not process.expect_stdout_file(file_path):
+            result = msg
+
+        if result is not None:
+            self._check_signal(process, result)
 
     def assert_stderr_matches_file(self, process, file_path, msg=None):
         """
@@ -277,20 +292,35 @@ class TestCase(object):
                 self._stderr_filename(process), file_path))
             return
 
-        if getattr(self, '__marks_update__', False):
-            # Save output instead of comparing it
-            with open(file_path, 'wb') as f:
+        if getattr(self, '__marks_update__', False) or self.flag_set('save'):
+            # Save stderr output to file.
+            filename = file_path
+            if self.flag_set('save'):
+                filename = self._stderr_filename(process)
+
+            with open(filename, 'wb') as f:
                 while True:
                     line = process.readline_stderr()
                     f.write(line)
                     if line == '':
                         break
+
+        if getattr(self, '__marks_update__', False):
             print("\tstandard error file updated: {0}".format(file_path))
             return
 
-        if not process.expect_stderr_file(file_path):
-            msg = msg or "stderr mismatch"
-            self._check_signal(process, msg)
+        # Set error message, if not set already.
+        msg = msg or "stderr mismatch"
+        result = None
+
+        if self.flag_set('save'):
+            result = self._compare_files(
+                self._stderr_filename(process), file_path, msg=msg)
+        elif not process.expect_stderr_file(file_path):
+            result = msg
+
+        if result is not None:
+            self._check_signal(process, result)
 
     def assert_stdout(self, process, output, msg=None):
         """
@@ -389,10 +419,15 @@ class TestCase(object):
             print("\tdiff {0} {1}".format(file1, file2))
             return
 
+        result = self._compare_files(file1, file2, msg=msg)
+        if result is not None:
+            raise self.failure_exception(result)
+
+    def _compare_files(self, file1, file2, msg1=None, msg2=None, msg=None):
         if not os.path.exists(file1):
-            msg = msg or "file missing: {0}".format(file1)
+            return msg1 or "file missing: {0}".format(file1)
         elif not os.path.exists(file2):
-            msg = msg or "file missing: {0}".format(file1)
+            return msg2 or "file missing: {0}".format(file1)
         else:
             # Files exist, so open and compare them
             f1 = open(file1, 'rb')
@@ -414,12 +449,8 @@ class TestCase(object):
             f1.close()
             f2.close()
 
-            if not different:
-                return
-
-            msg = msg or "file mismatch: contents do not exactly match"
-
-        raise self.failure_exception(msg)
+            if different:
+                return msg or "file mismatch: contents do not exactly match"
 
 
 class DummyProcess(object):

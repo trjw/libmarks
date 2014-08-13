@@ -51,6 +51,10 @@ class TestProgram(object):
                             action='store_true',
                             help='Show details for the test(s) being run')
 
+        parser.add_argument('-s', '--save', dest='save_output',
+                            action='store_true',
+                            help='Save output from the test(s) being run')
+
         self._parser = parser
 
     def parse_arguments(self, argv):
@@ -74,6 +78,9 @@ class TestProgram(object):
         elif self.detail:
             # Run detail mode
             self.runner_class = runner.DetailTestRunner
+
+        # Set flags
+        self.flags['save'] = self.save_output
 
     def create_tests(self):
         if self.test_names is None:
