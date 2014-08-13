@@ -345,7 +345,7 @@ class TestCase(object):
         if not process.assert_exit_status(status):
             msg = msg or "exit status mismatch: expected {0}, got {1}".format(
                 status, process.exit_status)
-            self._check_timeout(process, msg)
+            self._check_signal(process, msg)
 
     def assert_signalled(self, process, msg=None):
         """
