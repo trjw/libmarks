@@ -68,13 +68,8 @@ class TestSuite(object):
 
         wrapper = _TestWrapper()
 
-        # Add update flag, if set.
-        if getattr(self, '__marks_update__', False):
-            class_.__marks_update__ = True
-
-        # Add details flag, if set.
-        if getattr(self, '__marks_details__', False):
-            class_.__marks_details__ = True
+        # Apply flags to class.
+        self._apply_flags(class_)
 
         if getattr(class_, 'setup_class', None):
             # Perform setup.
@@ -102,3 +97,15 @@ class TestSuite(object):
     def _tear_down_classes(self, result):
         for class_ in self._test_class_setup:
             self._tear_down_class(class_, result)
+
+    def _apply_flags(self, class_):
+        """Apply the appropriate flags to the test class"""
+        class_.__marks_flags__ = getattr(self, '__marks_flags__', {})
+
+        # Add update flag, if set.
+        if getattr(self, '__marks_update__', False):
+            class_.__marks_update__ = True
+
+        # Add details flag, if set.
+        if getattr(self, '__marks_details__', False):
+            class_.__marks_details__ = True

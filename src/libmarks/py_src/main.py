@@ -10,7 +10,8 @@ class TestProgram(object):
     runner_class = runner.BasicTestRunner
 
     def __init__(
-            self, module='__main__', test_loader=loader.default_test_loader):
+            self, module='__main__', test_loader=loader.default_test_loader,
+            flags=None):
         if isinstance(module, basestring):
             self.module = __import__(module)
             # Load the module at the correct level
@@ -20,6 +21,11 @@ class TestProgram(object):
             self.module = module
 
         self.test_loader = test_loader
+
+        # Store flags to be sent to the test runner.
+        self.flags = {}
+        if flags is not None:
+            self.flags = flags
 
         argv = sys.argv
 
@@ -77,7 +83,7 @@ class TestProgram(object):
                 self.test_names, self.module)
 
     def run_tests(self):
-        runner = self.runner_class()
+        runner = self.runner_class(**self.flags)
         runner.run(self.test)
 
 

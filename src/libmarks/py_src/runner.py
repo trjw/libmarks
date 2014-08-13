@@ -6,8 +6,20 @@ class BasicTestRunner(object):
 
     result_class = result.PrintedTestResult
 
+    def __init__(self, result_class=None, **kwargs):
+        self.flags = kwargs
+
+        if result_class is not None:
+            self.result_class = result_class
+
+    def _apply_flags(self, test):
+        """Apply the appropriate flags to the tests"""
+        test.__marks_flags__ = self.flags
+
     def run(self, test):
         result = self.result_class()
+
+        self._apply_flags(test)
 
         result.start_test_run()
         test.run(result)

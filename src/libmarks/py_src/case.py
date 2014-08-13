@@ -136,6 +136,10 @@ class TestCase(object):
         return "{0}.{1}.err".format(
             self.id().replace('__main__.', ''), p.count)
 
+    def flag_set(self, flag):
+        """Checks whether a flag is set on the class"""
+        return self.__marks_flags__.get(flag, False)
+
     def process(self, argv, input_file=None, *args, **kwargs):
         """Create a Process of the type specified for this test case"""
         # Add the timeout to the init args.
