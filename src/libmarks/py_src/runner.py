@@ -46,6 +46,29 @@ class MarkingTestRunner(BasicTestRunner):
         return result
 
 
+CONFIRMATION_MESSAGE = """
+Please confirm that you want to update the output files in this test suite.
+
+NOTE: THIS PROCESS WILL MODIFY EXISTING FILES.
+      PLEASE ENSURE YOU HAVE A BACKUP BEFORE PROCEEDING.
+"""
+
+
+class UpdateTestRunner(BasicTestRunner):
+
+    result_class = result.UpdateTestResult
+
+    def run(self, test):
+        # Confirm that the update should proceed
+        print(CONFIRMATION_MESSAGE)
+        confirm = raw_input("Are you sure you want to update the files? (y/N)")
+
+        if confirm == 'y':
+            # Set update flag.
+            test.__marks_update__ = True
+            super(UpdateTestRunner, self).run(test)
+
+
 class DetailTestRunner(BasicTestRunner):
 
     result_class = result.DetailTestResult

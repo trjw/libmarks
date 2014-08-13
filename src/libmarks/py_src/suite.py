@@ -68,6 +68,10 @@ class TestSuite(object):
 
         wrapper = _TestWrapper()
 
+        # Add update flag, if set.
+        if getattr(self, '__marks_update__', False):
+            class_.__marks_update__ = True
+
         # Add details flag, if set.
         if getattr(self, '__marks_details__', False):
             class_.__marks_details__ = True

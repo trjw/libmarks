@@ -217,12 +217,21 @@ class TestCase(object):
 
     def _check_timeout(self, process, msg):
         """Check if process was timed out, causing the test to fail."""
+        if getattr(self, '__marks_update__', False):
+            # Ignore errors when in update mode.
+            return
+
         if process.timeout:
             msg = "Timeout occurred"
+
         raise self.failure_exception(msg)
 
     def fail(self, msg=None):
         """Fail immediately, with the given message."""
+        if getattr(self, '__marks_update__', False):
+            # Ignore errors when in update mode.
+            return
+
         raise self.failure_exception(msg)
 
     def assert_stdout_matches_file(self, process, file_path, msg=None):
@@ -235,6 +244,17 @@ class TestCase(object):
             print("Compare stdout from Process {0}:".format(process.count))
             print("\tdiff {0} {1}".format(
                 self._stdout_filename(process), file_path))
+            return
+
+        if getattr(self, '__marks_update__', False):
+            # Save output instead of comparing it
+            with open(file_path, 'wb') as f:
+                while True:
+                    line = process.readline_stdout()
+                    f.write(line)
+                    if line == '':
+                        break
+            print("\tstandard output file updated: {0}".format(file_path))
             return
 
         if not process.expect_stdout_file(file_path):
@@ -253,6 +273,17 @@ class TestCase(object):
                 self._stderr_filename(process), file_path))
             return
 
+        if getattr(self, '__marks_update__', False):
+            # Save output instead of comparing it
+            with open(file_path, 'wb') as f:
+                while True:
+                    line = process.readline_stderr()
+                    f.write(line)
+                    if line == '':
+                        break
+            print("\tstandard error file updated: {0}".format(file_path))
+            return
+
         if not process.expect_stderr_file(file_path):
             msg = msg or "stderr mismatch"
             self._check_signal(process, msg)
@@ -269,6 +300,12 @@ class TestCase(object):
             print(output)
             return
 
+        if getattr(self, '__marks_update__', False):
+            # Print message to remind user to check output
+            # TODO: Include source code location
+            print("\tCheck assert_stdout('{0}')".format(output))
+            return
+
         if not process.expect_stdout(output):
             msg = msg or "stdout mismatch"
             self._check_signal(process, msg)
@@ -283,6 +320,12 @@ class TestCase(object):
             print(
                 "Expect output (Process {0} [stderr]):".format(process.count))
             print(output)
+            return
+
+        if getattr(self, '__marks_update__', False):
+            # Print message to remind user to check output
+            # TODO: Include source code location
+            print("\tCheck assert_stderr('{0}')".format(output))
             return
 
         if not process.expect_stderr(output):

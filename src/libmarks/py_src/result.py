@@ -206,6 +206,23 @@ class MarkingTestResult(object):
             len(self.successes), len(self.errors), len(self.failures))
 
 
+class UpdateTestResult(TestResult):
+
+    def start_test_run(self):
+        super(UpdateTestResult, self).start_test_run()
+        print("Updating tests\n")
+
+    def start_test(self, test):
+        super(UpdateTestResult, self).start_test(test)
+        if sys.stdout.isatty():
+            print("\033[1m==> {0}:\033[0m".format(test.id()))
+        else:
+            print("==> {0}:".format(test.id()))
+
+    def stop_test(self, test):
+        print()
+
+
 class DetailTestResult(TestResult):
 
     def start_test_run(self):

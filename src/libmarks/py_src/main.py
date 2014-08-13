@@ -38,6 +38,9 @@ class TestProgram(object):
         parser.add_argument('-m', '--mark', dest='mark', action='store_true',
                             help=argparse.SUPPRESS)
 
+        parser.add_argument('--update', dest='update', action='store_true',
+                            help='Update files for the given test(s)')
+
         parser.add_argument('-d', '--detail', dest='detail',
                             action='store_true',
                             help='Show details for the test(s) being run')
@@ -59,6 +62,9 @@ class TestProgram(object):
         if self.mark:
             # Perform marking
             self.runner_class = runner.MarkingTestRunner
+        elif self.update:
+            # Perform file updates
+            self.runner_class = runner.UpdateTestRunner
         elif self.detail:
             # Run detail mode
             self.runner_class = runner.DetailTestRunner
