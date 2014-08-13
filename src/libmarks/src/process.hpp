@@ -17,6 +17,7 @@ protected:
     int exitStatus, signalNum;
     bool abnormalExit, signalled;
     bool timeout;
+    pthread_mutex_t waitMutex;
 
     void init(std::vector<std::string>, std::string);
     void init(std::vector<std::string>);

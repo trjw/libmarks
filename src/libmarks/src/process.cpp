@@ -33,6 +33,9 @@ Process::~Process()
     if (!finished) {
         send_kill();
     }
+
+    // Destroy wait mutex.
+    pthread_mutex_destroy(&waitMutex);
 }
 
 bool Process::send(const std::string& message)
@@ -206,6 +209,9 @@ void Process::init(std::vector<std::string> argv, std::string inputFile)
     if (pipe(fdOut) != 0 || pipe(fdErr) != 0 || pipe(fdCheck) != 0) {
         throw PipeException();
     }
+
+    // Initialise wait mutex
+    pthread_mutex_init(&waitMutex, NULL);
 
     // Fork
     childPid = fork();
@@ -463,6 +469,9 @@ bool Process::close_stream(FILE **stream)
 
 void Process::perform_wait(bool block)
 {
+    // Obtain mutex.
+    pthread_mutex_lock(&waitMutex);
+
     if (!finished) {
         // Set up options for waitpid, based on whether we should wait
         // for the process to complete or not.
@@ -475,32 +484,37 @@ void Process::perform_wait(bool block)
         int status;
         int result = waitpid(childPid, &status, options);
 
-        if (!block && result == 0) {
+        if (result == -1) {
+            // Error detected - Child is already finished, or call was
+            // interrupted by caught signal.
+        } else if (!block && result == 0) {
             // Child is not finished, so do not check status.
-            return;
-        }
-
-        // TODO: Check for other results of waitpid.
-
-        // Check for the exit status of the child
-        if (WIFEXITED(status)) {
-            exitStatus = WEXITSTATUS(status);
         } else {
-            abnormalExit = true;
+            // Child is finished, so check status and close streams.
+            // Check for the exit status of the child.
+            if (WIFEXITED(status)) {
+                exitStatus = WEXITSTATUS(status);
+            } else {
+                abnormalExit = true;
+            }
+
+            // Check signal, if it was signalled.
+            if (WIFSIGNALED(status)) {
+                signalled = true;
+                signalNum = WTERMSIG(status);
+            }
+
+            // Close the files.
+            close_stream(&input);
+            close_stream(&output);
+            close_stream(&error);
+
+            finished = true;
         }
-
-        if (WIFSIGNALED(status)) {
-            signalled = true;
-            signalNum = WTERMSIG(status);
-        }
-
-        // Close the files.
-        close_stream(&input);
-        close_stream(&output);
-        close_stream(&error);
-
-        finished = true;
     }
+
+    // Release mutex.
+    pthread_mutex_unlock(&waitMutex);
 }
 
 /** Timeout Process **/
@@ -529,6 +543,9 @@ TimeoutProcess::~TimeoutProcess()
 
     // Join the thread.
     pthread_join(thread, NULL);
+
+    // Destroy wait mutex.
+    pthread_mutex_destroy(&waitMutex);
 }
 
 int TimeoutProcess::get_timeout_duration()
@@ -539,9 +556,8 @@ int TimeoutProcess::get_timeout_duration()
 void TimeoutProcess::perform_timeout()
 {
     if (!finished) {
-        send_signal(SIGKILL);
-        perform_wait(true);
         timeout = true;
+        send_kill();
     }
 }
 
