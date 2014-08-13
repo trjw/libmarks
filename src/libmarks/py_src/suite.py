@@ -27,7 +27,7 @@ class TestSuite(object):
     def add_test(self, test):
         # sanity checks
         if not hasattr(test, '__call__'):
-            raise TypeError("Test {} is not callable".format(repr(test)))
+            raise TypeError("Test {0} is not callable".format(repr(test)))
 
         self._tests.append(test)
 

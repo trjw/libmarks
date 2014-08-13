@@ -92,13 +92,13 @@ class TestCase(object):
         pass
 
     def id(self):
-        return "{}.{}".format(strclass(self.__class__), self._test_method)
+        return "{0}.{1}".format(strclass(self.__class__), self._test_method)
 
     def __str__(self):
-        return "{} ({})".format(self._test_method, strclass(self.__class__))
+        return "{0} ({1})".format(self._test_method, strclass(self.__class__))
 
     def __repr__(self):
-        return "<{} test_method={}>".format(
+        return "<{0} test_method={1}>".format(
             strclass(self.__class__), self._test_method)
 
     def __call__(self, *args, **kwargs):
@@ -123,7 +123,8 @@ class TestCase(object):
         Remove module '__main__' from the ID, as it is not useful in most
         cases.
         """
-        return "{}.{}.out".format(self.id().replace('__main__.', ''), p.count)
+        return "{0}.{1}.out".format(
+            self.id().replace('__main__.', ''), p.count)
 
     def _stderr_filename(self, p):
         """
@@ -132,7 +133,8 @@ class TestCase(object):
         Remove module '__main__' from the ID, as it is not useful in most
         cases.
         """
-        return "{}.{}.err".format(self.id().replace('__main__.', ''), p.count)
+        return "{0}.{1}.err".format(
+            self.id().replace('__main__.', ''), p.count)
 
     def process(self, argv, input_file=None, *args, **kwargs):
         """Create a Process of the type specified for this test case"""
@@ -159,11 +161,11 @@ class TestCase(object):
 
         if getattr(self, '__marks_details__', False):
             # Print out command for running the process, including streams.
-            print("Starting Process {}...".format(p.count))
-            print("\t{}".format(' '.join(argv)), end='')
+            print("Starting Process {0}...".format(p.count))
+            print("\t{0}".format(' '.join(argv)), end='')
             if input_file is not None:
-                print(' < {}'.format(input_file), end='')
-            print(' > {} 2> {}'.format(
+                print(' < {0}'.format(input_file), end='')
+            print(' > {0} 2> {1}'.format(
                 self._stdout_filename(p), self._stderr_filename(p)))
 
         return p
@@ -230,8 +232,8 @@ class TestCase(object):
         """
         if getattr(self, '__marks_details__', False):
             # Print out command to compare stdout.
-            print("Compare stdout from Process {}:".format(process.count))
-            print("\tdiff {} {}".format(
+            print("Compare stdout from Process {0}:".format(process.count))
+            print("\tdiff {0} {1}".format(
                 self._stdout_filename(process), file_path))
             return
 
@@ -246,8 +248,8 @@ class TestCase(object):
         """
         if getattr(self, '__marks_details__', False):
             # Print out command to compare stderr.
-            print("Compare stderr from Process {}:".format(process.count))
-            print("\tdiff {} {}".format(
+            print("Compare stderr from Process {0}:".format(process.count))
+            print("\tdiff {0} {1}".format(
                 self._stderr_filename(process), file_path))
             return
 
@@ -262,7 +264,8 @@ class TestCase(object):
         """
         if getattr(self, '__marks_details__', False):
             # Print out the expected output from stdout.
-            print("Expect output (Process {} [stdout]):".format(process.count))
+            print(
+                "Expect output (Process {0} [stdout]):".format(process.count))
             print(output)
             return
 
@@ -277,7 +280,8 @@ class TestCase(object):
         """
         if getattr(self, '__marks_details__', False):
             # Print out the expected output from stdout.
-            print("Expect output (Process {} [stderr]):".format(process.count))
+            print(
+                "Expect output (Process {0} [stderr]):".format(process.count))
             print(output)
             return
 
@@ -291,12 +295,12 @@ class TestCase(object):
         """
         if getattr(self, '__marks_details__', False):
             # Print out the expected exit status for the process.
-            print("Expect exit status (Process {}): {}".format(
+            print("Expect exit status (Process {0}): {1}".format(
                 process.count, status))
             return
 
         if not process.assert_exit_status(status):
-            msg = msg or "exit status mismatch: expected {}, got {}".format(
+            msg = msg or "exit status mismatch: expected {0}, got {1}".format(
                 status, process.exit_status)
             self._check_timeout(process, msg)
 
@@ -306,7 +310,7 @@ class TestCase(object):
         """
         if getattr(self, '__marks_details__', False):
             # Print that the process is expected to receive a signal.
-            print("Expect Process {} to receive signal".format(process.count))
+            print("Expect Process {0} to receive signal".format(process.count))
             return
 
         if not process.assert_signalled():
@@ -319,12 +323,12 @@ class TestCase(object):
         """
         if getattr(self, '__marks_details__', False):
             # Print out the expected signal for the process.
-            print("Expect signal (Process {}): {}".format(
+            print("Expect signal (Process {0}): {1}".format(
                 process.count, signal))
             return
 
         if not process.assert_signal(signal):
-            msg = msg or "signal mismatch: expected {}, got {}".format(
+            msg = msg or "signal mismatch: expected {0}, got {1}".format(
                 signal, process.signal)
             self._check_timeout(process, msg)
 
@@ -335,13 +339,13 @@ class TestCase(object):
         if getattr(self, '__marks_details__', False):
             # Print out the command to check the two files.
             print("Check files are the same:")
-            print("\tdiff {} {}".format(file1, file2))
+            print("\tdiff {0} {1}".format(file1, file2))
             return
 
         if not os.path.exists(file1):
-            msg = msg or "file missing: {}".format(file1)
+            msg = msg or "file missing: {0}".format(file1)
         elif not os.path.exists(file2):
-            msg = msg or "file missing: {}".format(file1)
+            msg = msg or "file missing: {0}".format(file1)
         else:
             # Files exist, so open and compare them
             f1 = open(file1, 'rb')

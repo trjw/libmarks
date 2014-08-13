@@ -129,14 +129,14 @@ class MarkingTestResult(object):
             r['total_marks'] += mark
         elif cat_marks != category_marks:
             raise ValueError(
-                "Differing total marks for category '{}' ({} and {})".format(
+                "Differing total marks for category '{0}' ({1} vs {2})".format(
                     category, category_marks, cat_marks))
 
         r.setdefault('tests', []).append(outcome)
 
         if r['total_marks'] and cat_marks:
             raise ValueError(
-                "Category '{}' cannot have both category marks and "
+                "Category '{0}' cannot have both category marks and "
                 "individual test marks".format(category))
 
     def start_test_run(self):
@@ -225,4 +225,4 @@ class DetailTestResult(TestResult):
 
     def stop_test_run(self):
         super(DetailTestResult, self).stop_test_run()
-        print("Ran {} tests in detail mode.".format(self.tests_run))
+        print("Ran {0} tests in detail mode.".format(self.tests_run))
