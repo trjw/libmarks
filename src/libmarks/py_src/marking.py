@@ -31,9 +31,6 @@ def mark_submission(args):
     # Enable cleanup.
     flags['cleanup'] = True
 
-    # Open results file before running test.
-    f = open('results.json', 'w')
-
     # Run the tests.
     runner = MarkingTestRunner(**flags)
     result = runner.run(test)
@@ -41,8 +38,9 @@ def mark_submission(args):
     # Export the results and save them as JSON.
     details = result.export()
     details['submission'] = submission
-    json.dump(details, f, indent=4)
-    f.close()
+
+    with open('results.json', 'w') as f:
+        json.dump(details, f, indent=4)
 
     print("Finished marking submission:", submission)
 
@@ -67,8 +65,7 @@ class MarkingRunner(BasicTestRunner):
         processes = self.flags.get('processes', NUM_PROCESSES)
 
         # Run tests over all submissions
-        # TODO: Ensure this can work on Python 2.6
-        pool = mp.Pool(processes=processes, maxtasksperchild=1)
+        pool = mp.Pool(processes=processes)
         results = pool.map(mark_submission, self._submissions(test))
 
         # Save output as JSON.
