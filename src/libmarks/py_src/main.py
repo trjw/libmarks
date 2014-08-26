@@ -2,7 +2,7 @@ import argparse
 import os
 import sys
 
-from . import loader, runner
+from . import loader, runner, marking
 from ._version import get_version
 
 
@@ -60,6 +60,13 @@ class TestProgram(object):
                             action='store_true',
                             help='Save output from the test(s) being run')
 
+        parser.add_argument('--directory', dest='directory',
+                            help=argparse.SUPPRESS)
+
+        parser.add_argument('--processes', dest='processes', type=int,
+                            default=marking.NUM_PROCESSES,
+                            help=argparse.SUPPRESS)
+
         self._parser = parser
 
     def parse_arguments(self, argv):
@@ -76,7 +83,10 @@ class TestProgram(object):
 
         if self.mark:
             # Perform marking
-            self.runner_class = runner.MarkingTestRunner
+            if self.directory:
+                self.runner_class = marking.MarkingRunner
+            else:
+                self.runner_class = runner.MarkingTestRunner
         elif self.update:
             # Perform file updates
             self.runner_class = runner.UpdateTestRunner
@@ -86,6 +96,8 @@ class TestProgram(object):
 
         # Set flags
         self.flags['save'] = self.save_output
+        self.flags['directory'] = self.directory
+        self.flags['processes'] = self.processes
 
     def create_tests(self):
         if self.test_names is None:

@@ -214,6 +214,25 @@ class MarkingTestResult(TestResult):
                 or getattr(test.__class__, '__marks_mark__', RESULT_SUCCESS))
         self._record_test(test, mark)
 
+    def export(self):
+        """Export the test results and marks as a dictionary"""
+        results = {
+            'tests': self.tests,
+            'results': {
+                'failures': [test.id() for test, err in self.failures],
+                'errors': [test.id() for test, err in self.errors],
+                'successes': [test.id() for test, err in self.successes],
+            },
+            'marks': self.marks,
+            'totals': {
+                'passed': self.tests_passed,
+                'test_count': self.total_tests,
+                'received_marks': self.received_marks,
+                'total_marks': self.total_marks,
+            },
+        }
+        return results
+
 
 class UpdateTestResult(TestResult):
 
