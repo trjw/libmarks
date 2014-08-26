@@ -3,6 +3,7 @@ import os
 import sys
 
 from . import loader, runner
+from ._version import get_version
 
 
 class TestProgram(object):
@@ -40,6 +41,10 @@ class TestProgram(object):
         parser.add_argument('tests', nargs='*',
                             help='a list of any number of test modules, '
                             'classes and test methods.')
+
+        parser.add_argument(
+            '-V', '--version', action='version',
+            version='%(prog)s {version}'.format(version=get_version()))
 
         parser.add_argument('-m', '--mark', dest='mark', action='store_true',
                             help=argparse.SUPPRESS)
