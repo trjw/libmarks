@@ -78,6 +78,7 @@ class MarkingRunner(BasicTestRunner):
             header = ['submission']
             # TODO: Get list of test names, outside of tests
             header.extend(results[0]['tests'].keys())
+            header.extend(results[0]['details'].keys())
             header.append('mark')
 
             with open('marking_results.csv', 'w') as f:
@@ -89,4 +90,5 @@ class MarkingRunner(BasicTestRunner):
                         'mark': res['totals']['received_marks']
                     }
                     info.update(res['tests'])
+                    info.update(res['details'])
                     dw.writerow(info)

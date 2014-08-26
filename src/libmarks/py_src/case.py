@@ -86,6 +86,9 @@ class TestCase(object):
         # Counter for processes within a test
         self._process_count = 0
 
+        # Dict to collect information about tests.
+        self.__details = {}
+
     def setup(self):
         pass
 
@@ -202,6 +205,9 @@ class TestCase(object):
         # Reset count for processes within test
         self._process_count = 0
 
+        # Reset information collected for this test.
+        self.__details = {}
+
         wrapper = _TestWrapper()
         try:
             # Perform setup.
@@ -216,6 +222,9 @@ class TestCase(object):
                 # Perform tear down.
                 with wrapper.test_executer(self):
                     self.tear_down()
+
+            # Process details.
+            self._process_details(result)
 
             # Process wrapper.
             if not ignored:
@@ -470,6 +479,14 @@ class TestCase(object):
 
             if different:
                 return msg or "file mismatch: contents do not exactly match"
+
+    def add_detail(self, name, data):
+        """Record information related to the test"""
+        self.__details[name] = data
+
+    def _process_details(self, result):
+        """Update details in the result with those stored from the test."""
+        result.update_details(self.__details)
 
 
 class DummyProcess(object):

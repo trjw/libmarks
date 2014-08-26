@@ -17,6 +17,7 @@ class TestResult(object):
         self.errors = []
         self.successes = []
         self.tests_run = 0
+        self.details = {}
 
         # Record test classes.
         self._test_class_setup = {}
@@ -64,6 +65,18 @@ class TestResult(object):
     def add_success(self, test):
         """Record a test success."""
         self.successes.append((test, None))
+
+    def add_detail(self, name, data):
+        """Record information about a test."""
+        self.details[name] = data
+
+    def update_details(self, details):
+        """Update details from a test."""
+        self.details.update(details)
+
+    def get_details(self):
+        """Retrieve all stored information about tests."""
+        return self.details
 
     def _exc_info_pretty_print(self, exc_info, test):
         exc_type, value, tb = exc_info
@@ -230,6 +243,7 @@ class MarkingTestResult(TestResult):
                 'received_marks': self.received_marks,
                 'total_marks': self.total_marks,
             },
+            'details': self.get_details()
         }
         return results
 
