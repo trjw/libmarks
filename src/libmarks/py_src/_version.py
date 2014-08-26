@@ -4,7 +4,7 @@ Used from Django:
     https://github.com/django/django/blob/master/django/utils/version.py
 """
 
-VERSION = (0, 2, 0, 'alpha', 1)
+VERSION = (0, 3, 0, 'alpha', 1)
 
 
 def get_version(version=None):
