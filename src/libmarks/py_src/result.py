@@ -124,6 +124,7 @@ class MarkingTestResult(TestResult):
 
     def __init__(self):
         super(MarkingTestResult, self).__init__()
+        self.tests = {}
         self.marks = {}
         """Contains test case results grouped into categories."""
         self.tests_passed = 0
@@ -161,6 +162,9 @@ class MarkingTestResult(TestResult):
                 "Category '{0}' cannot have both category marks and "
                 "individual test marks".format(category))
 
+        # Store test result separately.
+        self.tests[test.id()] = outcome
+
     def stop_test_run(self):
         """Run after all of the testing is complete."""
         for category in self.marks:
@@ -186,6 +190,10 @@ class MarkingTestResult(TestResult):
             self.tests_passed += passed
             self.total_tests += len(info['tests'])
             self.received_marks += mark
+
+    def class_setup_failed(self, class_):
+        # Ensure all tests run when in marking mode.
+        return False
 
     def add_failure(self, test, error):
         """Record a test failure."""
