@@ -10,41 +10,38 @@ from .runner import BasicTestRunner, MarkingTestRunner
 NUM_PROCESSES = 4
 
 
-def mark_submission(args):
-    # Extract arguments
-    # TODO: Fix how arguments are passed
-    path = args[0]
-    test = args[1]
-    flags = args[2]
+def mark_submission(path, test, flags):
+    """Mark a single submission"""
+    try:
+        # Change to submission directory.
+        os.chdir(path)
 
-    # Change to submission directory.
-    os.chdir(path)
+        # Get submission ID (directory name).
+        submission = os.path.basename(os.path.normpath(path))
 
-    # Get submission ID (directory name).
-    submission = os.path.basename(os.path.normpath(path))
+        print("Starting marking submission:", submission)
 
-    print("Starting marking submission:", submission)
+        # Set marking mode to be silent.
+        flags['silent'] = True
 
-    # Set marking mode to be silent.
-    flags['silent'] = True
+        # Enable cleanup.
+        flags['cleanup'] = True
 
-    # Enable cleanup.
-    flags['cleanup'] = True
+        # Run the tests.
+        runner = MarkingTestRunner(**flags)
+        result = runner.run(test)
 
-    # Run the tests.
-    runner = MarkingTestRunner(**flags)
-    result = runner.run(test)
+        # Export the results and save them as JSON.
+        details = result.export()
+        details['submission'] = submission
 
-    # Export the results and save them as JSON.
-    details = result.export()
-    details['submission'] = submission
+        with open('results.json', 'w') as f:
+            json.dump(details, f, indent=4)
 
-    with open('results.json', 'w') as f:
-        json.dump(details, f, indent=4)
-
-    print("Finished marking submission:", submission)
-
-    return details
+        print("Finished marking submission:", submission)
+        return details
+    except KeyboardInterrupt:
+        return
 
 
 class MarkingRunner(BasicTestRunner):
@@ -66,7 +63,21 @@ class MarkingRunner(BasicTestRunner):
 
         # Run tests over all submissions
         pool = mp.Pool(processes=processes)
-        results = pool.map(mark_submission, self._submissions(test))
+        results = []
+
+        def complete(result):
+            # Record results from marking
+            if result:
+                results.append(result)
+
+        try:
+            for s in self._submissions(test):
+                pool.apply_async(mark_submission, args=s, callback=complete)
+            pool.close()
+            pool.join()
+        except KeyboardInterrupt:
+            pool.terminate()
+            pool.join()
 
         # Save output as JSON.
         with open('overall_results.json', 'w') as f:
