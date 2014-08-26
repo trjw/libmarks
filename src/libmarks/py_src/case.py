@@ -23,6 +23,14 @@ def marks(category, mark=None, category_marks=None):
     return decorator
 
 
+def ignore_result(test_item):
+    """Mark a test as having its results ignored.
+    Used for tests that add details but do not test functionality
+    """
+    test_item.__marks_ignore_result__ = True
+    return test_item
+
+
 class _TestWrapper(object):
     def __init__(self):
         self.success = True
@@ -185,7 +193,11 @@ class TestCase(object):
             result = TestResult()
             result.start_test_run()
 
-        result.start_test(self)
+        # Check if test has its results being ignored.
+        ignored = getattr(self.test_method, '__marks_ignore_result__', False)
+
+        if not ignored:
+            result.start_test(self)
 
         # Reset count for processes within test
         self._process_count = 0
@@ -206,13 +218,15 @@ class TestCase(object):
                     self.tear_down()
 
             # Process wrapper.
-            self._process_errors(result, wrapper.errors)
-            if wrapper.success:
-                result.add_success(self)
+            if not ignored:
+                self._process_errors(result, wrapper.errors)
+                if wrapper.success:
+                    result.add_success(self)
 
             return result
         finally:
-            result.stop_test(self)
+            if not ignored:
+                result.stop_test(self)
             if original_result is None:
                 # One-off test, so finish tests.
                 result.stop_test_run()
