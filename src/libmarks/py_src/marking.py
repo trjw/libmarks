@@ -18,7 +18,6 @@ def mark_submission(args):
     flags = args[2]
 
     # Change to submission directory.
-    print(os.getcwd(), path)
     os.chdir(path)
 
     # Get submission ID (directory name).
@@ -55,7 +54,6 @@ class MarkingRunner(BasicTestRunner):
     def _list_dirs(self):
         """List all directories within the target directory"""
         path = self.flags.get('directory')
-        print("marking dir", path)
         return filter(os.path.isdir, os.listdir(path))
 
     def _submissions(self, test):
@@ -67,7 +65,7 @@ class MarkingRunner(BasicTestRunner):
     def run(self, test):
         # Get number of processes to run
         processes = self.flags.get('processes', NUM_PROCESSES)
-        print(processes)
+
         # Run tests over all submissions
         # TODO: Ensure this can work on Python 2.6
         pool = mp.Pool(processes=processes, maxtasksperchild=1)
