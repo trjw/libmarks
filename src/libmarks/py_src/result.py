@@ -226,13 +226,18 @@ class DetailTestResult(TestResult):
     def start_test_run(self):
         super(DetailTestResult, self).start_test_run()
         print("Showing details for tests")
-        message = "NOTE: THIS IS A SIMULATION ONLY. " + \
-            "YOU NEED TO RUN THESE COMMANDS IN THE ORDER GIVEN.\n"
+        message = "NOTE: THIS IS A SIMULATION ONLY. NO TESTS ARE RUN."
         self._print_bold(message)
+        print("To replicate a test, all given commands must be executed.\n")
 
     def start_test(self, test):
         super(DetailTestResult, self).start_test(test)
         self._print_bold("==> {0}:".format(test.id()))
+        doc = test.doc()
+        if doc:
+            self._print_bold("About the test:")
+            print(doc)
+        self._print_bold("What the test runs and checks:")
 
     def stop_test(self, test):
         super(DetailTestResult, self).stop_test(test)
