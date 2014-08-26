@@ -165,7 +165,7 @@ class TestCase(object):
 
         if getattr(self, '__marks_details__', False):
             # Print out command for running the process, including streams.
-            print("Starting Process {0}...".format(p.count))
+            print("Start Process {0}:".format(p.count))
             print("\t{0}".format(' '.join(argv)), end='')
             if input_file is not None:
                 print(' < {0}'.format(input_file), end='')

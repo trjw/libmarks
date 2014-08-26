@@ -74,6 +74,12 @@ class TestResult(object):
             util.strclass(self.__class__), self.tests_run,
             len(self.successes), len(self.errors), len(self.failures))
 
+    def _print_bold(self, message):
+        if sys.stdout.isatty():
+            print("\033[1m{0}\033[0m".format(message))
+        else:
+            print(message)
+
 
 class PrintedTestResult(TestResult):
 
@@ -209,10 +215,7 @@ class UpdateTestResult(TestResult):
 
     def start_test(self, test):
         super(UpdateTestResult, self).start_test(test)
-        if sys.stdout.isatty():
-            print("\033[1m==> {0}:\033[0m".format(test.id()))
-        else:
-            print("==> {0}:".format(test.id()))
+        self._print_bold("==> {0}:".format(test.id()))
 
     def stop_test(self, test):
         print()
@@ -222,14 +225,14 @@ class DetailTestResult(TestResult):
 
     def start_test_run(self):
         super(DetailTestResult, self).start_test_run()
-        print("Running tests - detail mode\n")
+        print("Showing details for tests")
+        message = "NOTE: THIS IS A SIMULATION ONLY. " + \
+            "YOU NEED TO RUN THESE COMMANDS IN THE ORDER GIVEN.\n"
+        self._print_bold(message)
 
     def start_test(self, test):
         super(DetailTestResult, self).start_test(test)
-        if sys.stdout.isatty():
-            print("\033[1m==> {0}:\033[0m".format(test.id()))
-        else:
-            print("==> {0}:".format(test.id()))
+        self._print_bold("==> {0}:".format(test.id()))
 
     def stop_test(self, test):
         super(DetailTestResult, self).stop_test(test)
@@ -237,4 +240,6 @@ class DetailTestResult(TestResult):
 
     def stop_test_run(self):
         super(DetailTestResult, self).stop_test_run()
-        print("Ran {0} tests in detail mode.".format(self.tests_run))
+        print("Showed details for {0} tests.".format(self.tests_run))
+        message = "NOTE: THIS IS A SIMULATION ONLY. NO TESTS WERE RUN."
+        self._print_bold(message)
