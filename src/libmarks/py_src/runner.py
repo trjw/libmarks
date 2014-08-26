@@ -49,7 +49,11 @@ class BasicTestRunner(object):
 
     def tear_down_environment(self):
         """Tear down the environment after running the tests"""
+        # Ensure we are in the original working directory.
+        os.chdir(self.flags['working_dir'])
+
         if self.flags.get('cleanup', False):
+            # Clean up the temporary folder.
             try:
                 shutil.rmtree(self.flags['temp_dir'])
             except OSError as e:
