@@ -2,6 +2,7 @@ from __future__ import print_function
 import contextlib
 import sys
 import os
+import inspect
 
 from .result import TestResult
 from .util import strclass
@@ -93,6 +94,10 @@ class TestCase(object):
 
     def id(self):
         return "{0}.{1}".format(strclass(self.__class__), self._test_method)
+
+    def doc(self):
+        """Return the docstring of the current test method"""
+        return inspect.getdoc(self.test_method)
 
     def __str__(self):
         return "{0} ({1})".format(self._test_method, strclass(self.__class__))
