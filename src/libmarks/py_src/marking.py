@@ -62,7 +62,7 @@ class MarkingRunner(BasicTestRunner):
         processes = self.flags.get('processes', NUM_PROCESSES)
 
         # Run tests over all submissions
-        pool = mp.Pool(processes=processes)
+        pool = mp.Pool(processes=processes, maxtasksperchild=1)
         results = []
 
         def complete(result):
