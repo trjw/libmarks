@@ -1,4 +1,4 @@
-from __future__ import print_function
+from __future__ import division, print_function
 
 import os
 import multiprocessing as mp
@@ -19,7 +19,7 @@ def mark_submission(path, test, flags):
         # Get submission ID (directory name).
         submission = os.path.basename(os.path.normpath(path))
 
-        print("Starting marking submission:", submission)
+        print("-> Start marking submission:", submission)
 
         # Set marking mode to be silent.
         flags['silent'] = True
@@ -38,7 +38,8 @@ def mark_submission(path, test, flags):
         with open('results.json', 'w') as f:
             json.dump(details, f, indent=4)
 
-        print("Finished marking submission:", submission)
+        print("-> Finished marking submission: {0} ({1})".format(
+            submission, details['totals']['received_marks']))
         return details
     except KeyboardInterrupt:
         return
@@ -61,12 +62,22 @@ class MarkingRunner(BasicTestRunner):
         # Get number of processes to run
         processes = self.flags.get('processes', NUM_PROCESSES)
 
+        count = {
+            'submissions': len(self._list_dirs()),
+            'marked': 0,
+        }
+        print("Starting marking:", count['submissions'], "submissions")
+
         # Run tests over all submissions
         pool = mp.Pool(processes=processes, maxtasksperchild=1)
         results = []
 
         def complete(result):
             # Record results from marking
+            count['marked'] += 1
+            print("Marked {0}/{1} ({2:.2%})".format(
+                count['marked'], count['submissions'], 
+                count['marked'] / count['submissions']))
             if result:
                 results.append(result)
 
