@@ -256,6 +256,9 @@ class TestCase(object):
         if process.timeout:
             msg = "Timeout occurred"
 
+        # Kill process, to ensure it is not left around.
+        process.kill()
+
         raise self.failure_exception(msg)
 
     def fail(self, msg=None):
