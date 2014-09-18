@@ -45,7 +45,8 @@ bool Process::send(const std::string& message)
         return false;
     }
 
-    if (fprintf(input, "%s", message.c_str()) != message.length()) {
+    int count = fprintf(input, "%s", message.c_str());
+    if (count == -1 || (unsigned int) count != message.length()) {
         // Sending failed.
         return false;
     }
@@ -373,7 +374,7 @@ char **Process::create_args(std::vector<std::string> argv)
 void Process::delete_args(char **args, size_t length)
 {
     // Count to length + 1, to accommodate NULL array terminator.
-    for (int i = 0; i < length + 1; ++i) {
+    for (unsigned int i = 0; i < length + 1; ++i) {
         delete [] args[i];
     }
     delete [] args;
@@ -426,7 +427,7 @@ bool Process::expect(const std::string& expected, FILE *stream)
         }
     } else {
         // Check each char in the expected against chars in the stream.
-        for (int i = 0; i < expected.length(); ++i) {
+        for (unsigned int i = 0; i < expected.length(); ++i) {
             if (expected[i] != (char) fgetc(stream)) {
                 return false;
             }

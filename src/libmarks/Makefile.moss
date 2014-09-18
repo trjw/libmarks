@@ -3,6 +3,7 @@
 .PHONY: all clean
 
 CC = clang++
+CFLAGS = -Wall -Werror -pedantic
 
 # location of the Python header files
 PYTHON_VERSION = 2.7
@@ -29,7 +30,7 @@ all: $(TARGETS) src/process.so
 	python compile_py.py py_src $(DESTINATION)
 
 clean:
-	rm $(TARGETS) src/process.so
+	rm -f $(TARGETS) src/process.so
 	rm -rf $(DESTINATION)
 
 src/process.so: $(TARGETS)
@@ -39,4 +40,4 @@ src/glue.o: src/glue.cpp src/process.hpp
 	$(CC) $(PYTHON_INCLUDES) -I$(BOOST_INC) -fPIC -pthread -c src/glue.cpp -o src/glue.o
 
 src/process.o: src/process.cpp src/process.hpp
-	$(CC) $(PYTHON_INCLUDES) -I$(BOOST_INC) -fPIC -pthread -c src/process.cpp -o src/process.o
+	$(CC) $(CFLAGS) $(PYTHON_INCLUDES) -I$(BOOST_INC) -fPIC -pthread -c src/process.cpp -o src/process.o
