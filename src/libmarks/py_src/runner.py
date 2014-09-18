@@ -7,6 +7,9 @@ from . import result
 
 TEMP_PREFIX = 'testres'
 
+DEFAULT_CLEANUP = True
+DEFAULT_SILENT = False
+
 
 class BasicTestRunner(object):
 
@@ -145,15 +148,5 @@ class UpdateTestRunner(BasicTestRunner):
 
         if confirm == 'y':
             # Set update flag.
-            test.__marks_update__ = True
+            self.flags['update'] = True
             super(UpdateTestRunner, self).run(test)
-
-
-class DetailTestRunner(BasicTestRunner):
-
-    result_class = result.DetailTestResult
-
-    def run(self, test):
-        # Set details flag.
-        test.__marks_details__ = True
-        super(DetailTestRunner, self).run(test)

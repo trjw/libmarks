@@ -96,11 +96,3 @@ class TestSuite(object):
     def _apply_flags(self, class_):
         """Apply the appropriate flags to the test class"""
         class_.__marks_flags__ = getattr(self, '__marks_flags__', {})
-
-        # Add update flag, if set.
-        if getattr(self, '__marks_update__', False):
-            class_.__marks_update__ = True
-
-        # Add details flag, if set.
-        if getattr(self, '__marks_details__', False):
-            class_.__marks_details__ = True
