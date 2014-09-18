@@ -63,8 +63,8 @@ class TestSuite(object):
 
         wrapper = _TestWrapper()
 
-        # Apply flags to class.
-        self._apply_flags(class_)
+        # Apply options to class.
+        self._apply_options(class_)
 
         if getattr(class_, 'setup_class', None):
             # Perform setup.
@@ -93,6 +93,6 @@ class TestSuite(object):
         for class_ in result.test_classes():
             self._tear_down_class(class_, result)
 
-    def _apply_flags(self, class_):
-        """Apply the appropriate flags to the test class"""
-        class_.__marks_flags__ = getattr(self, '__marks_flags__', {})
+    def _apply_options(self, class_):
+        """Apply the appropriate options to the test class"""
+        class_.__marks_options__ = getattr(self, '__marks_options__', {})

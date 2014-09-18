@@ -16,34 +16,34 @@ class BasicTestRunner(object):
     result_class = result.PrintedTestResult
 
     def __init__(self, result_class=None, **kwargs):
-        self.flags = kwargs
+        self.options = kwargs
 
         if result_class is not None:
             self.result_class = result_class
 
         # Store the working directory.
-        self.flags['working_dir'] = os.getcwd()
+        self.options['working_dir'] = os.getcwd()
 
-    def _apply_flags(self, test):
-        """Apply the appropriate flags to the tests"""
-        test.__marks_flags__ = self.flags
+    def _apply_options(self, test):
+        """Apply the appropriate options to the tests"""
+        test.__marks_options__ = self.options
 
     def setup_environment(self):
         """Setup the environment before running the tests.
 
         Create a temporary directory to run tests from. Store location
-        in flags, so test cases can use this information.
+        in options, so test cases can use this information.
         """
-        if not self.flags.get('silent', DEFAULT_SILENT):
+        if not self.options.get('silent', DEFAULT_SILENT):
             print("Setting up environment...")
 
-        working_dir = self.flags['working_dir']
-        prefix = self.flags.get('temp_prefix', TEMP_PREFIX)
+        working_dir = self.options['working_dir']
+        prefix = self.options.get('temp_prefix', TEMP_PREFIX)
 
         # Create temporary working directory.
         temp_dir = tempfile.mkdtemp(dir=working_dir, prefix=prefix)
 
-        if not self.flags.get('cleanup', DEFAULT_CLEANUP):
+        if not self.options.get('cleanup', DEFAULT_CLEANUP):
             print("Test output in", temp_dir)
             print("Remember to clean up your test result folders.\n")
 
@@ -51,20 +51,20 @@ class BasicTestRunner(object):
         os.chdir(temp_dir)
 
         # Store temporary directory path.
-        self.flags['temp_dir'] = temp_dir
+        self.options['temp_dir'] = temp_dir
 
     def tear_down_environment(self):
         """Tear down the environment after running the tests"""
-        if not self.flags.get('silent', DEFAULT_SILENT):
+        if not self.options.get('silent', DEFAULT_SILENT):
             print("Tearing down environment...")
 
         # Ensure we are in the original working directory.
-        os.chdir(self.flags['working_dir'])
+        os.chdir(self.options['working_dir'])
 
-        if self.flags.get('cleanup', DEFAULT_CLEANUP):
+        if self.options.get('cleanup', DEFAULT_CLEANUP):
             # Clean up the temporary folder.
             try:
-                shutil.rmtree(self.flags['temp_dir'])
+                shutil.rmtree(self.options['temp_dir'])
             except OSError as e:
                 # Check for ENOENT: No such file or directory.
                 # (Nothing more to do if directory has already been deleted)
@@ -76,8 +76,8 @@ class BasicTestRunner(object):
         # Setup the environment.
         self.setup_environment()
 
-        # Apply the flags to the test.
-        self._apply_flags(test)
+        # Apply the options to the test.
+        self._apply_options(test)
 
         # Create the result holder.
         result = self.result_class()
@@ -101,8 +101,8 @@ class MarkingTestRunner(BasicTestRunner):
         # Setup the environment.
         self.setup_environment()
 
-        # Apply the flags to the test.
-        self._apply_flags(test)
+        # Apply the options to the test.
+        self._apply_options(test)
 
         # Create the result holder.
         result = self.result_class()
@@ -112,7 +112,7 @@ class MarkingTestRunner(BasicTestRunner):
         result.stop_test_run()
 
         # Print results
-        if not self.flags.get('silent', False):
+        if not self.options.get('silent', False):
             print("{0:30}{1:15}{2}".format('Category', 'Passed', 'Mark'))
             for category in result.marks:
                 info = result.marks[category]
@@ -154,5 +154,5 @@ class UpdateTestRunner(BasicTestRunner):
 
         if confirm == 'y':
             # Set update flag.
-            self.flags['update'] = True
+            self.options['update'] = True
             super(UpdateTestRunner, self).run(test)

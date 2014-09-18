@@ -10,7 +10,7 @@ from .runner import BasicTestRunner, MarkingTestRunner
 NUM_PROCESSES = 4
 
 
-def mark_submission(path, test, flags):
+def mark_submission(path, test, options):
     """Mark a single submission"""
     try:
         # Change to submission directory.
@@ -22,13 +22,13 @@ def mark_submission(path, test, flags):
         print("-> Start marking submission:", submission)
 
         # Set marking mode to be silent.
-        flags['silent'] = True
+        options['silent'] = True
 
         # Enable cleanup.
-        flags['cleanup'] = True
+        options['cleanup'] = True
 
         # Run the tests.
-        runner = MarkingTestRunner(**flags)
+        runner = MarkingTestRunner(**options)
         result = runner.run(test)
 
         # Export the results and save them as JSON.
@@ -49,18 +49,18 @@ class MarkingRunner(BasicTestRunner):
 
     def _list_dirs(self):
         """List all directories within the target directory"""
-        path = self.flags.get('directory')
+        path = self.options.get('directory')
         return filter(os.path.isdir, os.listdir(path))
 
     def _submissions(self, test):
-        """Generator returning path, test and flags"""
+        """Generator returning path, test and options"""
         for path in self._list_dirs():
-            full_path = os.path.join(self.flags['working_dir'], path)
-            yield full_path, test, self.flags
+            full_path = os.path.join(self.options['working_dir'], path)
+            yield full_path, test, self.options
 
     def run(self, test):
         # Get number of processes to run
-        processes = self.flags.get('processes', NUM_PROCESSES)
+        processes = self.options.get('processes', NUM_PROCESSES)
 
         count = {
             'submissions': len(self._list_dirs()),

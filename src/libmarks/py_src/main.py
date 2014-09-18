@@ -12,7 +12,7 @@ class TestProgram(object):
 
     def __init__(
             self, module='__main__', test_loader=loader.default_test_loader,
-            flags=None):
+            options=None):
         if isinstance(module, basestring):
             self.module = __import__(module)
             # Load the module at the correct level
@@ -23,10 +23,10 @@ class TestProgram(object):
 
         self.test_loader = test_loader
 
-        # Store flags to be sent to the test runner.
-        self.flags = {}
-        if flags is not None:
-            self.flags = flags
+        # Store options to be sent to the test runner.
+        self.options = {}
+        if options is not None:
+            self.options = options
 
         argv = sys.argv
 
@@ -100,8 +100,8 @@ class TestProgram(object):
     def initialise_marks(self, argv):
         """Initialise the marks system before running tests."""
         # Set up flag defaults
-        self.flags['cleanup'] = runner.DEFAULT_CLEANUP
-        self.flags['silent'] = runner.DEFAULT_SILENT
+        self.options['cleanup'] = runner.DEFAULT_CLEANUP
+        self.options['silent'] = runner.DEFAULT_SILENT
 
         # Parse arguments
         self.parse_arguments(argv)
@@ -118,22 +118,22 @@ class TestProgram(object):
     def set_up_test(self, args):
         """Set up system to run tests normally."""
         self.tests = args.tests
-        self.flags['save'] = args.save_output
+        self.options['save'] = args.save_output
         if args.save_output:
-            self.flags['cleanup'] = False
+            self.options['cleanup'] = False
 
     def set_up_explain(self, args):
         """Set up system to run simulation of tests (no processes run)."""
         self.tests = args.tests
-        self.flags['explain'] = True
+        self.options['explain'] = True
         # Use the Detail result for a simulation.
-        self.flags['result_class'] = result.ExplainTestResult
+        self.options['result_class'] = result.ExplainTestResult
 
     def set_up_update(self, args):
         """Set up system to run tests and update files they use."""
         # Perform file updates
         self.tests = args.tests
-        self.flags['update'] = True
+        self.options['update'] = True
         self.runner_class = runner.UpdateTestRunner
 
     def set_up_mark(self, args):
@@ -142,8 +142,8 @@ class TestProgram(object):
         if args.directory:
             # Mark directory full of submissions.
             self.runner_class = marking.MarkingRunner
-            self.flags['directory'] = args.directory
-            self.flags['processes'] = args.processes
+            self.options['directory'] = args.directory
+            self.options['processes'] = args.processes
         else:
             # Mark a single submission in the current directory.
             self.runner_class = runner.MarkingTestRunner
@@ -158,7 +158,7 @@ class TestProgram(object):
 
     def run_tests(self):
         """Run the tests using the appropriate settings."""
-        runner = self.runner_class(**self.flags)
+        runner = self.runner_class(**self.options)
         runner.run(self.test)
 
 

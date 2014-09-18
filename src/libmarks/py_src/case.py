@@ -153,9 +153,9 @@ class TestCase(object):
         return "{0}.{1}.err".format(
             self.id().replace('__main__.', ''), p.count)
 
-    def flag_set(self, flag):
-        """Checks whether a flag is set on the class"""
-        return self.__marks_flags__.get(flag, False)
+    def option(self, option):
+        """Retrieves the value of an option, or None if option not set."""
+        return self.__marks_options__.get(option, None)
 
     def process(self, argv, input_file=None, *args, **kwargs):
         """Create a Process of the type specified for this test case"""
@@ -167,7 +167,7 @@ class TestCase(object):
         if input_file is not None:
             kwargs['input_file'] = input_file
 
-        if self.flag_set('explain'):
+        if self.option('explain'):
             # Ensure a real process is not created in export mode.
             self.process_class = DummyProcess
 
@@ -181,7 +181,7 @@ class TestCase(object):
         self._process_count += 1
         self._processes.append(p)
 
-        if self.flag_set('explain'):
+        if self.option('explain'):
             # Print out command for running the process, including streams.
             print("Start Process {0}:".format(p.count))
             print("\t{0}".format(' '.join(argv)), end='')
@@ -256,7 +256,7 @@ class TestCase(object):
 
     def _check_timeout(self, process, msg):
         """Check if process was timed out, causing the test to fail."""
-        if self.flag_set('update'):
+        if self.option('update'):
             # Ignore errors when in update mode.
             return
 
@@ -270,7 +270,7 @@ class TestCase(object):
 
     def fail(self, msg=None):
         """Fail immediately, with the given message."""
-        if self.flag_set('update'):
+        if self.option('update'):
             # Ignore errors when in update mode.
             return
 
@@ -281,17 +281,17 @@ class TestCase(object):
         Assert that the standard output of the process matches the
         contents of the given file.
         """
-        if self.flag_set('explain'):
+        if self.option('explain'):
             # Print out command to compare stdout.
             print("Compare stdout from Process {0}:".format(process.count))
             print("\tdiff {0} {1}".format(
                 self._stdout_filename(process), file_path))
             return
 
-        if self.flag_set('update') or self.flag_set('save'):
+        if self.option('update') or self.option('save'):
             # Save stdout output to file.
             filename = file_path
-            if self.flag_set('save'):
+            if self.option('save'):
                 filename = self._stdout_filename(process)
 
             with open(filename, 'wb') as f:
@@ -301,7 +301,7 @@ class TestCase(object):
                     if line == '':
                         break
 
-        if self.flag_set('update'):
+        if self.option('update'):
             print("\tstandard output file updated: {0}".format(file_path))
             return
 
@@ -309,7 +309,7 @@ class TestCase(object):
         msg = msg or "stdout mismatch"
         result = None
 
-        if self.flag_set('save'):
+        if self.option('save'):
             result = self._compare_files(
                 self._stdout_filename(process), file_path, msg=msg)
         elif not process.expect_stdout_file(file_path):
@@ -323,17 +323,17 @@ class TestCase(object):
         Assert that the standard error of the process matches the
         contents of the given file.
         """
-        if self.flag_set('explain'):
+        if self.option('explain'):
             # Print out command to compare stderr.
             print("Compare stderr from Process {0}:".format(process.count))
             print("\tdiff {0} {1}".format(
                 self._stderr_filename(process), file_path))
             return
 
-        if self.flag_set('update') or self.flag_set('save'):
+        if self.option('update') or self.option('save'):
             # Save stderr output to file.
             filename = file_path
-            if self.flag_set('save'):
+            if self.option('save'):
                 filename = self._stderr_filename(process)
 
             with open(filename, 'wb') as f:
@@ -343,7 +343,7 @@ class TestCase(object):
                     if line == '':
                         break
 
-        if self.flag_set('update'):
+        if self.option('update'):
             print("\tstandard error file updated: {0}".format(file_path))
             return
 
@@ -351,7 +351,7 @@ class TestCase(object):
         msg = msg or "stderr mismatch"
         result = None
 
-        if self.flag_set('save'):
+        if self.option('save'):
             result = self._compare_files(
                 self._stderr_filename(process), file_path, msg=msg)
         elif not process.expect_stderr_file(file_path):
@@ -365,7 +365,7 @@ class TestCase(object):
         Assert that the standard output of the process contains the given
         output.
         """
-        if self.flag_set('explain'):
+        if self.option('explain'):
             # Print out the expected output from stdout.
             if output == '':
                 print("Expect end of file (Process {0} [stdout])".format(
@@ -376,7 +376,7 @@ class TestCase(object):
                         process.count, repr(output)))
             return
 
-        if self.flag_set('update'):
+        if self.option('update'):
             # Print message to remind user to check output
             # TODO: Include source code location
             print("\tCheck assert_stdout('{0}')".format(output))
@@ -391,7 +391,7 @@ class TestCase(object):
         Assert that the standard error of the process contains the given
         output.
         """
-        if self.flag_set('explain'):
+        if self.option('explain'):
             # Print out the expected output from stdout.
             if output == '':
                 print("Expect end of file (Process {0} [stderr])".format(
@@ -402,7 +402,7 @@ class TestCase(object):
                         process.count, repr(output)))
             return
 
-        if self.flag_set('update'):
+        if self.option('update'):
             # Print message to remind user to check output
             # TODO: Include source code location
             print("\tCheck assert_stderr('{0}')".format(output))
@@ -416,7 +416,7 @@ class TestCase(object):
         """
         Assert that the exit status of the process matches the given status.
         """
-        if self.flag_set('explain'):
+        if self.option('explain'):
             # Print out the expected exit status for the process.
             print("Expect exit status (Process {0}): {1}".format(
                 process.count, status))
@@ -431,7 +431,7 @@ class TestCase(object):
         """
         Assert that the process received a signal.
         """
-        if self.flag_set('explain'):
+        if self.option('explain'):
             # Print that the process is expected to receive a signal.
             print("Expect Process {0} to receive signal".format(process.count))
             return
@@ -444,7 +444,7 @@ class TestCase(object):
         """
         Assert that the signal of the process matches the given signal.
         """
-        if self.flag_set('explain'):
+        if self.option('explain'):
             # Print out the expected signal for the process.
             print("Expect signal (Process {0}): {1}".format(
                 process.count, signal))
@@ -459,7 +459,7 @@ class TestCase(object):
         """
         Assert that the given files contain exactly the same contents.
         """
-        if self.flag_set('explain'):
+        if self.option('explain'):
             # Print out the command to check the two files.
             print("Check files are the same:")
             print("\tdiff {0} {1}".format(file1, file2))
