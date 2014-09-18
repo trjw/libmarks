@@ -367,9 +367,13 @@ class TestCase(object):
         """
         if self.flag_set('simulate'):
             # Print out the expected output from stdout.
-            print(
-                "Expect output (Process {0} [stdout]): {1}".format(
-                    process.count, repr(output)))
+            if output == '':
+                print("Expect end of file (Process {0} [stdout])".format(
+                    process.count))
+            else:
+                print(
+                    "Expect output (Process {0} [stdout]): {1}".format(
+                        process.count, repr(output)))
             return
 
         if self.flag_set('update'):
@@ -389,9 +393,13 @@ class TestCase(object):
         """
         if self.flag_set('simulate'):
             # Print out the expected output from stdout.
-            print(
-                "Expect output (Process {0} [stderr]): {}".format(
-                    process.count, repr(output)))
+            if output == '':
+                print("Expect end of file (Process {0} [stderr])".format(
+                    process.count))
+            else:
+                print(
+                    "Expect output (Process {0} [stderr]): {1}".format(
+                        process.count, repr(output)))
             return
 
         if self.flag_set('update'):

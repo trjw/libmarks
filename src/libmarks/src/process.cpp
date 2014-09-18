@@ -394,13 +394,16 @@ bool Process::expect(const std::string& expected, FILE *stream)
     }
 
     if (expected.length() == 0) {
-        // TODO: Should this raise an exception?
-        return false;
-    }
-
-    for (int i = 0; i < expected.length(); ++i) {
-        if (expected[i] != (char) fgetc(stream)) {
+        // Expected string is 0 length, so expect EOF to be returned.
+        if (fgetc(stream) != EOF) {
             return false;
+        }
+    } else {
+        // Check each char in the expected against chars in the stream.
+        for (int i = 0; i < expected.length(); ++i) {
+            if (expected[i] != (char) fgetc(stream)) {
+                return false;
+            }
         }
     }
 
