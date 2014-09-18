@@ -34,13 +34,16 @@ class BasicTestRunner(object):
         Create a temporary directory to run tests from. Store location
         in flags, so test cases can use this information.
         """
+        if not self.flags.get('silent', DEFAULT_SILENT):
+            print("Setting up environment...")
+
         working_dir = self.flags['working_dir']
         prefix = self.flags.get('temp_prefix', TEMP_PREFIX)
 
         # Create temporary working directory.
         temp_dir = tempfile.mkdtemp(dir=working_dir, prefix=prefix)
 
-        if not self.flags.get('silent', False):
+        if not self.flags.get('cleanup', DEFAULT_CLEANUP):
             print("Test output in", temp_dir)
             print("Remember to clean up your test result folders.\n")
 
@@ -52,10 +55,13 @@ class BasicTestRunner(object):
 
     def tear_down_environment(self):
         """Tear down the environment after running the tests"""
+        if not self.flags.get('silent', DEFAULT_SILENT):
+            print("Tearing down environment...")
+
         # Ensure we are in the original working directory.
         os.chdir(self.flags['working_dir'])
 
-        if self.flags.get('cleanup', False):
+        if self.flags.get('cleanup', DEFAULT_CLEANUP):
             # Clean up the temporary folder.
             try:
                 shutil.rmtree(self.flags['temp_dir'])
