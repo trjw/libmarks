@@ -59,13 +59,13 @@ class TestProgram(object):
             help='Save output from the test(s) being run')
         parser_test.set_defaults(func=self.set_up_test)
 
-        # Simulation parser.
-        parser_simulate = subparsers.add_parser(
-            'simulate', help='Simulate running test(s)')
-        parser_simulate.add_argument(
+        # Explain parser.
+        parser_explain = subparsers.add_parser(
+            'explain', help='Explain what tests run and check')
+        parser_explain.add_argument(
             'tests', nargs='*', help='a list of any number of test modules, '
             'classes and test methods.')
-        parser_simulate.set_defaults(func=self.set_up_simulate)
+        parser_explain.set_defaults(func=self.set_up_explain)
 
         # Update parser.
         parser_update = subparsers.add_parser(
@@ -122,12 +122,12 @@ class TestProgram(object):
         if args.save_output:
             self.flags['cleanup'] = False
 
-    def set_up_simulate(self, args):
+    def set_up_explain(self, args):
         """Set up system to run simulation of tests (no processes run)."""
         self.tests = args.tests
-        self.flags['simulate'] = True
+        self.flags['explain'] = True
         # Use the Detail result for a simulation.
-        self.flags['result_class'] = result.DetailTestResult
+        self.flags['result_class'] = result.ExplainTestResult
 
     def set_up_update(self, args):
         """Set up system to run tests and update files they use."""

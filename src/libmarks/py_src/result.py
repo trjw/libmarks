@@ -262,17 +262,17 @@ class UpdateTestResult(TestResult):
         print()
 
 
-class DetailTestResult(TestResult):
+class ExplainTestResult(TestResult):
 
     def start_test_run(self):
-        super(DetailTestResult, self).start_test_run()
-        print("Showing details for tests")
-        message = "NOTE: THIS IS A SIMULATION ONLY. NO TESTS ARE RUN."
+        super(ExplainTestResult, self).start_test_run()
+        print("Showing explanation for tests")
+        message = "NOTE: THIS IS AN EXPLANATION ONLY. NO TESTS ARE RUN."
         self._print_bold(message)
         print("To replicate a test, all given commands must be executed.\n")
 
     def start_test(self, test):
-        super(DetailTestResult, self).start_test(test)
+        super(ExplainTestResult, self).start_test(test)
         self._print_bold("==> {0}:".format(test.id()))
         doc = test.doc()
         if doc:
@@ -281,11 +281,11 @@ class DetailTestResult(TestResult):
         self._print_bold("What the test runs and checks:")
 
     def stop_test(self, test):
-        super(DetailTestResult, self).stop_test(test)
+        super(ExplainTestResult, self).stop_test(test)
         print()
 
     def stop_test_run(self):
-        super(DetailTestResult, self).stop_test_run()
-        print("Showed details for {0} tests.".format(self.tests_run))
-        message = "NOTE: THIS IS A SIMULATION ONLY. NO TESTS WERE RUN."
+        super(ExplainTestResult, self).stop_test_run()
+        print("Explained {0} tests.".format(self.tests_run))
+        message = "NOTE: THIS IS AN EXPLANATION ONLY. NO TESTS WERE RUN."
         self._print_bold(message)
