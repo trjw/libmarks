@@ -83,8 +83,9 @@ class TestCase(object):
         if self.timeout and self.process_class == Process:
             self.process_class = TimeoutProcess
 
-        # Counter for processes within a test
+        # Keep track of processes within a test.
         self._process_count = 0
+        self._processes = []
 
         # Dict to collect information about tests.
         self.__details = {}
@@ -178,6 +179,7 @@ class TestCase(object):
 
         # Increment the process count, ready for the next process.
         self._process_count += 1
+        self._processes.append(p)
 
         if getattr(self, '__marks_details__', False):
             # Print out command for running the process, including streams.
@@ -204,6 +206,7 @@ class TestCase(object):
 
         # Reset count for processes within test
         self._process_count = 0
+        self._processes = []
 
         # Reset information collected for this test.
         self.__details = {}
@@ -222,6 +225,10 @@ class TestCase(object):
                 # Perform tear down.
                 with wrapper.test_executer(self):
                     self.tear_down()
+
+                # Clean up processes.
+                for p in self._processes:
+                    p.kill()
 
             # Process details.
             self._process_details(result)
