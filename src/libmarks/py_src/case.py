@@ -509,3 +509,12 @@ class DummyProcess(object):
 
     def finish_input(self):
         pass
+
+    def kill(self):
+        pass
+
+    def readline_stderr(self):
+        return ''
+
+    def readline_stdout(self):
+        return ''
