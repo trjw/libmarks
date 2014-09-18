@@ -76,7 +76,8 @@ class MarkingRunner(BasicTestRunner):
             # Record results from marking
             count['marked'] += 1
             print("Marked {0}/{1} ({2:.2%})".format(
-                count['marked'], count['submissions'], 
+                count['marked'],
+                count['submissions'],
                 count['marked'] / count['submissions']))
             if result:
                 results.append(result)
