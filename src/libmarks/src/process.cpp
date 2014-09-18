@@ -162,19 +162,37 @@ int Process::get_signal()
     return signalNum;
 }
 
+/**
+ * Send a signal to the child process.
+ * @param signalVal The signal to send to the process.
+ */
 void Process::send_signal(int signalVal)
 {
     // TODO: Check range allowed for child pid
     if (childPid <= 0 || kill(childPid, signalVal) == -1) {
-        // TODO: raise exception on failure
         throw SignalException();
     }
 }
 
+/**
+ * Send a signal to the process group of the child.
+ * @param signalVal The signal to send to the process group.
+ */
+void Process::send_signal_group(int signalVal)
+{
+    // TODO: Check range allowed for child pid
+    if (childPid <= 0 || kill(-childPid, signalVal) == -1) {
+        throw SignalException();
+    }
+}
+
+/**
+ * Send SIGKILL to the entire process group of the child.
+ */
 void Process::send_kill()
 {
     if (!finished) {
-        send_signal(SIGKILL);
+        send_signal_group(SIGKILL);
         perform_wait(true);
     }
 }
@@ -301,6 +319,10 @@ void Process::setup_child(std::vector<std::string> argv, std::string inputFile)
     }
 
     if (close(fdCheck[READ]) == -1)
+        do_exec = false;
+
+    // Setup new session.
+    if (setsid() == -1)
         do_exec = false;
 
     // Set up close-on-exec for the check pipe.

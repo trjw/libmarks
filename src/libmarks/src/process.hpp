@@ -55,6 +55,7 @@ public:
     bool get_signalled();
     int get_signal();
     void send_signal(int);
+    void send_signal_group(int);
     void send_kill();
     bool check_signalled();
     bool get_timeout();
