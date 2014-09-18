@@ -1,5 +1,5 @@
-.DEFAULT=all
-.PHONY=all clean
+.DEFAULT: all
+.PHONY: all clean
 
 CC = clang++
 
