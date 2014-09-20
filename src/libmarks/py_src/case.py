@@ -182,13 +182,12 @@ class TestCase(object):
         self._processes.append(p)
 
         if self.option('explain'):
-            # Print out command for running the process, including streams.
-
             # Put quotes around argument if it contains whitespace.
             for i, arg in enumerate(argv):
                 if arg == '' or any(c.isspace() for c in arg):
                     argv[i] = '"{0}"'.format(arg)
 
+            # Print out command for running the process, including streams.
             print("Start Process {0}:".format(p.count))
             print("\t{0}".format(' '.join(argv)), end='')
             if input_file is not None:
@@ -246,6 +245,11 @@ class TestCase(object):
                     result.add_success(self)
 
             return result
+        except KeyboardInterrupt:
+            # Clean up processes before exiting.
+            for p in self._processes:
+                p.kill()
+            raise
         finally:
             if not ignored:
                 result.stop_test(self)

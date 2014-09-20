@@ -159,7 +159,12 @@ class TestProgram(object):
     def run_tests(self):
         """Run the tests using the appropriate settings."""
         runner = self.runner_class(**self.options)
-        runner.run(self.test)
+        try:
+            runner.run(self.test)
+        except KeyboardInterrupt:
+            # Clean up environment before exiting.
+            runner.tear_down_environment()
+            raise
 
 
 main = TestProgram
