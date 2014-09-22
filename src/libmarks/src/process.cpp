@@ -169,10 +169,14 @@ int Process::get_signal()
  */
 void Process::send_signal(int signalVal)
 {
-    perform_wait(false);
     if (!finished) {
         // TODO: Check range allowed for child pid
-        if (childPid <= 0 || kill(childPid, signalVal) == -1) {
+        if (childPid <= 0 || kill(childPid, SIG_CHECK) == -1) {
+            // Perform non-blocking wait, as the group may be dead already.
+            perform_wait(false);
+            if (!finished)
+                throw SignalException();
+        } else if (kill(childPid, signalVal) == -1) {
             throw SignalException();
         }
     }
@@ -184,10 +188,14 @@ void Process::send_signal(int signalVal)
  */
 void Process::send_signal_group(int signalVal)
 {
-    perform_wait(false);
     if (!finished) {
         // TODO: Check range allowed for child pid
-        if (childPid <= 0 || kill(-childPid, signalVal) == -1) {
+        if (childPid <= 0 || kill(-childPid, SIG_CHECK) == -1) {
+            // Perform non-blocking wait, as the group may be dead already.
+            perform_wait(false);
+            if (!finished)
+                throw SignalException();
+        } else if (kill(-childPid, signalVal) == -1) {
             throw SignalException();
         }
     }

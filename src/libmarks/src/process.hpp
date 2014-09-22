@@ -8,6 +8,9 @@
 #define READ 0
 #define WRITE 1
 
+/* Signals */
+#define SIG_CHECK 0
+
 class Process {
 protected:
     int fdIn[2], fdOut[2], fdErr[2], fdCheck[2];
