@@ -168,7 +168,7 @@ class TestCase(object):
 
         if self.option('explain'):
             # Ensure a real process is not created in export mode.
-            self.process_class = DummyProcess
+            self.process_class = ExplainProcess
 
         # Instantiate the new process.
         p = self.process_class(argv, *args, **kwargs)
@@ -535,16 +535,28 @@ class TestCase(object):
         result.update_details(self.__details)
 
 
-class DummyProcess(object):
+class ExplainProcess(object):
 
-    """A dummy process class, for use with the export process functionality"""
+    """A dummy process class, for use with the explain test functionality"""
 
     def __init__(self, argv, input_file=None, **kwargs):
         self.argv = argv
         self.input_file = input_file
 
+        # Count how many times a message is sent.
+        self._send_count = 0
+
+    def _print_coloured(self, text, fg=None, bg=None, attrs=None, **kwargs):
+        stream = kwargs.get('file', sys.stdout)
+        if stream.isatty():
+            # Only add colours and attributes if stream is a TTY.
+            text = coloured_text(text, colour=fg, background=bg, attrs=attrs)
+        print(text, **kwargs)
+
     def finish_input(self):
-        pass
+        self._print_coloured(
+            'Finish input to Process {0} (ie. Ctrl+D)'.format(self.count),
+            attrs=['bold'])
 
     def kill(self):
         pass
@@ -554,3 +566,40 @@ class DummyProcess(object):
 
     def readline_stdout(self):
         return ''
+
+    def send(self, message):
+        # Print out the first 10 messages that are sent to the process.
+        if self._send_count < 11:
+            # Show what is being sent to the process.
+            self._print_coloured(
+                'Send input to Process {0}: '.format(self.count),
+                attrs=['bold'], end='')
+            print(repr(message))
+        elif self._send_count == 11:
+            # Instruct user to read test case, as lots of input being sent.
+            self._print_coloured(
+                'Further input sent to Process {0} -'
+                ' see test case for details'.format(self.count),
+                attrs=['bold'])
+
+        self._send_count += 1
+
+    def print_stdout(self):
+        pass
+
+    def print_stderr(self):
+        pass
+
+    def send_signal(self, signal):
+        # Print out the signal being sent to the process.
+        self._print_coloured(
+            "Send signal to Process {0}: ".format(self.count),
+            attrs=['bold'], end='')
+        print(signal)
+
+    def send_signal_group(self, signal):
+        # Print out the signal being sent to the process group.
+        self._print_coloured(
+            "Send signal to Process {0} (incl. children): ".format(self.count),
+            attrs=['bold'], end='')
+        print(signal)
