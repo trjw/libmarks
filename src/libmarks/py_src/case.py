@@ -136,22 +136,14 @@ class TestCase(object):
     def _stdout_filename(self, p):
         """
         Generate filename for standard out (stdout) output from a process.
-
-        Remove module '__main__' from the ID, as it is not useful in most
-        cases.
         """
-        return "{0}.{1}.out".format(
-            self.id().replace('__main__.', ''), p.count)
+        return "{0}.{1}.out".format(self.id(), p.count)
 
     def _stderr_filename(self, p):
         """
         Generate filename for standard error (stderr) output from a process.
-
-        Remove module '__main__' from the ID, as it is not useful in most
-        cases.
         """
-        return "{0}.{1}.err".format(
-            self.id().replace('__main__.', ''), p.count)
+        return "{0}.{1}.err".format(self.id(), p.count)
 
     def option(self, option):
         """Retrieves the value of an option, or None if option not set."""
