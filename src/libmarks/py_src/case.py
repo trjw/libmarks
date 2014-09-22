@@ -5,7 +5,7 @@ import os
 import inspect
 
 from .result import TestResult
-from .util import strclass
+from .util import strclass, coloured_text
 from .process import Process, TimeoutProcess
 
 BUFFER_SIZE = 8 * 1024
@@ -149,6 +149,13 @@ class TestCase(object):
         """Retrieves the value of an option, or None if option not set."""
         return self.__marks_options__.get(option, None)
 
+    def _print_coloured(self, text, fg=None, bg=None, attrs=None, **kwargs):
+        stream = kwargs.get('file', sys.stdout)
+        if stream.isatty():
+            # Only add colours and attributes if stream is a TTY.
+            text = coloured_text(text, colour=fg, background=bg, attrs=attrs)
+        print(text, **kwargs)
+
     def process(self, argv, input_file=None, *args, **kwargs):
         """Create a Process of the type specified for this test case"""
         # Add the timeout to the init args.
@@ -180,7 +187,8 @@ class TestCase(object):
                     argv[i] = '"{0}"'.format(arg)
 
             # Print out command for running the process, including streams.
-            print("Start Process {0}:".format(p.count))
+            self._print_coloured(
+                'Start Process {0}:'.format(p.count), attrs=['bold'])
             print("\t{0}".format(' '.join(argv)), end='')
             if input_file is not None:
                 print(' < {0}'.format(input_file), end='')
@@ -285,7 +293,9 @@ class TestCase(object):
         """
         if self.option('explain'):
             # Print out command to compare stdout.
-            print("Compare stdout from Process {0}:".format(process.count))
+            self._print_coloured(
+                'Compare stdout from Process {0}:'.format(process.count),
+                attrs=['bold'])
             print("\tdiff {0} {1}".format(
                 self._stdout_filename(process), file_path))
             return
@@ -327,7 +337,9 @@ class TestCase(object):
         """
         if self.option('explain'):
             # Print out command to compare stderr.
-            print("Compare stderr from Process {0}:".format(process.count))
+            self._print_coloured(
+                'Compare stderr from Process {0}:'.format(process.count),
+                attrs=['bold'])
             print("\tdiff {0} {1}".format(
                 self._stderr_filename(process), file_path))
             return
@@ -370,12 +382,16 @@ class TestCase(object):
         if self.option('explain'):
             # Print out the expected output from stdout.
             if output == '':
-                print("Expect end of file (Process {0} [stdout])".format(
-                    process.count))
+                self._print_coloured(
+                    'Expect end of file (Process {0} [stdout])'.format(
+                        process.count),
+                    attrs=['bold'])
             else:
-                print(
-                    "Expect output (Process {0} [stdout]): {1}".format(
-                        process.count, repr(output)))
+                self._print_coloured(
+                    'Expect output (Process {0} [stdout]): '.format(
+                        process.count),
+                    attrs=['bold'], end='')
+                print(repr(output))
             return
 
         if self.option('update'):
@@ -396,12 +412,16 @@ class TestCase(object):
         if self.option('explain'):
             # Print out the expected output from stdout.
             if output == '':
-                print("Expect end of file (Process {0} [stderr])".format(
-                    process.count))
+                self._print_coloured(
+                    'Expect end of file (Process {0} [stderr])'.format(
+                        process.count),
+                    attrs=['bold'])
             else:
-                print(
-                    "Expect output (Process {0} [stderr]): {1}".format(
-                        process.count, repr(output)))
+                self._print_coloured(
+                    'Expect output (Process {0} [stderr]): '.format(
+                        process.count),
+                    attrs=['bold'], end='')
+                print(repr(output))
             return
 
         if self.option('update'):
@@ -420,8 +440,10 @@ class TestCase(object):
         """
         if self.option('explain'):
             # Print out the expected exit status for the process.
-            print("Expect exit status (Process {0}): {1}".format(
-                process.count, status))
+            self._print_coloured(
+                "Expect exit status (Process {0}): ".format(process.count),
+                attrs=['bold'], end='')
+            print(status)
             return
 
         if not process.assert_exit_status(status):
@@ -435,7 +457,9 @@ class TestCase(object):
         """
         if self.option('explain'):
             # Print that the process is expected to receive a signal.
-            print("Expect Process {0} to receive signal".format(process.count))
+            self._print_coloured(
+                "Expect Process {0} to receive signal".format(process.count),
+                attrs=['bold'])
             return
 
         if not process.assert_signalled():
@@ -448,8 +472,10 @@ class TestCase(object):
         """
         if self.option('explain'):
             # Print out the expected signal for the process.
-            print("Expect signal (Process {0}): {1}".format(
-                process.count, signal))
+            self._print_coloured(
+                "Expect signal (Process {0}): ".format(process.count),
+                attrs=['bold'], end='')
+            print(signal)
             return
 
         if not process.assert_signal(signal):
@@ -463,7 +489,7 @@ class TestCase(object):
         """
         if self.option('explain'):
             # Print out the command to check the two files.
-            print("Check files are the same:")
+            self._print_coloured("Check files are the same:", attrs=['bold'])
             print("\tdiff {0} {1}".format(file1, file2))
             return
 

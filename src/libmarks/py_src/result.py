@@ -87,11 +87,13 @@ class TestResult(object):
             util.strclass(self.__class__), self.tests_run,
             len(self.successes), len(self.errors), len(self.failures))
 
-    def _print_bold(self, message):
-        if sys.stdout.isatty():
-            print("\033[1m{0}\033[0m".format(message))
-        else:
-            print(message)
+    def _print_coloured(self, text, fg=None, bg=None, attrs=None, **kwargs):
+        stream = kwargs.get('file', sys.stdout)
+        if stream.isatty():
+            # Only add colours and attributes if stream is a TTY.
+            text = util.coloured_text(
+                text, colour=fg, background=bg, attrs=attrs)
+        print(text, **kwargs)
 
 
 class PrintedTestResult(TestResult):
@@ -119,17 +121,17 @@ class PrintedTestResult(TestResult):
 
     def add_failure(self, test, error):
         super(PrintedTestResult, self).add_failure(test, error)
-        print("FAIL")
+        self._print_coloured('FAIL', fg='red', attrs=['bold'])
         print("\t{0}".format(self._exc_info_pretty_print(error, test)))
 
     def add_error(self, test, error):
         super(PrintedTestResult, self).add_error(test, error)
-        print("ERROR")
+        self._print_coloured('ERROR', fg='red', attrs=['bold'])
         print("\t{0}".format(self._exc_info_pretty_print(error, test)))
 
     def add_success(self, test):
         super(PrintedTestResult, self).add_success(test)
-        print("OK")
+        self._print_coloured('OK', fg='green', attrs=['bold'])
 
 
 class MarkingTestResult(TestResult):
@@ -256,7 +258,7 @@ class UpdateTestResult(TestResult):
 
     def start_test(self, test):
         super(UpdateTestResult, self).start_test(test)
-        self._print_bold("==> {0}:".format(test.id()))
+        self._print_coloured("==> {0}:".format(test.id()), attrs=['bold'])
 
     def stop_test(self, test):
         print()
@@ -268,17 +270,18 @@ class ExplainTestResult(TestResult):
         super(ExplainTestResult, self).start_test_run()
         print("Showing explanation for tests")
         message = "NOTE: THIS IS AN EXPLANATION ONLY. NO TESTS ARE RUN."
-        self._print_bold(message)
+        self._print_coloured(message, fg='yellow', attrs=['bold'])
         print("To replicate a test, all given commands must be executed.\n")
 
     def start_test(self, test):
         super(ExplainTestResult, self).start_test(test)
-        self._print_bold("==> {0}:".format(test.id()))
+        self._print_coloured(
+            "==> {0}:".format(test.id()), fg='green', attrs=['bold'])
         doc = test.doc()
         if doc:
-            self._print_bold("About the test:")
+            self._print_coloured("About the test:", attrs=['bold'])
             print(doc)
-        self._print_bold("What the test runs and checks:")
+        self._print_coloured("What the test runs and checks:", attrs=['bold'])
 
     def stop_test(self, test):
         super(ExplainTestResult, self).stop_test(test)
@@ -288,4 +291,4 @@ class ExplainTestResult(TestResult):
         super(ExplainTestResult, self).stop_test_run()
         print("Explained {0} tests.".format(self.tests_run))
         message = "NOTE: THIS IS AN EXPLANATION ONLY. NO TESTS WERE RUN."
-        self._print_bold(message)
+        self._print_coloured(message, fg='yellow', attrs=['bold'])
