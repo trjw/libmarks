@@ -126,7 +126,7 @@ class PrintedTestResult(TestResult):
 
     def add_error(self, test, error):
         super(PrintedTestResult, self).add_error(test, error)
-        self._print_coloured('ERROR', fg='red', attrs=['bold'])
+        self._print_coloured('ERROR', fg='magenta', attrs=['bold'])
         print("\t{0}".format(self._exc_info_pretty_print(error, test)))
 
     def add_success(self, test):
