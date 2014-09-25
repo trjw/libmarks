@@ -51,7 +51,6 @@ class TestSuite(object):
 
             return result
         finally:
-            result.stop_test(self)
             if original_result is None:
                 # One-off test, so finish tests.
                 result.stop_test_run()
