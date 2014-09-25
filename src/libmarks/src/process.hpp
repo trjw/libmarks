@@ -39,6 +39,7 @@ public:
     Process(std::vector<std::string>);
     Process(std::vector<std::string>, std::string);
     ~Process();
+    pid_t get_pid();
     bool send(const std::string&);
     bool send_file(char *);
     bool finish_input();

@@ -38,6 +38,11 @@ Process::~Process()
     pthread_mutex_destroy(&waitMutex);
 }
 
+pid_t Process::get_pid()
+{
+    return childPid;
+}
+
 bool Process::send(const std::string& message)
 {
     if (input == NULL) {
