@@ -620,6 +620,19 @@ class TestCase(object):
             del pgrep
         return pids
 
+    def signal_process(self, pid, sig, explain_process=None):
+        """Send a signal to the process with the given ID."""
+        if self.option('explain'):
+            proc = explain_process or "a process (determined at runtime)"
+            msg = "Send signal {0} to {1}".format(sig, proc)
+            self._print_coloured(msg, attrs=['bold'])
+        else:
+            try:
+                os.kill(pid, sig)
+            except:
+                self.fail(
+                    "Failed to send signal {0} process {1}".format(sig, pid))
+
 
 class ExplainProcess(object):
 
