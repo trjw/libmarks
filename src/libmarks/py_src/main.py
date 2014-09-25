@@ -57,6 +57,9 @@ class TestProgram(object):
         parser_test.add_argument(
             '-s', '--save', dest='save_output', action='store_true',
             help='Save output from the test(s) being run')
+        parser_test.add_argument(
+            '-v', '--verbose', dest='verbose', action='store_true',
+            help='Show verbose output (incl. diff) for a test on failure')
         parser_test.set_defaults(func=self.set_up_test)
 
         # Explain parser.
@@ -121,6 +124,11 @@ class TestProgram(object):
         self.options['save'] = args.save_output
         if args.save_output:
             self.options['cleanup'] = False
+        if args.verbose:
+            if args.tests:
+                self.options['verbose'] = True
+            else:
+                print("WARNING: Verbose mode ignored as no tests specified.")
 
     def set_up_explain(self, args):
         """Set up system to run simulation of tests (no processes run)."""

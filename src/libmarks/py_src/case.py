@@ -3,6 +3,7 @@ import contextlib
 import sys
 import os
 import inspect
+import difflib
 
 from .result import TestResult
 from .util import strclass, safe_repr, coloured_text
@@ -324,6 +325,10 @@ class TestCase(object):
         if self.option('save'):
             result = self._compare_files(
                 self._stdout_filename(process), file_path, msg=msg)
+        elif self.option('verbose'):
+            result = self._verbose_compare(
+                process.readline_stdout, file_path,
+                self._stdout_filename(process), msg)
         elif not process.expect_stdout_file(file_path):
             result = msg
 
@@ -368,6 +373,10 @@ class TestCase(object):
         if self.option('save'):
             result = self._compare_files(
                 self._stderr_filename(process), file_path, msg=msg)
+        elif self.option('verbose'):
+            result = self._verbose_compare(
+                process.readline_stderr, file_path,
+                self._stderr_filename(process), msg)
         elif not process.expect_stderr_file(file_path):
             result = msg
 
@@ -524,7 +533,56 @@ class TestCase(object):
             f2.close()
 
             if different:
-                return msg or "file mismatch: contents do not exactly match"
+                msg = msg or "file mismatch: contents do not exactly match"
+                if self.option('verbose'):
+                    # Add diff of output to message.
+                    f1 = open(file1, 'rb')
+                    f2 = open(file2, 'rb')
+                    diff = difflib.unified_diff(
+                        f1.readlines(), f2.readlines(),
+                        fromfile=file1, tofile=file2)
+
+                    msg += '\nDiff leading to failure:\n{0}'.format(
+                        ''.join(diff))
+
+                    f1.close()
+                    f2.close()
+                return msg
+
+    def _verbose_compare(self, stream_readline, file_path, stream_name, msg):
+        if not os.path.exists(file_path):
+            return "file missing: {0}".format(file_path)
+        else:
+            # Files exist, so open and compare them
+            different = False
+            p_history = []
+            f_history = []
+
+            with open(file_path, 'rb') as f:
+                while True:
+                    p_line = stream_readline()
+                    f_line = f.readline()
+
+                    # Store history of output.
+                    p_history.append(p_line)
+                    f_history.append(f_line)
+
+                    if f_line != p_line:
+                        different = True
+                        break
+
+                    if not f_line:
+                        # Reached end of file, and they are the same
+                        break
+
+            if different:
+                # Append diff to error message.
+                diff = difflib.unified_diff(
+                    p_history, f_history,
+                    fromfile=stream_name, tofile=file_path)
+                msg += '\nDiff leading to failure [truncated]:\n'
+                msg += ''.join(diff)
+                return msg
 
     def add_detail(self, name, data):
         """Record information related to the test"""
