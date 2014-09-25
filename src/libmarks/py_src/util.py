@@ -1,5 +1,8 @@
 import os
 
+# Maximum length for a string representation of an object.
+_MAX_LENGTH = 80
+
 
 def strclass(cls):
     """Generate a class name string, including module path.
@@ -9,6 +12,19 @@ def strclass(cls):
     if cls.__module__ == '__main__':
         return cls.__name__
     return "{0}.{1}".format(cls.__module__, cls.__name__)
+
+
+def safe_repr(obj, length=None):
+    """Safely generate a string representation of an object."""
+    if length is None:
+        length = _MAX_LENGTH
+    try:
+        result = repr(obj)
+    except Exception:
+        result = object.__repr__(obj)
+    if len(result) <= length:
+        return result
+    return result[:length] + ' [truncated]...'
 
 
 # Colours for terminal text

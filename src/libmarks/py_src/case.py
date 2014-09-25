@@ -5,7 +5,7 @@ import os
 import inspect
 
 from .result import TestResult
-from .util import strclass, coloured_text
+from .util import strclass, safe_repr, coloured_text
 from .process import Process, TimeoutProcess
 
 BUFFER_SIZE = 8 * 1024
@@ -391,7 +391,7 @@ class TestCase(object):
                     'Expect output (Process {0} [stdout]): '.format(
                         process.count),
                     attrs=['bold'], end='')
-                print(repr(output))
+                print(safe_repr(output))
             return
 
         if self.option('update'):
@@ -421,7 +421,7 @@ class TestCase(object):
                     'Expect output (Process {0} [stderr]): '.format(
                         process.count),
                     attrs=['bold'], end='')
-                print(repr(output))
+                print(safe_repr(output))
             return
 
         if self.option('update'):
@@ -574,7 +574,7 @@ class ExplainProcess(object):
             self._print_coloured(
                 'Send input to Process {0}: '.format(self.count),
                 attrs=['bold'], end='')
-            print(repr(message))
+            print(safe_repr(message))
         elif self._send_count == 11:
             # Instruct user to read test case, as lots of input being sent.
             self._print_coloured(
