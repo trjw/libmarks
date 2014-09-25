@@ -4,6 +4,7 @@ import sys
 import os
 import inspect
 import difflib
+import time
 
 from .result import TestResult
 from .util import strclass, safe_repr, coloured_text
@@ -278,6 +279,13 @@ class TestCase(object):
         process.kill()
 
         raise self.failure_exception(msg)
+
+    def delay(self, secs):
+        """Insert a delay into a test.
+        Delay is in seconds, with fractions being acceptable.
+        """
+        if not self.option('explain'):
+            time.sleep(secs)
 
     def fail(self, msg=None):
         """Fail immediately, with the given message."""
