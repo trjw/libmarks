@@ -600,6 +600,26 @@ class TestCase(object):
         """Update details in the result with those stored from the test."""
         result.update_details(self.__details)
 
+    def child_pids(self, parent):
+        """Get the process IDs of the children of the given parent process."""
+        pids = []
+        if self.option('explain'):
+            self._print_coloured(
+                "Get IDs of child processes of Process {0}".format(
+                    parent.count),
+                attrs=['bold'])
+        else:
+            pgrep = self.process(['pgrep', '-P', str(parent.pid)])
+            while True:
+                pid = pgrep.readline_stdout()
+                if pid == '':
+                    break
+                pid = int(pid.strip())
+                pids.append(pid)
+            pgrep.assert_exit_status(0)
+            del pgrep
+        return pids
+
 
 class ExplainProcess(object):
 
