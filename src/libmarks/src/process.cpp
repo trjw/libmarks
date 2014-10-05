@@ -355,16 +355,20 @@ void Process::setup_child(std::vector<std::string> argv, std::string inputFile)
 
     // Execute the program.
     if (do_exec) {
-        char **args = create_args(argv);
-        execvp(args[0], args);
-
-        delete_args(args, argv.size());
+        execute_program(argv);
     }
 
     // Exec failed if program reaches this point.
     write(fdCheck[WRITE], "fail", 4);
     close(fdCheck[WRITE]);
     exit(-1);
+}
+
+void Process::execute_program(std::vector<std::string> argv)
+{
+    char **args = create_args(argv);
+    execvp(args[0], args);
+    delete_args(args, argv.size());
 }
 
 char **Process::create_args(std::vector<std::string> argv)

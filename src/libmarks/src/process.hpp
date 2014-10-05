@@ -26,6 +26,7 @@ protected:
     void init(std::vector<std::string>);
     void setup_parent(bool);
     void setup_child(std::vector<std::string>, std::string);
+    void execute_program(std::vector<std::string>);
     char **create_args(std::vector<std::string>);
     void delete_args(char **, size_t);
     bool expect(const std::string&, FILE *);
