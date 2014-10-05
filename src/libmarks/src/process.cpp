@@ -339,8 +339,8 @@ void Process::setup_child(std::vector<std::string> argv, std::string inputFile)
     if (close(fdCheck[READ]) == -1)
         do_exec = false;
 
-    // Setup new session.
-    if (setsid() == -1)
+    // Setup new progress group with this process as leader.
+    if (setpgid(0, 0) == -1)
         do_exec = false;
 
     // Set up close-on-exec for the check pipe.
