@@ -398,7 +398,6 @@ bool Process::expect_file(char *filePath, FILE *stream)
     std::ifstream expectedOutput (filePath);
 
     if (!expectedOutput.is_open()) {
-        // TODO: Raise error - error opening file
         throw StreamException();
     }
 
@@ -413,8 +412,7 @@ bool Process::expect_file(char *filePath, FILE *stream)
     do {
         expected = expectedOutput.get();
         received = fgetc(stream);
-    } while (expectedOutput.good() && received != EOF && !feof(stream) &&
-            expected == received);
+    } while (expectedOutput.good() && received != EOF && expected == received);
 
     // If output was same as expected, then both should be at end of file.
     if (expectedOutput.eof() && feof(stream)) {
@@ -467,7 +465,7 @@ std::string Process::readline(FILE *stream)
     std::string line;
     char c;
 
-    while((c = fgetc(stream)) != EOF && !feof(stream)) {
+    while((c = fgetc(stream)) != EOF) {
         line += c;
         if (c == '\n') {
             break;
