@@ -4,6 +4,8 @@ import errno
 import tempfile
 import shutil
 from . import result
+from .case import TestCase
+from .process import TracedProcess
 
 TEMP_PREFIX = 'testres'
 
@@ -103,6 +105,9 @@ class MarkingTestRunner(BasicTestRunner):
 
         # Apply the options to the test.
         self._apply_options(test)
+
+        # Set the TestCase to use a TracedProcess.
+        TestCase.process_class = TracedProcess
 
         # Create the result holder.
         result = self.result_class()
