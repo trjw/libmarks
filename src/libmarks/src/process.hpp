@@ -19,6 +19,10 @@
 #define D(x) do {} while (0)
 #endif
 
+/* Allow global value for LD_PRELOAD to be set for all Processes created */
+void set_ld_preload(std::string);
+std::string get_ld_preload();
+
 class Process {
 protected:
     int fdIn[2], fdOut[2], fdErr[2], fdCheck[2];

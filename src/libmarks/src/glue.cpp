@@ -122,6 +122,10 @@ BOOST_PYTHON_MODULE(process)
     register_exception_translator<StreamException>(&stream_exception_translator);
     register_exception_translator<StreamFinishedException>(&stream_finished_exception_translator);
 
+    /* Allow LD_PRELOAD value to be set for all processes */
+    def("set_ld_preload", set_ld_preload);
+    def("get_ld_preload", get_ld_preload);
+
     class_<Process>("Process", "Process class docstring", init<std::vector<std::string> >(args("argv")))
         .def(init<std::vector<std::string>, std::string>(args("argv", "input_file")))
         .add_property("pid", &Process::get_pid)

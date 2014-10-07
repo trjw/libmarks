@@ -13,6 +13,22 @@
 
 #include "process.hpp"
 
+/* Allow global value for LD_PRELOAD to be set for all Processes created */
+namespace {
+    std::string preload_value = "";
+}
+
+void set_ld_preload(std::string value)
+{
+    preload_value = value;
+}
+
+std::string get_ld_preload()
+{
+    return preload_value;
+}
+
+
 /* Public */
 Process::Process(std::vector<std::string> argv, std::string inputFile):
     input(NULL), output(NULL), error(NULL), finished(false),
@@ -366,6 +382,18 @@ void Process::setup_child(std::vector<std::string> argv, std::string inputFile)
 
 void Process::execute_program(std::vector<std::string> argv)
 {
+    if (!preload_value.empty()) {
+        D("Setting LD_PRELOAD for child: " << preload_value << std::endl);
+#ifdef __APPLE__
+        setenv("DYLD_FORCE_FLAT_NAMESPACE", "1", 1);
+        setenv("DYLD_INSERT_LIBRARIES", preload_value.c_str(), 1);
+#else
+        setenv("LD_PRELOAD", preload_value.c_str(), 1);
+#endif
+    } else {
+        D("LD_PRELOAD not set - value empty" << std::endl);
+    }
+
     char **args = create_args(argv);
     execvp(args[0], args);
     delete_args(args, argv.size());
