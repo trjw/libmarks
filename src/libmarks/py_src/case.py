@@ -8,7 +8,7 @@ import time
 
 from .result import TestResult
 from .util import strclass, safe_repr, coloured_text
-from .process import Process, TimeoutProcess
+from .process import Process, TimeoutProcess, TracedProcess
 
 BUFFER_SIZE = 8 * 1024
 
@@ -608,6 +608,8 @@ class TestCase(object):
                 "Get IDs of child processes of Process {0}".format(
                     parent.count),
                 attrs=['bold'])
+        elif isinstance(parent, TracedProcess):
+            pids = parent.child_pids()
         else:
             pgrep = self.process(['pgrep', '-P', str(parent.pid)])
             while True:
