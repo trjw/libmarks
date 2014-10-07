@@ -1,3 +1,4 @@
+# Mac OS X
 .DEFAULT: all
 .PHONY: all clean
 
@@ -8,6 +9,7 @@ CFLAGS = -Wall -Werror -pedantic
 PYTHON_VERSION = 2.7
 # PYTHON_INCLUDE = /usr/include/python$(PYTHON_VERSION)
 # PYTHON_LIB = /usr/lib/python$(PYTHON_VERSION)
+
 PYTHON_INCLUDES = $(shell python-config --includes)
 PYTHON_LDFLAGS = $(shell python-config --ldflags)
 
@@ -15,8 +17,8 @@ PYTHON_LDFLAGS = $(shell python-config --ldflags)
 BOOST_INC = /usr/local/include
 BOOST_LIB = /usr/local/lib
 
-PARTIAL_TARGETS = src/glue.o src/process.o src/tracedProcess.o
-TARGETS = $(PARTIAL_TARGETS) src/process.so src/libprotect.so
+PROCESS_PARTIALS = src/glue.o src/process.o src/tracedProcess.o
+TARGETS = $(PROCESS_PARTIALS) src/process.so src/libprotect.so
 
 DESTINATION = ../marks
 
@@ -36,8 +38,8 @@ clean:
 	rm -f $(TARGETS)
 	rm -rf $(DESTINATION)
 
-src/process.so: $(PARTIAL_TARGETS)
-	$(CC) -dynamiclib $(PARTIAL_TARGETS) -L$(BOOST_LIB) -lboost_python $(PYTHON_LDFLAGS) -o src/process.so
+src/process.so: $(PROCESS_PARTIALS)
+	$(CC) -dynamiclib -L$(BOOST_LIB) -lboost_python $(PYTHON_LDFLAGS) $(PROCESS_PARTIALS) -o src/process.so
 
 # $(CC) -dynamiclib $(TARGETS) -L$(BOOST_LIB) -lboost_python -L$(PYTHON_LIB)/config -lpython$(PYTHON_VERSION) -o process.so
 

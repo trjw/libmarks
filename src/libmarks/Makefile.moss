@@ -1,4 +1,4 @@
-# New moss
+# moss
 .DEFAULT: all
 .PHONY: all clean
 
@@ -17,7 +17,8 @@ PYTHON_LDFLAGS = -L$(PYTHON_LIB)/config -lpython$(PYTHON_VERSION)
 BOOST_INC = /usr/include
 BOOST_LIB = /usr/lib64
 
-TARGETS = src/glue.o src/process.o
+PROCESS_PARTIALS = src/glue.o src/process.o src/tracedProcess.o
+TARGETS = $(PROCESS_PARTIALS) src/process.so src/libprotect.so
 
 DESTINATION = ../marks
 
@@ -26,18 +27,28 @@ all: $(TARGETS) src/process.so
 	mkdir -p $(DESTINATION)
 	@# Copy the compiled library
 	cp src/process.so $(DESTINATION)/process.so
+	cp src/libprotect.so $(DESTINATION)/libprotect.so
 	@# Compile and copy the Python module
 	python compile_py.py py_src $(DESTINATION)
 
+debug: CFLAGS += -g -DDEBUG
+debug: clean all
+
 clean:
-	rm -f $(TARGETS) src/process.so
+	rm -f $(TARGETS)
 	rm -rf $(DESTINATION)
 
-src/process.so: $(TARGETS)
-	$(CC) -shared -Wl,--export-dynamic $(TARGETS) -L$(BOOST_LIB) -lboost_python $(PYTHON_LDFLAGS) -o src/process.so
+src/process.so: $(PROCESS_PARTIALS)
+	$(CC) -shared -Wl,--export-dynamic -L$(BOOST_LIB) -lboost_python $(PYTHON_LDFLAGS) $(PROCESS_PARTIALS) -o $@
 
 src/glue.o: src/glue.cpp src/process.hpp
-	$(CC) $(PYTHON_INCLUDES) -I$(BOOST_INC) -fPIC -pthread -c src/glue.cpp -o src/glue.o
+	$(CC) $(PYTHON_INCLUDES) -I$(BOOST_INC) -fPIC -pthread -c $< -o $@
 
 src/process.o: src/process.cpp src/process.hpp
-	$(CC) $(CFLAGS) $(PYTHON_INCLUDES) -I$(BOOST_INC) -fPIC -pthread -c src/process.cpp -o src/process.o
+	$(CC) $(CFLAGS) $(PYTHON_INCLUDES) -I$(BOOST_INC) -fPIC -pthread -c $< -o $@
+
+src/tracedProcess.o: src/traced_process.cpp src/process.hpp
+	$(CC) $(CFLAGS) $(PYTHON_INCLUDES) -I$(BOOST_INC) -fPIC -pthread -c $< -o $@
+
+src/libprotect.so: src/protection.cpp
+	$(CC) $(CFLAGS) -ldl -shared -Wl,--export-dynamic -fPIC $< -o $@
