@@ -11,6 +11,13 @@
 /* Signals */
 #define SIG_CHECK 0
 
+/* Debug printing */
+#ifdef DEBUG
+#define D(x) do { std::cerr << x; } while (0)
+#else
+#define D(x) do {} while (0)
+#endif
+
 class Process {
 protected:
     int fdIn[2], fdOut[2], fdErr[2], fdCheck[2];
