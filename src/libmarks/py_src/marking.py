@@ -58,7 +58,15 @@ class MarkingRunner(BasicTestRunner):
             full_path = os.path.join(self.options['working_dir'], path)
             yield full_path, test, self.options
 
+    def _set_protection(self):
+        import marks
+        preload = self.options.get('ld_preload', _default_protection())
+        marks.set_ld_preload(preload)
+
     def run(self, test):
+        # Protect against potentially bad system calls
+        self._set_protection()
+
         # Get number of processes to run
         processes = self.options.get('processes', NUM_PROCESSES)
 
@@ -115,3 +123,10 @@ class MarkingRunner(BasicTestRunner):
                     info.update(res['tests'])
                     info.update(res['details'])
                     dw.writerow(info)
+
+
+def _default_protection():
+    """Get the path to the included protection library"""
+    import marks
+    return os.path.join(
+        os.path.dirname(os.path.abspath(marks.__file__)), 'libprotect.so')
