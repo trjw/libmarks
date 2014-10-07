@@ -512,6 +512,29 @@ bool Process::close_stream(FILE **stream)
     return true;
 }
 
+void Process::finish_process(int status)
+{
+    // Check for the exit status of the child.
+    if (WIFEXITED(status)) {
+        exitStatus = WEXITSTATUS(status);
+    } else {
+        abnormalExit = true;
+    }
+
+    // Check signal, if it was signalled.
+    if (WIFSIGNALED(status)) {
+        signalled = true;
+        signalNum = WTERMSIG(status);
+    }
+
+    // Close the files.
+    close_stream(&input);
+    close_stream(&output);
+    close_stream(&error);
+
+    finished = true;
+}
+
 void Process::perform_wait(bool block)
 {
     // Obtain mutex.
@@ -536,25 +559,7 @@ void Process::perform_wait(bool block)
             // Child is not finished, so do not check status.
         } else {
             // Child is finished, so check status and close streams.
-            // Check for the exit status of the child.
-            if (WIFEXITED(status)) {
-                exitStatus = WEXITSTATUS(status);
-            } else {
-                abnormalExit = true;
-            }
-
-            // Check signal, if it was signalled.
-            if (WIFSIGNALED(status)) {
-                signalled = true;
-                signalNum = WTERMSIG(status);
-            }
-
-            // Close the files.
-            close_stream(&input);
-            close_stream(&output);
-            close_stream(&error);
-
-            finished = true;
+            finish_process(status);
         }
     }
 

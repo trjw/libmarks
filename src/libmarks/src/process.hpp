@@ -41,6 +41,7 @@ protected:
     std::string readline(FILE *);
     void print_stream(FILE *);
     bool close_stream(FILE **);
+    void finish_process(int);
     void perform_wait(bool);
 
 public:
