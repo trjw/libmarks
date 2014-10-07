@@ -16,7 +16,7 @@ BOOST_INC = /usr/local/include
 BOOST_LIB = /usr/local/lib
 
 PARTIAL_TARGETS = src/glue.o src/process.o src/tracedProcess.o
-TARGETS = $(PARTIAL_TARGETS) src/process.so
+TARGETS = $(PARTIAL_TARGETS) src/process.so src/libprotect.so
 
 DESTINATION = ../marks
 
@@ -25,6 +25,7 @@ all: $(TARGETS)
 	mkdir -p $(DESTINATION)
 	@# Copy the compiled library
 	cp src/process.so $(DESTINATION)/process.so
+	cp src/libprotect.so $(DESTINATION)/libprotect.so
 	@# Compile and copy the Python module
 	python compile_py.py py_src $(DESTINATION)
 
@@ -48,3 +49,6 @@ src/process.o: src/process.cpp src/process.hpp
 
 src/tracedProcess.o: src/traced_process.cpp src/process.hpp
 	$(CC) $(CFLAGS) $(PYTHON_INCLUDES) -I$(BOOST_INC) -fPIC -pthread -c $< -o $@
+
+src/libprotect.so: src/protection.cpp
+	$(CC) $(CFLAGS) -ldl -dynamiclib -fPIC $< -o $@
