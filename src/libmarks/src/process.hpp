@@ -1,6 +1,7 @@
 #include <string>
 #include <vector>
 #include <cstdio>
+#include <set>
 #include <sys/wait.h>
 #include <pthread.h>
 
@@ -75,9 +76,9 @@ public:
 };
 
 class TimeoutProcess: public Process {
-private:
+protected:
     int timeout_duration;
-    pthread_t thread;
+    pthread_t timeoutThread;
     void init_timeout();
 
 public:
@@ -88,8 +89,29 @@ public:
     void perform_timeout();
 };
 
+class TracedProcess: public TimeoutProcess {
+private:
+    pthread_t tracerThread;
+    std::set<pid_t> children;
+    void init_tracer();
+
+public:
+    TracedProcess(std::vector<std::string>, int);
+    TracedProcess(std::vector<std::string>, int, std::string);
+    ~TracedProcess();
+    int get_timeout_duration();
+    void perform_timeout();
+    std::set<pid_t> child_pids();
+};
+
 /* Timeout thread */
 void *timeout_thread(void *);
+
+/* Tracing */
+void trace_thread(pid_t);
+void trace_syscall(pid_t);
+int trace_child(pid_t, pid_t, std::set<pid_t> &);
+void kill_threads(std::set<pid_t> &);
 
 /* Exceptions */
 struct CloseException {};

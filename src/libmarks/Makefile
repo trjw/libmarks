@@ -15,11 +15,12 @@ PYTHON_LDFLAGS = $(shell python-config --ldflags)
 BOOST_INC = /usr/local/include
 BOOST_LIB = /usr/local/lib
 
-TARGETS = src/glue.o src/process.o
+PARTIAL_TARGETS = src/glue.o src/process.o src/tracedProcess.o
+TARGETS = $(PARTIAL_TARGETS) src/process.so
 
 DESTINATION = ../marks
 
-all: $(TARGETS) src/process.so
+all: $(TARGETS)
 	@# Create destination directory
 	mkdir -p $(DESTINATION)
 	@# Copy the compiled library
@@ -27,17 +28,23 @@ all: $(TARGETS) src/process.so
 	@# Compile and copy the Python module
 	python compile_py.py py_src $(DESTINATION)
 
+debug: CFLAGS += -g -DDEBUG
+debug: clean all
+
 clean:
-	rm -f $(TARGETS) src/process.so
+	rm -f $(TARGETS)
 	rm -rf $(DESTINATION)
 
-src/process.so: $(TARGETS)
-	$(CC) -dynamiclib $(TARGETS) -L$(BOOST_LIB) -lboost_python $(PYTHON_LDFLAGS) -o src/process.so
+src/process.so: $(PARTIAL_TARGETS)
+	$(CC) -dynamiclib $(PARTIAL_TARGETS) -L$(BOOST_LIB) -lboost_python $(PYTHON_LDFLAGS) -o src/process.so
 
 # $(CC) -dynamiclib $(TARGETS) -L$(BOOST_LIB) -lboost_python -L$(PYTHON_LIB)/config -lpython$(PYTHON_VERSION) -o process.so
 
 src/glue.o: src/glue.cpp src/process.hpp
-	$(CC) $(PYTHON_INCLUDES) -I$(BOOST_INC) -fPIC -pthread -c src/glue.cpp -o src/glue.o
+	$(CC) $(PYTHON_INCLUDES) -I$(BOOST_INC) -fPIC -pthread -c $< -o $@
 
 src/process.o: src/process.cpp src/process.hpp
-	$(CC) $(CFLAGS) $(PYTHON_INCLUDES) -I$(BOOST_INC) -fPIC -pthread -c src/process.cpp -o src/process.o
+	$(CC) $(CFLAGS) $(PYTHON_INCLUDES) -I$(BOOST_INC) -fPIC -pthread -c $< -o $@
+
+src/tracedProcess.o: src/traced_process.cpp src/process.hpp
+	$(CC) $(CFLAGS) $(PYTHON_INCLUDES) -I$(BOOST_INC) -fPIC -pthread -c $< -o $@

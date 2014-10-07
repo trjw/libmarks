@@ -589,10 +589,10 @@ TimeoutProcess::~TimeoutProcess()
     }
 
     // Ensure the thread is cancelled.
-    pthread_cancel(thread);
+    pthread_cancel(timeoutThread);
 
     // Join the thread.
-    pthread_join(thread, NULL);
+    pthread_join(timeoutThread, NULL);
 
     // Destroy wait mutex.
     pthread_mutex_destroy(&waitMutex);
@@ -615,7 +615,8 @@ void TimeoutProcess::perform_timeout()
 void TimeoutProcess::init_timeout()
 {
     // Create thread to perform timeout
-    if (pthread_create(&thread, NULL, timeout_thread, (void *) this) != 0) {
+    if (pthread_create(&timeoutThread, NULL, timeout_thread,
+            (void *) this) != 0) {
         // Error
     }
 }

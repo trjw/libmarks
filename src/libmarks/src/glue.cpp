@@ -154,4 +154,9 @@ BOOST_PYTHON_MODULE(process)
         .def(init<std::vector<std::string>, int, std::string>(args("argv", "timeout", "input_file")))
     ;
 
+    class_<TracedProcess, bases<Process> >("TracedProcess", "Traced Process class docstring", init<std::vector<std::string>, int>(args("argv", "timeout")))
+        .def(init<std::vector<std::string>, int, std::string>(args("argv", "timeout", "input_file")))
+        .def("child_pids", &TracedProcess::child_pids)
+    ;
+
 }
