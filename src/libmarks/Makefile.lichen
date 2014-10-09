@@ -39,7 +39,7 @@ clean:
 	rm -rf $(DESTINATION)
 
 src/process.so: $(PROCESS_PARTIALS)
-	$(CC) -shared -Wl,--export-dynamic -L$(BOOST_LIB) -lboost_python $(PYTHON_LDFLAGS) $(PROCESS_PARTIALS) -o $@
+	$(CC) -shared -Wl,--export-dynamic $(PROCESS_PARTIALS) -L$(BOOST_LIB) -lboost_python $(PYTHON_LDFLAGS) -o $@
 
 src/glue.o: src/glue.cpp src/process.hpp
 	$(CC) $(PYTHON_INCLUDES) -I$(BOOST_INC) -fPIC -pthread -c $< -o $@

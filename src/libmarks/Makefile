@@ -39,7 +39,7 @@ clean:
 	rm -rf $(DESTINATION)
 
 src/process.so: $(PROCESS_PARTIALS)
-	$(CC) -dynamiclib -L$(BOOST_LIB) -lboost_python $(PYTHON_LDFLAGS) $(PROCESS_PARTIALS) -o src/process.so
+	$(CC) -dynamiclib $(PROCESS_PARTIALS) -L$(BOOST_LIB) -lboost_python $(PYTHON_LDFLAGS) -o src/process.so
 
 # $(CC) -dynamiclib $(TARGETS) -L$(BOOST_LIB) -lboost_python -L$(PYTHON_LIB)/config -lpython$(PYTHON_VERSION) -o process.so
 
