@@ -90,6 +90,7 @@ class TimeoutProcess: public Process {
 protected:
     int timeout_duration;
     pthread_t timeoutThread;
+    bool timeoutStarted;
     void init_timeout();
 
 public:

@@ -619,14 +619,12 @@ void Process::perform_wait(bool block)
 /** Timeout Process **/
 /* Public */
 TimeoutProcess::TimeoutProcess(std::vector<std::string> argv, int timeout, std::string inputFile):
-    Process(argv, inputFile), timeout_duration(timeout)
-{
-}
+    Process(argv, inputFile), timeout_duration(timeout), timeoutStarted(false)
+{}
 
 TimeoutProcess::TimeoutProcess(std::vector<std::string> argv, int timeout):
-    Process(argv, ""), timeout_duration(timeout)
-{
-}
+    Process(argv, ""), timeout_duration(timeout), timeoutStarted(false)
+{}
 
 TimeoutProcess::~TimeoutProcess()
 {
@@ -635,11 +633,13 @@ TimeoutProcess::~TimeoutProcess()
         send_kill();
     }
 
-    // Ensure the thread is cancelled.
-    pthread_cancel(timeoutThread);
+    if (timeoutStarted) {
+        // Ensure the thread is cancelled.
+        pthread_cancel(timeoutThread);
 
-    // Join the thread.
-    pthread_join(timeoutThread, NULL);
+        // Join the thread.
+        pthread_join(timeoutThread, NULL);
+    }
 
     // Destroy wait mutex.
     pthread_mutex_destroy(&waitMutex);
@@ -671,7 +671,9 @@ void TimeoutProcess::init_timeout()
     if (pthread_create(&timeoutThread, NULL, timeout_thread,
             (void *) this) != 0) {
         // Error
+        return;
     }
+    timeoutStarted = true;
 }
 
 /* Timeout thread */
