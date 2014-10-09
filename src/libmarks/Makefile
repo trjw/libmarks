@@ -52,5 +52,5 @@ src/process.o: src/process.cpp src/process.hpp
 src/tracedProcess.o: src/traced_process.cpp src/process.hpp
 	$(CC) $(CFLAGS) $(PYTHON_INCLUDES) -I$(BOOST_INC) -fPIC -pthread -c $< -o $@
 
-src/libprotect.so: src/protection.cpp
-	$(CC) $(CFLAGS) -ldl -dynamiclib -fPIC $< -o $@
+src/libprotect.so: src/protection.c
+	clang -std=gnu99 $(CFLAGS) -ldl -dynamiclib -fPIC $< -o $@
