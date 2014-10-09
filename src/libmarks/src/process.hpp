@@ -4,6 +4,8 @@
 #include <set>
 #include <sys/wait.h>
 #include <pthread.h>
+#include <boost/shared_ptr.hpp>
+#include <boost/python.hpp>
 
 /* File descriptor ends for pipes */
 #define READ 0
@@ -11,6 +13,9 @@
 
 /* Signals */
 #define SIG_CHECK 0
+
+/* Maximum allowed child processes */
+#define MAX_CHILD_COUNT 20
 
 /* Debug printing */
 #ifdef DEBUG
@@ -25,6 +30,8 @@ std::string get_ld_preload();
 
 class Process {
 protected:
+    std::vector<std::string> argv;
+    std::string inputFile;
     int fdIn[2], fdOut[2], fdErr[2], fdCheck[2];
     pid_t childPid;
     FILE *input, *output, *error;
@@ -34,12 +41,11 @@ protected:
     bool timeout;
     pthread_mutex_t waitMutex;
 
-    void init(std::vector<std::string>, std::string);
-    void init(std::vector<std::string>);
-    void setup_parent(bool);
-    void setup_child(std::vector<std::string>, std::string);
-    void execute_program(std::vector<std::string>);
-    char **create_args(std::vector<std::string>);
+    void setup_parent();
+    virtual int setup_parent_pre_exec();
+    void setup_child();
+    virtual int setup_child_additional();
+    char **create_args(std::vector<std::string> &);
     void delete_args(char **, size_t);
     bool expect(const std::string&, FILE *);
     bool expect_file(char *, FILE *);
@@ -53,6 +59,7 @@ public:
     Process(std::vector<std::string>);
     Process(std::vector<std::string>, std::string);
     ~Process();
+    virtual void init();
     pid_t get_pid();
     bool send(const std::string&);
     bool send_file(char *);
@@ -89,33 +96,43 @@ public:
     TimeoutProcess(std::vector<std::string>, int);
     TimeoutProcess(std::vector<std::string>, int, std::string);
     ~TimeoutProcess();
+    virtual void init();
     int get_timeout_duration();
     void perform_timeout();
 };
 
+/* Tracing */
 class TracedProcess: public TimeoutProcess {
 private:
     pthread_t tracerThread;
+    bool traceEnabled;
     std::set<pid_t> children;
+    int setup_parent_pre_exec();
+    int setup_child_additional();
     void init_tracer();
+    void trace_child();
+    int trace_new_child(pid_t);
+    void trace_syscall(pid_t);
+    void kill_threads(std::set<pid_t> &);
+    static void *trace_thread(void *);
 
 public:
     TracedProcess(std::vector<std::string>, int);
     TracedProcess(std::vector<std::string>, int, std::string);
     ~TracedProcess();
-    int get_timeout_duration();
+    virtual void init();
     void perform_timeout();
     std::set<pid_t> child_pids();
+    boost::python::list child_pids_list();
 };
 
 /* Timeout thread */
 void *timeout_thread(void *);
 
-/* Tracing */
-void trace_thread(pid_t);
-void trace_syscall(pid_t);
-int trace_child(pid_t, pid_t, std::set<pid_t> &);
-void kill_threads(std::set<pid_t> &);
+/* Factories */
+boost::shared_ptr<Process> create_process(std::vector<std::string> argv, std::string inputFile);
+boost::shared_ptr<TimeoutProcess> create_timeout_process(std::vector<std::string> argv, int timeout, std::string inputFile="");
+boost::shared_ptr<TracedProcess> create_traced_process(std::vector<std::string> argv, int timeout, std::string inputFile="");
 
 /* Exceptions */
 struct CloseException {};

@@ -10,6 +10,7 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <pthread.h>
+#include <boost/shared_ptr.hpp>
 
 #include "process.hpp"
 
@@ -28,21 +29,35 @@ std::string get_ld_preload()
     return preload_value;
 }
 
+/* Use to create a new Process, so init() is called */
+boost::shared_ptr<Process> create_process(std::vector<std::string> argv, std::string inputFile)
+{
+    boost::shared_ptr<Process> p(new Process(argv, inputFile));
+    p->init();
+    return p;
+}
+
+/* Use to create a new TimeoutProcess, so init() is called */
+boost::shared_ptr<TimeoutProcess> create_timeout_process(std::vector<std::string> argv, int timeout, std::string inputFile)
+{
+    boost::shared_ptr<TimeoutProcess> p(new TimeoutProcess(argv, timeout, inputFile));
+    p->init();
+    return p;
+}
+
 
 /* Public */
 Process::Process(std::vector<std::string> argv, std::string inputFile):
+    argv(argv), inputFile(inputFile),
     input(NULL), output(NULL), error(NULL), finished(false),
     abnormalExit(false), signalled(false), timeout(false)
-{
-    init(argv, inputFile);
-}
+{}
 
 Process::Process(std::vector<std::string> argv):
+    argv(argv), inputFile(""),
     input(NULL), output(NULL), error(NULL), finished(false),
     abnormalExit(false), signalled(false), timeout(false)
-{
-    init(argv);
-}
+{}
 
 Process::~Process()
 {
@@ -248,12 +263,10 @@ bool Process::get_timeout()
 }
 
 /* Private */
-void Process::init(std::vector<std::string> argv, std::string inputFile)
+void Process::init()
 {
-    bool useInputPipe = inputFile == "";
-
     // Create pipe for stdin only if there is no input file.
-    if (useInputPipe && pipe(fdIn) != 0) {
+    if (inputFile.empty() && pipe(fdIn) != 0) {
         throw PipeException();
     }
 
@@ -272,26 +285,24 @@ void Process::init(std::vector<std::string> argv, std::string inputFile)
         throw ForkException();
     } else if (childPid == 0) {
         // Child process.
-        setup_child(argv, inputFile);
+        setup_child();
     } else {
         // Parent process.
-        setup_parent(useInputPipe);
+        setup_parent();
     }
 }
 
-void Process::init(std::vector<std::string> argv)
-{
-    init(argv, "");
-}
-
-void Process::setup_parent(bool useInputPipe)
+void Process::setup_parent()
 {
     // Close the ends of the pipes that are being used in the child.
-    if ((useInputPipe && close(fdIn[READ]) == -1) ||
+    if ((inputFile.empty() && close(fdIn[READ]) == -1) ||
             close(fdOut[WRITE]) == -1 || close(fdErr[WRITE]) == -1 ||
             close(fdCheck[WRITE]) == -1) {
         throw CloseException();
     }
+
+    if (setup_parent_pre_exec() == -1)
+        throw ExecException(); // TODO: Change this exception
 
     // Attempt to read on check pipe. If data is available, then exec failed.
     char buf[5];
@@ -305,7 +316,7 @@ void Process::setup_parent(bool useInputPipe)
         throw CloseException();
 
     // Open child stdin as a file, if pipe was created.
-    if (useInputPipe) {
+    if (inputFile.empty()) {
         input = fdopen(fdIn[WRITE], "w"); // Input from parent to child.
     }
 
@@ -313,12 +324,18 @@ void Process::setup_parent(bool useInputPipe)
     output = fdopen(fdOut[READ], "r"); // stdout from child to parent.
     error = fdopen(fdErr[READ], "r"); // stderr from child to parent.
 
-    if ((useInputPipe && input == NULL) || output == NULL || error == NULL) {
+    if ((inputFile.empty() && input == NULL) || output == NULL || error == NULL) {
         throw FdOpenException();
     }
 }
 
-void Process::setup_child(std::vector<std::string> argv, std::string inputFile)
+int Process::setup_parent_pre_exec()
+{
+    /* No additional setup required */
+    return 1;
+}
+
+void Process::setup_child()
 {
     bool do_exec = true;
 
@@ -369,19 +386,6 @@ void Process::setup_child(std::vector<std::string> argv, std::string inputFile)
     if (fcntl(fdCheck[WRITE], F_SETFD, flags) == -1)
         do_exec = false;
 
-    // Execute the program.
-    if (do_exec) {
-        execute_program(argv);
-    }
-
-    // Exec failed if program reaches this point.
-    write(fdCheck[WRITE], "fail", 4);
-    close(fdCheck[WRITE]);
-    exit(-1);
-}
-
-void Process::execute_program(std::vector<std::string> argv)
-{
     if (!preload_value.empty()) {
         D("Setting LD_PRELOAD for child: " << preload_value << std::endl);
 #ifdef __APPLE__
@@ -394,12 +398,29 @@ void Process::execute_program(std::vector<std::string> argv)
         D("LD_PRELOAD not set - value empty" << std::endl);
     }
 
-    char **args = create_args(argv);
-    execvp(args[0], args);
-    delete_args(args, argv.size());
+    if (setup_child_additional() == -1)
+        do_exec = false;
+
+    // Execute the program.
+    if (do_exec) {
+        char **args = create_args(argv);
+        execvp(args[0], args);
+        delete_args(args, argv.size());
+    }
+
+    // Exec failed if program reaches this point.
+    write(fdCheck[WRITE], "fail", 4);
+    close(fdCheck[WRITE]);
+    exit(-1);
 }
 
-char **Process::create_args(std::vector<std::string> argv)
+int Process::setup_child_additional()
+{
+    /* No additional setup */
+    return 1;
+}
+
+char **Process::create_args(std::vector<std::string> &argv)
 {
     // Create args array, including space for the NULL array terminator.
     char **args = new char*[argv.size() + 1];
@@ -600,13 +621,11 @@ void Process::perform_wait(bool block)
 TimeoutProcess::TimeoutProcess(std::vector<std::string> argv, int timeout, std::string inputFile):
     Process(argv, inputFile), timeout_duration(timeout)
 {
-    init_timeout();
 }
 
 TimeoutProcess::TimeoutProcess(std::vector<std::string> argv, int timeout):
     Process(argv, ""), timeout_duration(timeout)
 {
-    init_timeout();
 }
 
 TimeoutProcess::~TimeoutProcess()
@@ -624,6 +643,12 @@ TimeoutProcess::~TimeoutProcess()
 
     // Destroy wait mutex.
     pthread_mutex_destroy(&waitMutex);
+}
+
+void TimeoutProcess::init()
+{
+    Process::init();
+    init_timeout();
 }
 
 int TimeoutProcess::get_timeout_duration()

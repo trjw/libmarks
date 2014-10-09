@@ -3,6 +3,7 @@
 #include <boost/python/stl_iterator.hpp>
 #include <vector>
 #include <string>
+#include <boost/shared_ptr.hpp>
 
 #include "process.hpp"
 
@@ -126,8 +127,8 @@ BOOST_PYTHON_MODULE(process)
     def("set_ld_preload", set_ld_preload);
     def("get_ld_preload", get_ld_preload);
 
-    class_<Process>("Process", "Process class docstring", init<std::vector<std::string> >(args("argv")))
-        .def(init<std::vector<std::string>, std::string>(args("argv", "input_file")))
+    class_<Process, boost::shared_ptr<Process> >("Process", "Process class docstring", no_init)
+        .def("__init__", make_constructor(&create_process, default_call_policies(), (arg("argv"), arg("input_file")="")))
         .add_property("pid", &Process::get_pid)
         .add_property("exit_status", &Process::get_exit_status)
         .add_property("abnormal_exit", &Process::get_abnormal_exit)
@@ -154,13 +155,13 @@ BOOST_PYTHON_MODULE(process)
         .def("check_signalled", &Process::check_signalled)
     ;
 
-    class_<TimeoutProcess, bases<Process> >("TimeoutProcess", "Timeout Process class docstring", init<std::vector<std::string>, int>(args("argv", "timeout")))
-        .def(init<std::vector<std::string>, int, std::string>(args("argv", "timeout", "input_file")))
+    class_<TimeoutProcess, boost::shared_ptr<TimeoutProcess>, bases<Process> >("TimeoutProcess", "Timeout Process class docstring", no_init)
+        .def("__init__", make_constructor(&create_timeout_process, default_call_policies(), (arg("argv"), arg("timeout"), arg("input_file")="")))
     ;
 
-    class_<TracedProcess, bases<Process> >("TracedProcess", "Traced Process class docstring", init<std::vector<std::string>, int>(args("argv", "timeout")))
-        .def(init<std::vector<std::string>, int, std::string>(args("argv", "timeout", "input_file")))
-        .def("child_pids", &TracedProcess::child_pids)
+    class_<TracedProcess, boost::shared_ptr<TracedProcess>, bases<Process> >("TracedProcess", "Traced Process class docstring", no_init)
+        .def("__init__", make_constructor(&create_traced_process, default_call_policies(), (arg("argv"), arg("timeout"), arg("input_file")="")))
+        .def("child_pids", &TracedProcess::child_pids_list)
     ;
 
 }
