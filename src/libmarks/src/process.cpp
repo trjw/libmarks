@@ -120,42 +120,42 @@ bool Process::finish_input()
 
 bool Process::expect_stdout(const std::string& expected)
 {
-    return expect(expected, output);
+    return expect(expected, &output);
 }
 
 bool Process::expect_stderr(const std::string& expected)
 {
-    return expect(expected, error);
+    return expect(expected, &error);
 }
 
 bool Process::expect_stdout_file(char *filePath)
 {
-    return expect_file(filePath, output);
+    return expect_file(filePath, &output);
 }
 
 bool Process::expect_stderr_file(char *filePath)
 {
-    return expect_file(filePath, error);
+    return expect_file(filePath, &error);
 }
 
 std::string Process::readline_stdout()
 {
-    return readline(output);
+    return readline(&output);
 }
 
 std::string Process::readline_stderr()
 {
-    return readline(error);
+    return readline(&error);
 }
 
 void Process::print_stdout()
 {
-    print_stream(output);
+    print_stream(&output);
 }
 
 void Process::print_stderr()
 {
-    print_stream(error);
+    print_stream(&error);
 }
 
 bool Process::assert_exit_status(int expected)
@@ -446,7 +446,7 @@ void Process::delete_args(char **args, size_t length)
     delete [] args;
 }
 
-bool Process::expect_file(char *filePath, FILE *stream)
+bool Process::expect_file(char *filePath, FILE **stream)
 {
     std::ifstream expectedOutput (filePath);
 
@@ -454,7 +454,7 @@ bool Process::expect_file(char *filePath, FILE *stream)
         throw StreamException();
     }
 
-    if (stream == NULL) {
+    if (*stream == NULL) {
         // Trying to access a stream after the process has finished.
         throw StreamFinishedException();
     }
@@ -464,11 +464,13 @@ bool Process::expect_file(char *filePath, FILE *stream)
     // Char by char, check expected output against received output.
     do {
         expected = expectedOutput.get();
-        received = fgetc(stream);
+        if (*stream == NULL) // Stream may have been closed by timeout.
+            return false;
+        received = fgetc(*stream);
     } while (expectedOutput.good() && received != EOF && expected == received);
 
     // If output was same as expected, then both should be at end of file.
-    if (expectedOutput.eof() && feof(stream)) {
+    if (expectedOutput.eof() && feof(*stream)) {
         expectedOutput.close();
         return true;
     }
@@ -477,22 +479,22 @@ bool Process::expect_file(char *filePath, FILE *stream)
     return false;
 }
 
-bool Process::expect(const std::string& expected, FILE *stream)
+bool Process::expect(const std::string& expected, FILE **stream)
 {
-    if (stream == NULL) {
+    if (*stream == NULL) {
         // Trying to access a stream after the process has finished.
         throw StreamFinishedException();
     }
 
     if (expected.length() == 0) {
         // Expected string is 0 length, so expect EOF to be returned.
-        if (fgetc(stream) != EOF) {
+        if (*stream == NULL || fgetc(*stream) != EOF) {
             return false;
         }
     } else {
         // Check each char in the expected against chars in the stream.
         for (unsigned int i = 0; i < expected.length(); ++i) {
-            if (expected[i] != (char) fgetc(stream)) {
+            if (*stream == NULL || expected[i] != (char) fgetc(*stream)) {
                 return false;
             }
         }
@@ -508,9 +510,9 @@ bool Process::expect(const std::string& expected, FILE *stream)
  * @param  stream The stream to read from.
  * @return        The line read from the stream, including the newline character.
  */
-std::string Process::readline(FILE *stream)
+std::string Process::readline(FILE **stream)
 {
-    if (stream == NULL) {
+    if (*stream == NULL) {
         // Trying to access a stream after the process has finished.
         throw StreamFinishedException();
     }
@@ -518,7 +520,7 @@ std::string Process::readline(FILE *stream)
     std::string line;
     char c;
 
-    while((c = fgetc(stream)) != EOF) {
+    while(*stream != NULL && (c = fgetc(*stream)) != EOF) {
         line += c;
         if (c == '\n') {
             break;
@@ -528,17 +530,17 @@ std::string Process::readline(FILE *stream)
     return line;
 }
 
-void Process::print_stream(FILE *stream)
+void Process::print_stream(FILE **stream)
 {
-    if (stream == NULL) {
+    if (*stream == NULL) {
         // Trying to access a stream after the process has finished.
         throw StreamFinishedException();
     }
 
     char *buf = new char[80];
 
-    while (stream != NULL && !feof(stream)) {
-        if (fgets(buf, 80, stream) == NULL)
+    while (*stream != NULL && !feof(*stream)) {
+        if (fgets(buf, 80, *stream) == NULL)
             break;
         std::cout << buf;
     }
@@ -548,14 +550,15 @@ void Process::print_stream(FILE *stream)
 
 bool Process::close_stream(FILE **stream)
 {
-    int status = 0;
     if (*stream != NULL) {
-        status = fclose(*stream);
-        *stream = NULL;
-    }
+        int status = fclose(*stream);
 
-    if (status != 0) {
-        return false;
+        // Mark the stream as being closed.
+        *stream = NULL;
+
+        if (status != 0) {
+            return false;
+        }
     }
 
     return true;

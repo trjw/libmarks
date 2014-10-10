@@ -47,10 +47,10 @@ protected:
     virtual int setup_child_additional();
     char **create_args(std::vector<std::string> &);
     void delete_args(char **, size_t);
-    bool expect(const std::string&, FILE *);
-    bool expect_file(char *, FILE *);
-    std::string readline(FILE *);
-    void print_stream(FILE *);
+    bool expect(const std::string&, FILE **);
+    bool expect_file(char *, FILE **);
+    std::string readline(FILE **);
+    void print_stream(FILE **);
     bool close_stream(FILE **);
     void finish_process(int);
     void perform_wait(bool);
