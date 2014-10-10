@@ -671,7 +671,7 @@ void TimeoutProcess::perform_timeout()
 void TimeoutProcess::init_timeout()
 {
     // Create thread to perform timeout
-    if (pthread_create(&timeoutThread, NULL, timeout_thread,
+    if (pthread_create(&timeoutThread, NULL, &TimeoutProcess::timeout_thread,
             (void *) this) != 0) {
         // Error
         return;
@@ -679,15 +679,21 @@ void TimeoutProcess::init_timeout()
     timeoutStarted = true;
 }
 
-/* Timeout thread */
-void *timeout_thread(void *arg) {
-    TimeoutProcess *tp = (TimeoutProcess *) arg;
-
+void TimeoutProcess::timeout_process()
+{
     // Sleep for timeout length
-    sleep(tp->get_timeout_duration());
+    sleep(timeout_duration);
 
     // If process is not finished, kill process
-    tp->perform_timeout();
+    perform_timeout();
+}
+
+/* Timeout thread */
+void *TimeoutProcess::timeout_thread(void *arg)
+{
+    TimeoutProcess *tp = (TimeoutProcess *) arg;
+
+    tp->timeout_process();
 
     // End thread
     pthread_exit(NULL);

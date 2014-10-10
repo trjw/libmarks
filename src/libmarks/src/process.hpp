@@ -92,6 +92,8 @@ protected:
     pthread_t timeoutThread;
     bool timeoutStarted;
     void init_timeout();
+    virtual void perform_timeout();
+    static void *timeout_thread(void *);
 
 public:
     TimeoutProcess(std::vector<std::string>, int);
@@ -99,7 +101,7 @@ public:
     ~TimeoutProcess();
     virtual void init();
     int get_timeout_duration();
-    void perform_timeout();
+    void timeout_process();
 };
 
 /* Tracing */
@@ -110,6 +112,7 @@ private:
     std::set<pid_t> children;
     int setup_parent_pre_exec();
     int setup_child_additional();
+    void perform_timeout();
     void init_tracer();
     void trace_child();
     int trace_new_child(pid_t);
@@ -122,13 +125,9 @@ public:
     TracedProcess(std::vector<std::string>, int, std::string);
     ~TracedProcess();
     virtual void init();
-    void perform_timeout();
     std::set<pid_t> child_pids();
     boost::python::list child_pids_list();
 };
-
-/* Timeout thread */
-void *timeout_thread(void *);
 
 /* Factories */
 boost::shared_ptr<Process> create_process(std::vector<std::string> argv, std::string inputFile);
