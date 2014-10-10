@@ -26,9 +26,9 @@ class BasicTestRunner(object):
         # Store the working directory.
         self.options['working_dir'] = os.getcwd()
 
-    def _apply_options(self, test):
-        """Apply the appropriate options to the tests"""
-        test.__marks_options__ = self.options
+    def _apply_options(self, obj):
+        """Apply the appropriate options to the object"""
+        obj.__marks_options__ = self.options
 
     def setup_environment(self):
         """Setup the environment before running the tests.
@@ -83,6 +83,7 @@ class BasicTestRunner(object):
 
         # Create the result holder.
         result = self.result_class()
+        self._apply_options(result)
 
         # Run the test
         result.start_test_run()
@@ -111,6 +112,7 @@ class MarkingTestRunner(BasicTestRunner):
 
         # Create the result holder.
         result = self.result_class()
+        self._apply_options(result)
 
         result.start_test_run()
         test.run(result)
@@ -118,6 +120,9 @@ class MarkingTestRunner(BasicTestRunner):
 
         # Print results
         if not self.options.get('silent', False):
+            if self.options.get('verbose', False):
+                print()
+            print("Marking Results")
             print("{0:30}{1:15}{2}".format('Category', 'Passed', 'Mark'))
             for category in result.marks:
                 info = result.marks[category]

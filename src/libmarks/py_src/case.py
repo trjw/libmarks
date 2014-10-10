@@ -333,7 +333,7 @@ class TestCase(object):
         if self.option('save'):
             result = self._compare_files(
                 self._stdout_filename(process), file_path, msg=msg)
-        elif self.option('verbose'):
+        elif self.option('show_diff'):
             result = self._verbose_compare(
                 process.readline_stdout, file_path,
                 self._stdout_filename(process), msg)
@@ -381,7 +381,7 @@ class TestCase(object):
         if self.option('save'):
             result = self._compare_files(
                 self._stderr_filename(process), file_path, msg=msg)
-        elif self.option('verbose'):
+        elif self.option('show_diff'):
             result = self._verbose_compare(
                 process.readline_stderr, file_path,
                 self._stderr_filename(process), msg)
@@ -542,7 +542,7 @@ class TestCase(object):
 
             if different:
                 msg = msg or "file mismatch: contents do not exactly match"
-                if self.option('verbose'):
+                if self.option('show_diff'):
                     # Add diff of output to message.
                     f1 = open(file1, 'rb')
                     f2 = open(file2, 'rb')

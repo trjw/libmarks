@@ -85,6 +85,9 @@ class TestProgram(object):
             'tests', nargs='*', help='a list of any number of test modules, '
             'classes and test methods.')
         parser_mark.add_argument(
+            '-v', '--verbose', dest='verbose', action='store_true',
+            help='Show verbose output during marking')
+        parser_mark.add_argument(
             '--directory', dest='directory',
             help='Parent directory containing subdirectories for marking')
         parser_mark.add_argument(
@@ -122,11 +125,12 @@ class TestProgram(object):
         """Set up system to run tests normally."""
         self.tests = args.tests
         self.options['save'] = args.save_output
+        self.options['verbose'] = True
         if args.save_output:
             self.options['cleanup'] = False
         if args.verbose:
             if args.tests:
-                self.options['verbose'] = True
+                self.options['show_diff'] = True
             else:
                 print("WARNING: Verbose mode ignored as no tests specified.")
 
@@ -154,6 +158,7 @@ class TestProgram(object):
             self.options['processes'] = args.processes
         else:
             # Mark a single submission in the current directory.
+            self.options['verbose'] = args.verbose
             self.runner_class = runner.MarkingTestRunner
 
     def create_tests(self):

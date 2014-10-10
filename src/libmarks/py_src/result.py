@@ -95,46 +95,56 @@ class TestResult(object):
                 text, colour=fg, background=bg, attrs=attrs)
         print(text, **kwargs)
 
+    def option(self, option):
+        """Retrieves the value of an option, or None if option not set."""
+        return self.__marks_options__.get(option, None)
+
 
 class PrintedTestResult(TestResult):
 
     def start_test_run(self):
         super(PrintedTestResult, self).start_test_run()
-        print("Running tests\n")
+        if not self.option('silent'):
+            print("Running tests\n")
 
     def start_test(self, test):
         super(PrintedTestResult, self).start_test(test)
-        print("{0:60}".format(test.id()), end='')
-        sys.stdout.flush()
+        if self.option('verbose'):
+            print("{0:60}".format(test.id()), end='')
+            sys.stdout.flush()
 
     def stop_test(self, test):
         super(PrintedTestResult, self).stop_test(test)
 
     def stop_test_run(self):
         super(PrintedTestResult, self).stop_test_run()
-        results = RESULT_TEMPLATE.format(
-            self.tests_run, len(self.successes),
-            len(self.errors), len(self.failures))
-        print()
-        print('-' * 70)
-        print(results)
+        if self.option('verbose'):
+            results = RESULT_TEMPLATE.format(
+                self.tests_run, len(self.successes),
+                len(self.errors), len(self.failures))
+            print()
+            print('-' * 70)
+            print(results)
 
     def add_failure(self, test, error):
         super(PrintedTestResult, self).add_failure(test, error)
-        self._print_coloured('FAIL', fg='red', attrs=['bold'])
-        print("\t{0}".format(self._exc_info_pretty_print(error, test)))
+        if self.option('verbose'):
+            self._print_coloured('FAIL', fg='red', attrs=['bold'])
+            print("\t{0}".format(self._exc_info_pretty_print(error, test)))
 
     def add_error(self, test, error):
         super(PrintedTestResult, self).add_error(test, error)
-        self._print_coloured('ERROR', fg='magenta', attrs=['bold'])
-        print("\t{0}".format(self._exc_info_pretty_print(error, test)))
+        if self.option('verbose'):
+            self._print_coloured('ERROR', fg='magenta', attrs=['bold'])
+            print("\t{0}".format(self._exc_info_pretty_print(error, test)))
 
     def add_success(self, test):
         super(PrintedTestResult, self).add_success(test)
-        self._print_coloured('OK', fg='green', attrs=['bold'])
+        if self.option('verbose'):
+            self._print_coloured('OK', fg='green', attrs=['bold'])
 
 
-class MarkingTestResult(TestResult):
+class MarkingTestResult(PrintedTestResult):
     """Container of test result information."""
 
     def __init__(self):
