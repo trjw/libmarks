@@ -49,13 +49,17 @@ class MarkingRunner(BasicTestRunner):
 
     def _list_dirs(self):
         """List all directories within the target directory"""
-        path = self.options.get('directory')
-        return filter(os.path.isdir, os.listdir(path))
+        dirs = []
+        root = self.options.get('directory')
+        for f in os.listdir(root):
+            if os.path.isdir(os.path.join(root, f)):
+                dirs.append(f)
+        return dirs
 
     def _submissions(self, test):
         """Generator returning path, test and options"""
-        for path in self._list_dirs():
-            full_path = os.path.join(self.options['working_dir'], path)
+        for folder in self._list_dirs():
+            full_path = os.path.join(self.options['directory'], folder)
             yield full_path, test, self.options
 
     def _set_protection(self):
@@ -99,8 +103,20 @@ class MarkingRunner(BasicTestRunner):
             pool.terminate()
             pool.join()
 
+        # Create paths to output files
+        directory = self.options.get('directory')
+        # Results JSON file
+        results_json_default = os.path.join(directory, 'overall_results.json')
+        results_json = self.options.get(
+            'overall_results_json', results_json_default)
+
+        # Results CSV file
+        results_csv_default = os.path.join(directory, 'marking_results.csv')
+        results_csv = self.options.get(
+            'overall_results_csv', results_csv_default)
+
         # Save output as JSON.
-        with open('overall_results.json', 'w') as f:
+        with open(results_json, 'w') as f:
             json.dump(results, f)
 
         if results:
@@ -112,10 +128,10 @@ class MarkingRunner(BasicTestRunner):
             header.extend(results[0]['details'].keys())
             header.append('mark')
 
-            with open('marking_results.csv', 'w') as f:
+            with open(results_csv, 'w') as f:
                 dw = csv.DictWriter(f, fieldnames=header)
                 dw.writerow(dict((fn, fn) for fn in header))
-                for res in results:
+                for res in sorted(results, key=lambda x: x['submission']):
                     info = {
                         'submission': res['submission'],
                         'mark': res['totals']['received_marks']
