@@ -35,23 +35,25 @@ boost::shared_ptr<TracedProcess> create_traced_process(std::vector<std::string> 
 
 /* Public */
 TracedProcess::TracedProcess(std::vector<std::string> argv, int timeout, std::string inputFile):
-    TimeoutProcess(argv, timeout, inputFile), traceEnabled(false)
+    TimeoutProcess(argv, timeout, inputFile), traceStarted(false)
 {
 }
 
 TracedProcess::TracedProcess(std::vector<std::string> argv, int timeout):
-    TimeoutProcess(argv, timeout, ""), traceEnabled(false)
+    TimeoutProcess(argv, timeout, ""), traceStarted(false)
 {
 }
 
 TracedProcess::~TracedProcess()
 {
     // Finish the timeout thread.
-    pthread_cancel(timeoutThread);
-    pthread_join(timeoutThread, NULL);
+    if (timeoutStarted) {
+        pthread_cancel(timeoutThread);
+        pthread_join(timeoutThread, NULL);
+    }
 
     // Finish the tracer thread.
-    if (traceEnabled) {
+    if (traceStarted) {
         pthread_cancel(tracerThread);
         pthread_join(tracerThread, NULL);
     }
@@ -119,12 +121,13 @@ boost::python::list TracedProcess::child_pids_list()
 void TracedProcess::init_tracer()
 {
 #ifdef __linux__ /* Trace is linux specific */
-    traceEnabled = true;
     // Create thread to perform timeout
     if (pthread_create(&tracerThread, NULL, &TracedProcess::trace_thread,
             (void *) this) != 0) {
         // Error
+        return;
     }
+    traceStarted = true;
 #endif /* linux */
 }
 
