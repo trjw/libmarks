@@ -1,13 +1,39 @@
 from __future__ import division, print_function
 
 import os
+import traceback
 import multiprocessing as mp
+from multiprocessing.pool import Pool
 import csv
 import json
 from .runner import BasicTestRunner, MarkingTestRunner
 
 
 NUM_PROCESSES = 4
+
+
+class LogException(object):
+    """Log any exception raised in a Pool worker"""
+
+    def __init__(self, callable):
+        self.__callable = callable
+
+    def __call__(self, *args, **kwargs):
+        try:
+            result = self.__callable(*args, **kwargs)
+        except Exception as e:
+            self._error(traceback.format_exc())
+            raise
+        return result
+
+    def _error(self, msg, *args):
+        return mp.get_logger().error(msg, *args)
+
+
+class LoggingPool(Pool):
+
+    def apply_async(self, func, args=(), kwds={}, callback=None):
+        return Pool.apply_async(self, LogException(func), args, kwds, callback)
 
 
 def mark_submission(path, test, options):
@@ -81,7 +107,8 @@ class MarkingRunner(BasicTestRunner):
         print("Starting marking:", count['submissions'], "submissions")
 
         # Run tests over all submissions
-        pool = mp.Pool(processes=processes, maxtasksperchild=1)
+        mp.log_to_stderr()
+        pool = LoggingPool(processes=processes, maxtasksperchild=1)
         results = []
 
         def complete(result):
