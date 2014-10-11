@@ -36,43 +36,49 @@ class BasicTestRunner(object):
         Create a temporary directory to run tests from. Store location
         in options, so test cases can use this information.
         """
-        if not self.options.get('silent', DEFAULT_SILENT):
-            print("Setting up environment...")
-
         working_dir = self.options['working_dir']
-        prefix = self.options.get('temp_prefix', TEMP_PREFIX)
+        if self.options.get('explain', False):
+            # No temporary directory required, as no tests are run.
+            temp_dir = working_dir
+        else:
+            # Create the temporary directory, as tests are being run.
+            if not self.options.get('silent', DEFAULT_SILENT):
+                print("Setting up environment...")
 
-        # Create temporary working directory.
-        temp_dir = tempfile.mkdtemp(dir=working_dir, prefix=prefix)
+            # Create temporary working directory.
+            prefix = self.options.get('temp_prefix', TEMP_PREFIX)
+            temp_dir = tempfile.mkdtemp(dir=working_dir, prefix=prefix)
 
-        if not self.options.get('cleanup', DEFAULT_CLEANUP):
-            print("Test output in", temp_dir)
-            print("Remember to clean up your test result folders.\n")
+            if not self.options.get('cleanup', DEFAULT_CLEANUP):
+                print("Test output in", temp_dir)
+                print("Remember to clean up your test result folders.\n")
 
-        # Change to new temp directory.
-        os.chdir(temp_dir)
+            # Change to new temp directory.
+            os.chdir(temp_dir)
 
         # Store temporary directory path.
         self.options['temp_dir'] = temp_dir
 
     def tear_down_environment(self):
         """Tear down the environment after running the tests"""
-        if not self.options.get('silent', DEFAULT_SILENT):
-            print("Tearing down environment...")
+        if not self.options.get('explain', False):
+            # Only remove temporary directory if it was created.
+            if not self.options.get('silent', DEFAULT_SILENT):
+                print("Tearing down environment...")
 
-        # Ensure we are in the original working directory.
-        os.chdir(self.options['working_dir'])
+            # Ensure we are in the original working directory.
+            os.chdir(self.options['working_dir'])
 
-        if self.options.get('cleanup', DEFAULT_CLEANUP):
-            # Clean up the temporary folder.
-            try:
-                shutil.rmtree(self.options['temp_dir'])
-            except OSError as e:
-                # Check for ENOENT: No such file or directory.
-                # (Nothing more to do if directory has already been deleted)
-                if e.errno != errno.ENOENT:
-                    # Other error, so raise.
-                    raise
+            if self.options.get('cleanup', DEFAULT_CLEANUP):
+                # Clean up the temporary folder.
+                try:
+                    shutil.rmtree(self.options['temp_dir'])
+                except OSError as e:
+                    # Check for ENOENT: "No such file or directory." - Nothing
+                    # more to do if directory has already been deleted.
+                    if e.errno != errno.ENOENT:
+                        # Other error, so raise.
+                        raise
 
     def run(self, test):
         # Setup the environment.
