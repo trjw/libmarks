@@ -21,7 +21,7 @@ class LogException(object):
     def __call__(self, *args, **kwargs):
         try:
             result = self.__callable(*args, **kwargs)
-        except Exception as e:
+        except Exception:
             self._error(traceback.format_exc())
             raise
         return result
