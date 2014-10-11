@@ -85,7 +85,6 @@ int TracedProcess::setup_parent_pre_exec()
 
 int TracedProcess::setup_child_additional()
 {
-    std::cerr << "TRACE PROCESS EXECUTE STUFF" << std::endl;
 #ifdef __linux__ /* Trace is linux specific */
     // Mark the child to be traced.
     if (kill(getpid(), SIGSTOP) == -1)
