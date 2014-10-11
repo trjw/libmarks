@@ -183,10 +183,12 @@ class TestCase(object):
         self._processes.append(p)
 
         if self.option('explain'):
-            # Put quotes around argument if it contains whitespace.
             for i, arg in enumerate(argv):
+                # Put quotes around argument if it contains whitespace.
                 if arg == '' or any(c.isspace() for c in arg):
                     argv[i] = '"{0}"'.format(arg)
+                # Ensure escape characters are visible when printed.
+                argv[i] = argv[i].encode('unicode_escape')
 
             # Print out command for running the process, including streams.
             self._print_coloured(
