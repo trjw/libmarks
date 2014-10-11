@@ -199,6 +199,17 @@ class TestCase(object):
 
         return p
 
+    def _cleanup_processes(self):
+        """Attempt to kill all processes started within a test"""
+        for p in self._processes:
+            try:
+                p.kill()
+            except RuntimeError:
+                # Sending signal to process may have failed.
+                # This is most likely due to the process already
+                # being dead, so ignore.
+                pass
+
     def run(self, result=None, **kwargs):
         original_result = result
         if result is None:
@@ -234,8 +245,7 @@ class TestCase(object):
                     self.tear_down()
 
                 # Clean up processes.
-                for p in self._processes:
-                    p.kill()
+                self._cleanup_processes()
 
             # Process details.
             self._process_details(result)
@@ -248,9 +258,8 @@ class TestCase(object):
 
             return result
         except KeyboardInterrupt:
-            # Clean up processes before exiting.
-            for p in self._processes:
-                p.kill()
+            # Clean up processes before raising exception.
+            self._cleanup_processes()
             raise
         finally:
             if not ignored:

@@ -97,9 +97,8 @@ int TracedProcess::setup_child_additional()
 void TracedProcess::perform_timeout()
 {
     if (!finished) {
-        timeout = true;
         kill_threads(children);
-        send_kill();
+        TimeoutProcess::perform_timeout();
     }
 }
 

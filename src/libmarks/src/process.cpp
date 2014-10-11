@@ -661,7 +661,11 @@ void TimeoutProcess::perform_timeout()
 {
     if (!finished) {
         timeout = true;
-        send_kill();
+        try {
+            send_kill();
+        } catch (SignalException& e) {
+            // Ignore exception here - possible that children already dead.
+        }
     }
 }
 
