@@ -39,7 +39,7 @@ protected:
     int exitStatus, signalNum;
     bool abnormalExit, signalled;
     bool timeout;
-    pthread_mutex_t waitMutex;
+    pthread_mutex_t finishMutex;
 
     void setup_parent();
     virtual int setup_parent_pre_exec();
@@ -108,7 +108,7 @@ public:
 class TracedProcess: public TimeoutProcess {
 private:
     pthread_t tracerThread;
-    bool traceEnabled;
+    bool traceStarted;
     std::set<pid_t> children;
     int setup_parent_pre_exec();
     int setup_child_additional();

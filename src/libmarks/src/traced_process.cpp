@@ -63,8 +63,8 @@ TracedProcess::~TracedProcess()
         send_kill();
     }
 
-    // Destroy wait mutex.
-    pthread_mutex_destroy(&waitMutex);
+    // Destroy mutex.
+    pthread_mutex_destroy(&finishMutex);
 }
 
 void TracedProcess::init()
@@ -133,9 +133,6 @@ void TracedProcess::init_tracer()
 
 void TracedProcess::trace_child()
 {
-    // Obtain mutex, as we are using wait().
-    pthread_mutex_lock(&waitMutex);
-
 #ifdef __linux__ /* Trace is linux specific */
     // Status information from the process that was waited upon.
     int status;
@@ -244,9 +241,6 @@ void TracedProcess::trace_child()
     }
     kill_threads(children);
 #endif /* linux */
-
-    // Release mutex.
-    pthread_mutex_unlock(&waitMutex);
 }
 
 int TracedProcess::trace_new_child(pid_t pid)

@@ -65,8 +65,8 @@ Process::~Process()
         send_kill();
     }
 
-    // Destroy wait mutex.
-    pthread_mutex_destroy(&waitMutex);
+    // Destroy mutex.
+    pthread_mutex_destroy(&finishMutex);
 }
 
 pid_t Process::get_pid()
@@ -273,8 +273,8 @@ void Process::init()
         throw PipeException();
     }
 
-    // Initialise wait mutex
-    pthread_mutex_init(&waitMutex, NULL);
+    // Initialise mutex for finishing a process.
+    pthread_mutex_init(&finishMutex, NULL);
 
     // Fork
     childPid = fork();
@@ -564,6 +564,9 @@ bool Process::close_stream(FILE **stream)
 
 void Process::finish_process(int status)
 {
+    // Obtain mutex.
+    pthread_mutex_lock(&finishMutex);
+
     // Check for the exit status of the child.
     if (WIFEXITED(status)) {
         exitStatus = WEXITSTATUS(status);
@@ -583,13 +586,13 @@ void Process::finish_process(int status)
     close_stream(&error);
 
     finished = true;
+
+    // Release mutex.
+    pthread_mutex_unlock(&finishMutex);
 }
 
 void Process::perform_wait(bool block)
 {
-    // Obtain mutex.
-    pthread_mutex_lock(&waitMutex);
-
     if (!finished) {
         // Set up options for waitpid, based on whether we should wait
         // for the process to complete or not.
@@ -612,9 +615,6 @@ void Process::perform_wait(bool block)
             finish_process(status);
         }
     }
-
-    // Release mutex.
-    pthread_mutex_unlock(&waitMutex);
 }
 
 /** Timeout Process **/
@@ -642,8 +642,8 @@ TimeoutProcess::~TimeoutProcess()
         pthread_join(timeoutThread, NULL);
     }
 
-    // Destroy wait mutex.
-    pthread_mutex_destroy(&waitMutex);
+    // Destroy mutex.
+    pthread_mutex_destroy(&finishMutex);
 }
 
 void TimeoutProcess::init()
