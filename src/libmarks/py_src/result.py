@@ -21,6 +21,7 @@ class TestResult(object):
 
         # Record test classes.
         self._test_class_setup = {}
+        self._test_module_setup = {}
 
     def start_test_run(self):
         """Run before the testing starts."""
@@ -37,6 +38,22 @@ class TestResult(object):
     def stop_test_run(self):
         """Run after all of the testing is complete."""
         pass
+
+    def add_module_setup(self, module_name, success=True):
+        """Record a test module setup as complete."""
+        self._test_module_setup[module_name] = success
+
+    def module_setup_run(self, module_):
+        """Check if setup for a module has occurred."""
+        return module_ in self._test_module_setup
+
+    def module_setup_failed(self, module_name):
+        """Check if setup for a module failed."""
+        return not self._test_module_setup.get(module_name, True)
+
+    def test_modules(self):
+        """Return list of modules that have been setup."""
+        return self._test_module_setup.keys()
 
     def add_class_setup(self, class_, success=True):
         """Record a test class setup as complete."""
@@ -215,6 +232,10 @@ class MarkingTestResult(PrintedTestResult):
             self.tests_passed += passed
             self.total_tests += len(info['tests'])
             self.received_marks += mark
+
+    def module_setup_failed(self, module_name):
+        # Ensure all tests run when in marking mode.
+        return False
 
     def class_setup_failed(self, class_):
         # Ensure all tests run when in marking mode.

@@ -1,4 +1,5 @@
 
+import sys
 from .case import _TestWrapper
 from .result import TestResult
 from .util import strclass
@@ -41,13 +42,17 @@ class TestSuite(object):
 
         try:
             for test in self:
+                self._setup_module(test, result)
                 self._setup_class(test, result)
-                if not result.class_setup_failed(test.__class__):
+                module_name = test.__class__.__module__
+                if not (result.module_setup_failed(module_name) or
+                        result.class_setup_failed(test.__class__)):
                     test.run(result, child=True)
 
             # Tear down classes
             if not child:
                 self._tear_down_classes(result)
+                self._tear_down_modules(result)
 
             return result
         finally:
@@ -55,15 +60,67 @@ class TestSuite(object):
                 # One-off test, so finish tests.
                 result.stop_test_run()
 
-    def _setup_class(self, test, result):
-        class_ = test.__class__
-        if result.class_setup_run(class_):
+    def _setup_module(self, test, result):
+        module_name = test.__class__.__module__
+        if module_name == __name__:
+            # Do not attempt to setup this module.
+            return
+        elif result.module_setup_run(module_name):
+            # Module setup has already been run.
+            return
+
+        try:
+            module = sys.modules[module_name]
+        except KeyError:
             return
 
         wrapper = _TestWrapper()
 
+        if getattr(module, 'setup_module', None):
+            with wrapper.test_executer(self):
+                options = getattr(self, '__marks_options__', {})
+                module.setup_module(options)
+
+        # Record result for module setup. If no setup_module() method
+        # available, then treat as success.
+        result.add_module_setup(module_name, wrapper.success)
+
+    def _tear_down_module(self, module_name, result):
+        try:
+            module = sys.modules[module_name]
+        except KeyError:
+            return
+
+        wrapper = _TestWrapper()
+
+        if getattr(module, 'tear_down_module', None):
+            # Perform tear down.
+            with wrapper.test_executer(self):
+                options = getattr(self, '__marks_options__', {})
+                module.tear_down_module(options)
+
+            # TODO: Add error.
+            # if not wrapper.success:
+            #     result.add_error()
+
+    def _tear_down_modules(self, result):
+        for module_name in result.test_modules():
+            self._tear_down_module(module_name, result)
+
+    def _setup_class(self, test, result):
+        class_ = test.__class__
+
         # Apply options to class.
         self._apply_options(class_)
+
+        if result.class_setup_run(class_):
+            # Class setup has already been run.
+            return
+        elif result.module_setup_failed(class_.__module__):
+            # Do not setup class if the module failed setup.
+            return
+
+        wrapper = _TestWrapper()
 
         if getattr(class_, 'setup_class', None):
             # Perform setup.
