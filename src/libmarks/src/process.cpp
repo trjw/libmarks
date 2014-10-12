@@ -62,7 +62,11 @@ Process::Process(std::vector<std::string> argv):
 Process::~Process()
 {
     if (!finished) {
-        send_kill();
+        try {
+            send_kill();
+        } catch (SignalException& e) {
+            // Nothing can be done at this point, so ignore.
+        }
     }
 
     // Destroy mutex.
@@ -629,21 +633,11 @@ TimeoutProcess::TimeoutProcess(std::vector<std::string> argv, int timeout):
 
 TimeoutProcess::~TimeoutProcess()
 {
-    if (!finished) {
-        // Kill the Process.
-        send_kill();
-    }
-
     if (timeoutStarted) {
-        // Ensure the thread is cancelled.
+        // Finish the timeout thread.
         pthread_cancel(timeoutThread);
-
-        // Join the thread.
         pthread_join(timeoutThread, NULL);
     }
-
-    // Destroy mutex.
-    pthread_mutex_destroy(&finishMutex);
 }
 
 void TimeoutProcess::init()

@@ -58,7 +58,7 @@ protected:
 public:
     Process(std::vector<std::string>);
     Process(std::vector<std::string>, std::string);
-    ~Process();
+    virtual ~Process();
     virtual void init();
     pid_t get_pid();
     bool send(const std::string&);

@@ -46,25 +46,11 @@ TracedProcess::TracedProcess(std::vector<std::string> argv, int timeout):
 
 TracedProcess::~TracedProcess()
 {
-    // Finish the timeout thread.
-    if (timeoutStarted) {
-        pthread_cancel(timeoutThread);
-        pthread_join(timeoutThread, NULL);
-    }
-
-    // Finish the tracer thread.
     if (traceStarted) {
+        // Finish the tracer thread.
         pthread_cancel(tracerThread);
         pthread_join(tracerThread, NULL);
     }
-
-    if (!finished) {
-        // Kill the Process.
-        send_kill();
-    }
-
-    // Destroy mutex.
-    pthread_mutex_destroy(&finishMutex);
 }
 
 void TracedProcess::init()
