@@ -495,8 +495,10 @@ bool Process::expect(const std::string& expected, FILE **stream)
         }
     } else {
         // Check each char in the expected against chars in the stream.
+        char c;
         for (unsigned int i = 0; i < expected.length(); ++i) {
-            if (*stream == NULL || expected[i] != (char) fgetc(*stream)) {
+            if (*stream == NULL || (c = fgetc(*stream)) == EOF ||
+                    expected[i] != c) {
                 return false;
             }
         }
