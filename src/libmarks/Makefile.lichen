@@ -3,7 +3,7 @@
 .PHONY: all clean
 
 CC = g++
-CFLAGS = -Wall -Werror -pedantic
+CFLAGS = -Wall -Werror -pedantic -Wno-long-long
 
 # location of the Python header files
 PYTHON_VERSION = 2.7
@@ -42,13 +42,13 @@ src/process.so: $(PROCESS_PARTIALS)
 	$(CC) -shared -Wl,--export-dynamic $(PROCESS_PARTIALS) -L$(BOOST_LIB) -lboost_python $(PYTHON_LDFLAGS) -o $@
 
 src/glue.o: src/glue.cpp src/process.hpp
-	$(CC) $(PYTHON_INCLUDES) -I$(BOOST_INC) -fPIC -pthread -c $< -o $@
+	$(CC) $(PYTHON_INCLUDES) -I$(BOOST_INC) -fPIC -pthread -c src/glue.cpp -o $@
 
 src/process.o: src/process.cpp src/process.hpp
-	$(CC) $(CFLAGS) $(PYTHON_INCLUDES) -I$(BOOST_INC) -fPIC -pthread -c $< -o $@
+	$(CC) $(CFLAGS) $(PYTHON_INCLUDES) -I$(BOOST_INC) -fPIC -pthread -c src/process.cpp -o $@
 
 src/tracedProcess.o: src/traced_process.cpp src/process.hpp
-	$(CC) $(CFLAGS) $(PYTHON_INCLUDES) -I$(BOOST_INC) -fPIC -pthread -c $< -o $@
+	$(CC) $(CFLAGS) $(PYTHON_INCLUDES) -I$(BOOST_INC) -fPIC -pthread -c src/traced_process.cpp -o $@
 
 src/libprotect.so: src/protection.c
-	gcc -std=gnu99 $(CFLAGS) -ldl -shared -Wl,--export-dynamic -fPIC $< -o $@
+	gcc -std=gnu99 $(CFLAGS) -shared -Wl,--export-dynamic -fPIC src/protection.c -o $@
