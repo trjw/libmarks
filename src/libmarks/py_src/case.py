@@ -425,7 +425,7 @@ class TestCase(object):
         if self.option('update'):
             # Print message to remind user to check output
             # TODO: Include source code location
-            print("\tCheck assert_stdout('{0}')".format(output))
+            print("\tCheck assert_stdout({0})".format(safe_repr(output)))
             return
 
         if not process.expect_stdout(output):
@@ -455,7 +455,7 @@ class TestCase(object):
         if self.option('update'):
             # Print message to remind user to check output
             # TODO: Include source code location
-            print("\tCheck assert_stderr('{0}')".format(output))
+            print("\tCheck assert_stderr({0})".format(safe_repr(output)))
             return
 
         if not process.expect_stderr(output):
