@@ -339,21 +339,22 @@ int Process::setup_parent_pre_exec()
 
 void Process::setup_child()
 {
-    bool do_exec = true;
+    char **args;
+    int fd = -1, flags = 0;
 
     // Set up child input (stdin)
     if (inputFile != "") {
         // Open file as stdin for child.
-        int fd = open(inputFile.c_str(), O_RDONLY);
+        fd = open(inputFile.c_str(), O_RDONLY);
         if (fd == -1 || dup2(fd, STDIN_FILENO) == -1 || close(fd) == -1) {
-            do_exec = false;
+            goto childerror;
         }
     } else {
         // Finish pipe creation.
         if (close(fdIn[WRITE]) == -1 ||
                 dup2(fdIn[READ], STDIN_FILENO) == -1 ||
                 close(fdIn[READ]) == -1) {
-            do_exec = false;
+            goto childerror;
         }
     }
 
@@ -361,55 +362,58 @@ void Process::setup_child()
     if (close(fdOut[READ]) == -1 ||
             dup2(fdOut[WRITE], STDOUT_FILENO) == -1 ||
             close(fdOut[WRITE]) == -1) {
-        do_exec = false;
+        goto childerror;
     }
 
     // Set up child error (stderr).
     if (close(fdErr[READ]) == -1 ||
             dup2(fdErr[WRITE], STDERR_FILENO) == -1 ||
             close(fdErr[WRITE]) == -1) {
-        do_exec = false;
+        goto childerror;
     }
 
+    // Set up check pipe.
     if (close(fdCheck[READ]) == -1)
-        do_exec = false;
+        goto childerror;
 
     // Setup new progress group with this process as leader.
     if (setpgid(0, 0) == -1)
-        do_exec = false;
+        goto childerror;
 
     // Set up close-on-exec for the check pipe.
-    int flags = fcntl(fdCheck[WRITE], F_GETFD);
+    flags = fcntl(fdCheck[WRITE], F_GETFD);
     if (flags == -1)
-        do_exec = false;
+        goto childerror;
 
     flags |= FD_CLOEXEC;
 
     if (fcntl(fdCheck[WRITE], F_SETFD, flags) == -1)
-        do_exec = false;
+        goto childerror;
 
     if (!preload_value.empty()) {
         D("Setting LD_PRELOAD for child: " << preload_value << std::endl);
 #ifdef __APPLE__
-        setenv("DYLD_FORCE_FLAT_NAMESPACE", "1", 1);
-        setenv("DYLD_INSERT_LIBRARIES", preload_value.c_str(), 1);
+        if (setenv("DYLD_FORCE_FLAT_NAMESPACE", "1", 1) == -1 ||
+                setenv("DYLD_INSERT_LIBRARIES", preload_value.c_str(), 1) == -1)
+            goto childerror;
 #else
-        setenv("LD_PRELOAD", preload_value.c_str(), 1);
+        if (setenv("LD_PRELOAD", preload_value.c_str(), 1) == -1)
+            goto childerror;
 #endif
     } else {
         D("LD_PRELOAD not set - value empty" << std::endl);
     }
 
+    // Perform additional child setup, as possibly defined by subclasses.
     if (setup_child_additional() == -1)
-        do_exec = false;
+        goto childerror;
 
     // Execute the program.
-    if (do_exec) {
-        char **args = create_args(argv);
-        execvp(args[0], args);
-        delete_args(args, argv.size());
-    }
+    args = create_args(argv);
+    execvp(args[0], args);
+    delete_args(args, argv.size());
 
+childerror:
     // Exec failed if program reaches this point.
     write(fdCheck[WRITE], "fail", 4);
     close(fdCheck[WRITE]);
