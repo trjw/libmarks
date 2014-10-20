@@ -203,6 +203,10 @@ class TestCase(object):
 
     def _cleanup_processes(self):
         """Attempt to kill all processes started within a test"""
+        if self.option('explain'):
+            # Do not cleanup, as no processes are running.
+            return
+
         for p in self._processes:
             try:
                 p.kill()
@@ -287,7 +291,8 @@ class TestCase(object):
             msg = "Timeout occurred"
 
         # Kill process, to ensure it is not left around.
-        process.kill()
+        if not self.option('explain'):
+            process.kill()
 
         raise self.failure_exception(msg)
 
