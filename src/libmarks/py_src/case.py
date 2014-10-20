@@ -671,7 +671,9 @@ class ExplainProcess(object):
             attrs=['bold'])
 
     def kill(self):
-        pass
+        self._print_coloured(
+            'Kill Process {0}'.format(self.count), attrs=['bold'], end='')
+        print(' (send SIGKILL to process group)')
 
     def readline_stderr(self):
         return ''
