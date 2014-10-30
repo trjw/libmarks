@@ -158,11 +158,15 @@ class TestCase(object):
             text = coloured_text(text, colour=fg, background=bg, attrs=attrs)
         print(text, **kwargs)
 
-    def process(self, argv, input_file=None, *args, **kwargs):
+    def process(self, argv, input_file=None, timeout=0):
         """Create a Process of the type specified for this test case"""
+        kwargs = {}
+
         # Add the timeout to the init args.
-        if self.timeout:
-            kwargs.setdefault('timeout', self.timeout)
+        if timeout:
+            kwargs['timeout'] = timeout
+        elif self.timeout:
+            kwargs['timeout'] = self.timeout
 
         # Include the input file if it is set.
         if input_file is not None:
@@ -173,7 +177,7 @@ class TestCase(object):
             self.process_class = ExplainProcess
 
         # Instantiate the new process.
-        p = self.process_class(argv, *args, **kwargs)
+        p = self.process_class(argv, **kwargs)
 
         # Store the process count on the process.
         p.count = self._process_count
