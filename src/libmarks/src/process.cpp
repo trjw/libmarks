@@ -347,6 +347,7 @@ void Process::setup_child()
         // Open file as stdin for child.
         fd = open(inputFile.c_str(), O_RDONLY);
         if (fd == -1 || dup2(fd, STDIN_FILENO) == -1 || close(fd) == -1) {
+            D("Failed to open file as stdin (" << inputFile << ")" << std::endl);
             goto childerror;
         }
     } else {
@@ -354,6 +355,7 @@ void Process::setup_child()
         if (close(fdIn[WRITE]) == -1 ||
                 dup2(fdIn[READ], STDIN_FILENO) == -1 ||
                 close(fdIn[READ]) == -1) {
+            D("Failed to setup pipe for stdin" << std::endl);
             goto childerror;
         }
     }
@@ -362,6 +364,7 @@ void Process::setup_child()
     if (close(fdOut[READ]) == -1 ||
             dup2(fdOut[WRITE], STDOUT_FILENO) == -1 ||
             close(fdOut[WRITE]) == -1) {
+        D("Failed to setup pipe for stdout" << std::endl);
         goto childerror;
     }
 
@@ -369,6 +372,7 @@ void Process::setup_child()
     if (close(fdErr[READ]) == -1 ||
             dup2(fdErr[WRITE], STDERR_FILENO) == -1 ||
             close(fdErr[WRITE]) == -1) {
+        D("Failed to setup pipe for stderr" << std::endl);
         goto childerror;
     }
 
