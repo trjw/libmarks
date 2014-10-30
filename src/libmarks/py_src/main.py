@@ -60,6 +60,9 @@ class TestProgram(object):
         parser_test.add_argument(
             '-v', '--verbose', dest='verbose', action='store_true',
             help='Show verbose output (incl. diff) for a test on failure')
+        parser_test.add_argument(
+            '-o', '--option', dest='options', action='append',
+            help='Set custom options for this test run.')
         parser_test.set_defaults(func=self.set_up_test)
 
         # Explain parser.
@@ -68,6 +71,9 @@ class TestProgram(object):
         parser_explain.add_argument(
             'tests', nargs='*', help='a list of any number of test modules, '
             'classes and test methods.')
+        parser_explain.add_argument(
+            '-o', '--option', dest='options', action='append',
+            help='Set custom options for this test run.')
         parser_explain.set_defaults(func=self.set_up_explain)
 
         # Update parser.
@@ -76,6 +82,9 @@ class TestProgram(object):
         parser_update.add_argument(
             'tests', nargs='*', help='a list of any number of test modules, '
             'classes and test methods.')
+        parser_update.add_argument(
+            '-o', '--option', dest='options', action='append',
+            help='Set custom options for this test run.')
         parser_update.set_defaults(func=self.set_up_update)
 
         # Marking parser.
@@ -94,6 +103,9 @@ class TestProgram(object):
             '--processes', dest='processes', type=int,
             default=marking.NUM_PROCESSES,
             help='Number of processes to use during marking')
+        parser_mark.add_argument(
+            '-o', '--option', dest='options', action='append',
+            help='Set custom options for this test run.')
         parser_mark.set_defaults(func=self.set_up_mark)
 
     def parse_arguments(self, argv):
@@ -102,6 +114,7 @@ class TestProgram(object):
         args = self._parser.parse_args(argv[1:])
         # Process the arguments we received
         args.func(args)
+        self.parse_options(args)
 
     def initialise_marks(self, argv):
         """Initialise the marks system before running tests."""
@@ -160,6 +173,20 @@ class TestProgram(object):
             # Mark a single submission in the current directory.
             self.options['verbose'] = args.verbose
             self.runner_class = runner.MarkingTestRunner
+
+    def parse_options(self, args):
+        """Add custom options from the command line to the test option set.
+
+        Do not override existing options set during configuration.
+        """
+        if args.options:
+            for opt in args.options:
+                name = opt
+                val = True
+                if '=' in opt:
+                    name, val = opt.split('=')
+                if name not in self.options:
+                    self.options[name] = val
 
     def create_tests(self):
         """Create a list of tests to be run."""
