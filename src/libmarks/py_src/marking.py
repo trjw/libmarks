@@ -2,6 +2,7 @@ from __future__ import division, print_function
 
 import os
 import traceback
+import copy
 import multiprocessing as mp
 from multiprocessing.pool import Pool
 import csv
@@ -44,6 +45,7 @@ def mark_submission(path, test, options):
 
         # Get submission ID (directory name).
         submission = os.path.basename(os.path.normpath(path))
+        options['submission'] = submission
 
         print("-> Start marking submission:", submission)
 
@@ -53,9 +55,17 @@ def mark_submission(path, test, options):
         # Enable cleanup.
         options['cleanup'] = True
 
+        # Allow custom setup to be performed via function callback
+        if options.get('marking_setup', False):
+            options['marking_setup'](options)
+
         # Run the tests.
         runner = MarkingTestRunner(**options)
         result = runner.run(test)
+
+        # Allow custom teardown to be performed via function callback
+        if options.get('marking_tear_down', False):
+            options['marking_tear_down'](options)
 
         # Export the results and save them as JSON.
         details = result.export()
@@ -86,7 +96,7 @@ class MarkingRunner(BasicTestRunner):
         """Generator returning path, test and options"""
         for folder in self._list_dirs():
             full_path = os.path.join(self.options['directory'], folder)
-            yield full_path, test, self.options
+            yield full_path, test, copy.deepcopy(self.options)
 
     def _set_protection(self):
         import marks
