@@ -1,0 +1,85 @@
+Player A discarded 3 aimed at B. This forced B to discard 4. B was out.
+A(p1) :3
+B(p2)-:4
+C(p3) :
+You are holding:57
+card>Player C discarded 7.
+Player A discarded 6 aimed at C.
+A(p1) :36
+B(p2)-:4
+C(p3) :7
+You are holding:81
+card>target>guess>Player C discarded 1 aimed at A guessing 8.
+Player A discarded 1 aimed at C guessing 8. This forced C to discard 8. C was out.
+Scores: p1=1 p2=0 p3=0
+Player A discarded 2.
+Player B discarded 3 aimed at C. This forced C to discard 4. C was out.
+Player A discarded 7.
+Player B discarded 6 aimed at A.
+Player A discarded 1 aimed at B guessing 8.
+Player B discarded 1 aimed at A guessing 8. This forced A to discard 8. A was out.
+Scores: p1=1 p2=1 p3=0
+Player A discarded 4.
+Player B discarded 3 aimed at C. This forced C to discard 5. C was out.
+Player A discarded 2.
+Player B discarded 1 aimed at A guessing 8.
+Player A discarded 1 aimed at B guessing 8.
+Player B discarded 1 aimed at A guessing 8.
+Player A discarded 1 aimed at B guessing 8.
+Player B discarded 1 aimed at A guessing 8.
+Player A discarded 2.
+Player B discarded 3 aimed at A. This forced B to discard 6. B was out.
+Scores: p1=2 p2=1 p3=0
+Player A discarded 4.
+Player B discarded 3 aimed at C. This forced C to discard 5. C was out.
+Player A discarded 2.
+Player B discarded 1 aimed at A guessing 8. This forced A to discard 8. A was out.
+Scores: p1=2 p2=2 p3=0
+Player A discarded 1 aimed at B guessing 8.
+Player B discarded 1 aimed at C guessing 8.
+A(p1) :1
+B(p2) :1
+C(p3) :
+You are holding:13
+card>target>guess>Player C discarded 1 aimed at A guessing 8.
+Player A discarded 1 aimed at B guessing 8.
+Player B discarded 2.
+A(p1) :11
+B(p2) :12
+C(p3) :1
+You are holding:36
+card>target>Player C discarded 3 aimed at A. This forced A to discard 4. A was out.
+Player B discarded 7.
+A(p1)-:114
+B(p2) :127
+C(p3) :13
+You are holding:62
+card>Player C discarded 2.
+Player B discarded 3 aimed at C. This forced B to discard 5. B was out.
+Scores: p1=2 p2=2 p3=1
+Player A discarded 3 aimed at B. This forced B to discard 4. B was out.
+A(p1) :3
+B(p2)-:4
+C(p3) :
+You are holding:57
+card>Player C discarded 7.
+Player A discarded 6 aimed at C.
+A(p1) :36
+B(p2)-:4
+C(p3) :7
+You are holding:81
+card>target>guess>Player C discarded 1 aimed at A guessing 8.
+Player A discarded 1 aimed at C guessing 8. This forced C to discard 8. C was out.
+Scores: p1=3 p2=2 p3=1
+Player A discarded 4.
+Player B discarded 3 aimed at C. This forced C to discard 5. C was out.
+Player A discarded 2.
+Player B discarded 1 aimed at A guessing 8.
+Player A discarded 1 aimed at B guessing 8.
+Player B discarded 1 aimed at A guessing 8.
+Player A discarded 1 aimed at B guessing 8.
+Player B discarded 1 aimed at A guessing 8.
+Player A discarded 2.
+Player B discarded 3 aimed at A. This forced B to discard 6. B was out.
+Scores: p1=4 p2=2 p3=1
+Game over

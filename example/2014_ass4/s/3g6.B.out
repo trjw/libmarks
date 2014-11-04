@@ -1,0 +1,87 @@
+Player A discarded 1 aimed at C guessing 3.
+A(Alex) :1
+B(Connor) :
+C(bob) :
+You are holding:11
+card>target>target>guess>Player B discarded 1 aimed at A guessing 2.
+Player C discarded 1 aimed at B guessing 3.
+Player A discarded 1 aimed at C guessing 8.
+A(Alex) :11
+B(Connor) :1
+C(bob) :1
+You are holding:13
+card>target>guess>Player B discarded 1 aimed at C guessing 7. This forced C to discard 7. C was out.
+Player A discarded 3 aimed at B. This forced B to discard 3. B was out.
+Scores: Alex=1 Connor=0 bob=0
+Player A discarded 1 aimed at B guessing 5.
+A(Alex) :1
+B(Connor) :
+C(bob) :
+You are holding:11
+card>target>guess>Player B discarded 1 aimed at C guessing 7.
+Player C discarded 7.
+Player A discarded 3 aimed at B.
+A(Alex) :13
+B(Connor) :1
+C(bob) :7
+You are holding:13
+card>target>Player B discarded 3 aimed at A.
+Player C discarded 6 aimed at A.
+Player A discarded 4.
+A(Alex)*:134
+B(Connor) :13
+C(bob) :76
+You are holding:14
+card>Player B discarded 4.
+Player C discarded 2.
+Player A discarded 2.
+A(Alex) :1342
+B(Connor) :134
+C(bob) :762
+You are holding:15
+card>target>Player B discarded 5 aimed at A. This forced A to discard 1.
+Scores: Alex=2 Connor=0 bob=0
+Player A discarded 1 aimed at C guessing 3.
+A(Alex) :1
+B(Connor) :
+C(bob) :
+You are holding:11
+card>target>target>guess>Player B discarded 1 aimed at A guessing 2.
+Player C discarded 1 aimed at B guessing 3.
+Player A discarded 1 aimed at C guessing 8.
+A(Alex) :11
+B(Connor) :1
+C(bob) :1
+You are holding:13
+card>target>guess>Player B discarded 1 aimed at C guessing 7. This forced C to discard 7. C was out.
+Player A discarded 3 aimed at B. This forced B to discard 3. B was out.
+Scores: Alex=3 Connor=0 bob=0
+Player A discarded 1 aimed at B guessing 5.
+A(Alex) :1
+B(Connor) :
+C(bob) :
+You are holding:11
+card>target>guess>Player B discarded 1 aimed at C guessing 7.
+Player C discarded 7.
+Player A discarded 3 aimed at B.
+A(Alex) :13
+B(Connor) :1
+C(bob) :7
+You are holding:13
+card>target>Player B discarded 3 aimed at A.
+Player C discarded 6 aimed at A.
+Player A discarded 4.
+A(Alex)*:134
+B(Connor) :13
+C(bob) :76
+You are holding:14
+card>Player B discarded 4.
+Player C discarded 2.
+Player A discarded 2.
+A(Alex) :1342
+B(Connor) :134
+C(bob) :762
+You are holding:15
+card>target>Player B discarded 5 aimed at A. This forced A to discard 1.
+Scores: Alex=4 Connor=0 bob=0
+Game over

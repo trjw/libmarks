@@ -1,0 +1,65 @@
+A(Alex) :
+B(Connor) :
+C(bob) :
+D(gameover) :
+You are holding:82
+card>Player A discarded 2.
+Player B discarded 5 aimed at A. This forced A to discard 8. A was out.
+Player C discarded 4.
+Player D discarded 7.
+Player B discarded 2.
+Player C discarded 4.
+Player D discarded 5 aimed at D. This forced D to discard 6.
+Player B discarded 3 aimed at D. This forced B to discard 1. B was out.
+Player C discarded 1 aimed at D guessing 5.
+Player D discarded 3 aimed at C.
+Scores: Alex=0 Connor=0 bob=1 gameover=1
+A(Alex) :
+B(Connor) :
+C(bob) :
+D(gameover) :
+You are holding:82
+card>Player A discarded 2.
+Player B discarded 5 aimed at A. This forced A to discard 8. A was out.
+Player C discarded 4.
+Player D discarded 7.
+Player B discarded 2.
+Player C discarded 4.
+Player D discarded 5 aimed at D. This forced D to discard 6.
+Player B discarded 3 aimed at D. This forced B to discard 1. B was out.
+Player C discarded 1 aimed at D guessing 5.
+Player D discarded 3 aimed at C.
+Scores: Alex=0 Connor=0 bob=2 gameover=2
+A(Alex) :
+B(Connor) :
+C(bob) :
+D(gameover) :
+You are holding:82
+card>Player A discarded 2.
+Player B discarded 5 aimed at A. This forced A to discard 8. A was out.
+Player C discarded 4.
+Player D discarded 7.
+Player B discarded 2.
+Player C discarded 4.
+Player D discarded 5 aimed at D. This forced D to discard 6.
+Player B discarded 3 aimed at D. This forced B to discard 1. B was out.
+Player C discarded 1 aimed at D guessing 5.
+Player D discarded 3 aimed at C.
+Scores: Alex=0 Connor=0 bob=3 gameover=3
+A(Alex) :
+B(Connor) :
+C(bob) :
+D(gameover) :
+You are holding:82
+card>Player A discarded 2.
+Player B discarded 5 aimed at A. This forced A to discard 8. A was out.
+Player C discarded 4.
+Player D discarded 7.
+Player B discarded 2.
+Player C discarded 4.
+Player D discarded 5 aimed at D. This forced D to discard 6.
+Player B discarded 3 aimed at D. This forced B to discard 1. B was out.
+Player C discarded 1 aimed at D guessing 5.
+Player D discarded 3 aimed at C.
+Scores: Alex=0 Connor=0 bob=4 gameover=4
+Game over

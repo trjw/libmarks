@@ -1,0 +1,45 @@
+A(name) :
+B(p2) :
+You are holding:65
+card>target>Player A discarded 5 aimed at B. This forced B to discard 7.
+Player B discarded 1 aimed at A guessing 8.
+A(name) :5
+B(p2) :71
+You are holding:62
+card>Player A discarded 2.
+Player B discarded 3 aimed at A. This forced A to discard 6. A was out.
+Scores: name=0 p2=1
+A(name) :
+B(p2) :
+You are holding:65
+card>target>Player A discarded 5 aimed at B. This forced B to discard 7.
+Player B discarded 1 aimed at A guessing 8.
+A(name) :5
+B(p2) :71
+You are holding:62
+card>Player A discarded 2.
+Player B discarded 3 aimed at A. This forced A to discard 6. A was out.
+Scores: name=0 p2=2
+A(name) :
+B(p2) :
+You are holding:65
+card>target>Player A discarded 5 aimed at B. This forced B to discard 7.
+Player B discarded 1 aimed at A guessing 8.
+A(name) :5
+B(p2) :71
+You are holding:62
+card>Player A discarded 2.
+Player B discarded 3 aimed at A. This forced A to discard 6. A was out.
+Scores: name=0 p2=3
+A(name) :
+B(p2) :
+You are holding:65
+card>target>Player A discarded 5 aimed at B. This forced B to discard 7.
+Player B discarded 1 aimed at A guessing 8.
+A(name) :5
+B(p2) :71
+You are holding:62
+card>Player A discarded 2.
+Player B discarded 3 aimed at A. This forced A to discard 6. A was out.
+Scores: name=0 p2=4
+Game over

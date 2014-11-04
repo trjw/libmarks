@@ -1,0 +1,44 @@
+2 A
+name
+p2
+newround 6
+yourturn 5
+YES
+thishappened A5B-/B7-
+thishappened B1A8/---
+yourturn 2
+YES
+thishappened A2--/---
+thishappened B3A-/A6A
+scores 0 1
+newround 6
+yourturn 5
+YES
+thishappened A5B-/B7-
+thishappened B1A8/---
+yourturn 2
+YES
+thishappened A2--/---
+thishappened B3A-/A6A
+scores 0 2
+newround 6
+yourturn 5
+YES
+thishappened A5B-/B7-
+thishappened B1A8/---
+yourturn 2
+YES
+thishappened A2--/---
+thishappened B3A-/A6A
+scores 0 3
+newround 6
+yourturn 5
+YES
+thishappened A5B-/B7-
+thishappened B1A8/---
+yourturn 2
+YES
+thishappened A2--/---
+thishappened B3A-/A6A
+scores 0 4
+gameover

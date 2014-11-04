@@ -1,0 +1,105 @@
+Player A discarded 2.
+Player B discarded 5 aimed at A. This forced A to discard 8. A was out.
+A(Alex)-:28
+B(Connor) :5
+C(bob) :
+D(gameover) :
+You are holding:44
+card>Player C discarded 4.
+Player D discarded 7.
+Player B discarded 2.
+A(Alex)-:28
+B(Connor) :52
+C(bob) :4
+D(gameover) :7
+You are holding:41
+card>Player C discarded 4.
+Player D discarded 5 aimed at D. This forced D to discard 6.
+Player B discarded 3 aimed at D. This forced B to discard 1. B was out.
+A(Alex)-:28
+B(Connor)-:5231
+C(bob) :44
+D(gameover) :756
+You are holding:11
+card>target>guess>Player C discarded 1 aimed at D guessing 5.
+Player D discarded 3 aimed at C.
+Scores: Alex=0 Connor=0 bob=1 gameover=1
+Player A discarded 2.
+Player B discarded 5 aimed at A. This forced A to discard 8. A was out.
+A(Alex)-:28
+B(Connor) :5
+C(bob) :
+D(gameover) :
+You are holding:44
+card>Player C discarded 4.
+Player D discarded 7.
+Player B discarded 2.
+A(Alex)-:28
+B(Connor) :52
+C(bob) :4
+D(gameover) :7
+You are holding:41
+card>Player C discarded 4.
+Player D discarded 5 aimed at D. This forced D to discard 6.
+Player B discarded 3 aimed at D. This forced B to discard 1. B was out.
+A(Alex)-:28
+B(Connor)-:5231
+C(bob) :44
+D(gameover) :756
+You are holding:11
+card>target>guess>Player C discarded 1 aimed at D guessing 5.
+Player D discarded 3 aimed at C.
+Scores: Alex=0 Connor=0 bob=2 gameover=2
+Player A discarded 2.
+Player B discarded 5 aimed at A. This forced A to discard 8. A was out.
+A(Alex)-:28
+B(Connor) :5
+C(bob) :
+D(gameover) :
+You are holding:44
+card>Player C discarded 4.
+Player D discarded 7.
+Player B discarded 2.
+A(Alex)-:28
+B(Connor) :52
+C(bob) :4
+D(gameover) :7
+You are holding:41
+card>Player C discarded 4.
+Player D discarded 5 aimed at D. This forced D to discard 6.
+Player B discarded 3 aimed at D. This forced B to discard 1. B was out.
+A(Alex)-:28
+B(Connor)-:5231
+C(bob) :44
+D(gameover) :756
+You are holding:11
+card>target>guess>Player C discarded 1 aimed at D guessing 5.
+Player D discarded 3 aimed at C.
+Scores: Alex=0 Connor=0 bob=3 gameover=3
+Player A discarded 2.
+Player B discarded 5 aimed at A. This forced A to discard 8. A was out.
+A(Alex)-:28
+B(Connor) :5
+C(bob) :
+D(gameover) :
+You are holding:44
+card>Player C discarded 4.
+Player D discarded 7.
+Player B discarded 2.
+A(Alex)-:28
+B(Connor) :52
+C(bob) :4
+D(gameover) :7
+You are holding:41
+card>Player C discarded 4.
+Player D discarded 5 aimed at D. This forced D to discard 6.
+Player B discarded 3 aimed at D. This forced B to discard 1. B was out.
+A(Alex)-:28
+B(Connor)-:5231
+C(bob) :44
+D(gameover) :756
+You are holding:11
+card>target>guess>Player C discarded 1 aimed at D guessing 5.
+Player D discarded 3 aimed at C.
+Scores: Alex=0 Connor=0 bob=4 gameover=4
+Game over

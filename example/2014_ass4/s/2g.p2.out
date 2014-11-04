@@ -1,0 +1,63 @@
+Player A discarded 6 aimed at B.
+A(p1) :6
+B(p2) :
+You are holding:58
+card>target>Player B discarded 5 aimed at A. This forced A to discard 7.
+Player A discarded 1 aimed at B guessing 8. This forced B to discard 8. B was out.
+Scores: p1=1 p2=0
+Player A discarded 5 aimed at A. This forced A to discard 6.
+A(p1) :56
+B(p2) :
+You are holding:71
+card>target>guess>Player B discarded 1 aimed at A guessing 8. This forced A to discard 8. A was out.
+Scores: p1=1 p2=1
+Player A discarded 5 aimed at A. This forced A to discard 6.
+A(p1) :56
+B(p2) :
+You are holding:71
+card>Player B discarded 7.
+Player A discarded 2.
+A(p1) :562
+B(p2) :7
+You are holding:13
+card>target>guess>Player B discarded 1 aimed at A guessing 6.
+Player A discarded 4.
+A(p1)*:5624
+B(p2) :71
+You are holding:31
+card>Player B discarded 3.
+Player A discarded 2.
+A(p1) :56242
+B(p2) :713
+You are holding:14
+card>Player B discarded 4.
+Player A discarded 3.
+A(p1) :562423
+B(p2) :7134
+You are holding:11
+card>target>guess>Player B discarded 1 aimed at A guessing 8. This forced A to discard 8. A was out.
+Scores: p1=1 p2=2
+Player A discarded 5 aimed at B. This forced B to discard 7.
+A(p1) :5
+B(p2) :7
+You are holding:81
+card>target>guess>Player B discarded 1 aimed at A guessing 6. This forced A to discard 6. A was out.
+Scores: p1=1 p2=3
+Player A discarded 5 aimed at A. This forced A to discard 6.
+A(p1) :56
+B(p2) :
+You are holding:71
+card>Player B discarded 7.
+Player A discarded 2.
+A(p1) :562
+B(p2) :7
+You are holding:13
+card>target>Player B discarded 3 aimed at A. This forced B to discard 1. B was out.
+Scores: p1=2 p2=3
+Player A discarded 5 aimed at B. This forced B to discard 7.
+A(p1) :5
+B(p2) :7
+You are holding:81
+card>target>guess>Player B discarded 1 aimed at A guessing 6. This forced A to discard 6. A was out.
+Scores: p1=2 p2=4
+Game over

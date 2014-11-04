@@ -1,0 +1,71 @@
+Player A discarded 1 aimed at C guessing 3.
+Player B discarded 1 aimed at A guessing 2.
+A(Alex) :1
+B(Connor) :1
+C(bob) :
+You are holding:17
+card>target>guess>Player C discarded 1 aimed at B guessing 3.
+Player A discarded 1 aimed at C guessing 8.
+Player B discarded 1 aimed at C guessing 7. This forced C to discard 7. C was out.
+Player A discarded 3 aimed at B. This forced B to discard 3. B was out.
+Scores: Alex=1 Connor=0 bob=0
+Player A discarded 1 aimed at B guessing 5.
+Player B discarded 1 aimed at C guessing 7.
+A(Alex) :1
+B(Connor) :1
+C(bob) :
+You are holding:17
+card>Player C discarded 7.
+Player A discarded 3 aimed at B.
+Player B discarded 3 aimed at A.
+A(Alex) :13
+B(Connor) :13
+C(bob) :7
+You are holding:16
+card>target>Player C discarded 6 aimed at A.
+Player A discarded 4.
+Player B discarded 4.
+A(Alex)*:134
+B(Connor)*:134
+C(bob) :76
+You are holding:12
+card>Player C discarded 2.
+Player A discarded 2.
+Player B discarded 5 aimed at A. This forced A to discard 1.
+Scores: Alex=2 Connor=0 bob=0
+Player A discarded 1 aimed at C guessing 3.
+Player B discarded 1 aimed at A guessing 2.
+A(Alex) :1
+B(Connor) :1
+C(bob) :
+You are holding:17
+card>target>guess>Player C discarded 1 aimed at B guessing 3.
+Player A discarded 1 aimed at C guessing 8.
+Player B discarded 1 aimed at C guessing 7. This forced C to discard 7. C was out.
+Player A discarded 3 aimed at B. This forced B to discard 3. B was out.
+Scores: Alex=3 Connor=0 bob=0
+Player A discarded 1 aimed at B guessing 5.
+Player B discarded 1 aimed at C guessing 7.
+A(Alex) :1
+B(Connor) :1
+C(bob) :
+You are holding:17
+card>Player C discarded 7.
+Player A discarded 3 aimed at B.
+Player B discarded 3 aimed at A.
+A(Alex) :13
+B(Connor) :13
+C(bob) :7
+You are holding:16
+card>target>Player C discarded 6 aimed at A.
+Player A discarded 4.
+Player B discarded 4.
+A(Alex)*:134
+B(Connor)*:134
+C(bob) :76
+You are holding:12
+card>Player C discarded 2.
+Player A discarded 2.
+Player B discarded 5 aimed at A. This forced A to discard 1.
+Scores: Alex=4 Connor=0 bob=0
+Game over

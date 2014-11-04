@@ -1,0 +1,71 @@
+A(Alex) :
+B(Connor) :
+C(bob) :
+You are holding:87
+card>Player A discarded 7.
+Player B discarded 2.
+Player C discarded 2.
+A(Alex) :7
+B(Connor) :2
+C(bob) :2
+You are holding:84
+card>Player A discarded 4.
+Player B discarded 5 aimed at C. This forced C to discard 4.
+Player C discarded 1 aimed at B guessing 5. This forced B to discard 5. B was out.
+A(Alex) :74
+B(Connor)-:255
+C(bob) :241
+You are holding:86
+card>target>Player A discarded 6 aimed at C.
+Player C discarded 3 aimed at A. This forced A to discard 3. A was out.
+Scores: Alex=0 Connor=0 bob=1
+A(Alex) :
+B(Connor) :
+C(bob) :
+You are holding:87
+card>Player A discarded 7.
+Player B discarded 5 aimed at A. This forced A to discard 8. A was out.
+Player C discarded 2.
+Player B discarded 2.
+Player C discarded 5 aimed at B. This forced B to discard 4.
+Player B discarded 1 aimed at C guessing 6.
+Player C discarded 4.
+Player B discarded 3.
+Player C discarded 1 aimed at B guessing 3. This forced B to discard 3. B was out.
+Scores: Alex=0 Connor=0 bob=2
+A(Alex) :
+B(Connor) :
+C(bob) :
+You are holding:87
+card>Player A discarded 7.
+Player B discarded 2.
+Player C discarded 2.
+A(Alex) :7
+B(Connor) :2
+C(bob) :2
+You are holding:84
+card>Player A discarded 4.
+Player B discarded 5 aimed at C. This forced C to discard 4.
+Player C discarded 1 aimed at B guessing 5. This forced B to discard 5. B was out.
+A(Alex) :74
+B(Connor)-:255
+C(bob) :241
+You are holding:86
+card>target>Player A discarded 6 aimed at C.
+Player C discarded 3 aimed at A. This forced A to discard 3. A was out.
+Scores: Alex=0 Connor=0 bob=3
+A(Alex) :
+B(Connor) :
+C(bob) :
+You are holding:87
+card>Player A discarded 7.
+Player B discarded 5 aimed at A. This forced A to discard 8. A was out.
+Player C discarded 2.
+Player B discarded 2.
+Player C discarded 5 aimed at B. This forced B to discard 4.
+Player B discarded 1 aimed at C guessing 6.
+Player C discarded 4.
+Player B discarded 3.
+Player C discarded 1 aimed at B guessing 3. This forced B to discard 3. B was out.
+Scores: Alex=0 Connor=0 bob=4
+Game over
