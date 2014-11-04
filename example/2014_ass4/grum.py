@@ -11,7 +11,6 @@ host = platform.node().split('.')[0]
 
 sys.path[0:0] = [
     '/home/students/s4230085/public/' + host,
-    '/Users/joel/co/thesis/src',
 ]
 
 import marks
@@ -24,7 +23,7 @@ except:
 
 
 TEST_LOCATION = '/home/students/s4230085/public/csse2310/ass4/mtest'
-TEST_LOCATION = '/Users/joel/Documents/UQ/2014-s2/csse2310/ass4/mtest'
+TEST_LOCATION = '/home/students/s4230085/private/tutoring/2014/ass4/mtest'
 COMPILE = "make"
 
 DELAY = 2  # Delay (seconds) between starting server and starting clients.
@@ -489,18 +488,18 @@ class Server(marks.TestCase):
         c2 = self.process(['nc', '-4', 'localhost', PORTS[0]])
 
         # Send input
-        c2.send("{0}\n".format('X' * 5000))
+        long = 'X' * 100
+        for i in range(50):
+            c2.send(long)
+        c2.send("{0}\n".format(long))
         c2.send("2verylong\n")
         with open('tests/s/2verylong.p2.in', 'r') as f:
             for line in f:
                 c2.send(line)
 
         self.assert_stdout_matches_file(c1, 'tests/s/2verylong.p1.out')
-        self.assert_stdout_matches_file(c2, 'tests/s/2verylong.p2.out')
         self.assert_stderr(c1, '')
-        self.assert_stderr(c2, '')
         self.assert_exit_status(c1, 0)
-        self.assert_exit_status(c2, 0)
 
     def play_single_game_sort(self, port, game, four=False):
         c1 = self.process(
