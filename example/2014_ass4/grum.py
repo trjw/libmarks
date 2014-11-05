@@ -11,6 +11,7 @@ host = platform.node().split('.')[0]
 
 sys.path[0:0] = [
     '/home/students/s4230085/public/' + host,
+    '/Users/joel/co/thesis/src',
 ]
 
 import marks
@@ -24,6 +25,7 @@ except:
 
 TEST_LOCATION = '/home/students/s4230085/public/csse2310/ass4/mtest'
 TEST_LOCATION = '/home/students/s4230085/private/tutoring/2014/ass4/mtest'
+TEST_LOCATION = '/Users/joel/Documents/UQ/2014-s2/csse2310/ass4/mtest'
 COMPILE = "make"
 
 DELAY = 2  # Delay (seconds) between starting server and starting clients.
@@ -1035,10 +1037,14 @@ if __name__ == '__main__':
 
     def assign_port(options):
         options['port'] = port_queue.get()
-        print(options['submission'], options['port'])
+        # print(options['submission'], options['port'], marks.get_ld_preload())
 
     def release_port(options):
         port_queue.put(options['port'])
 
-    options = {'marking_setup': assign_port, 'marking_tear_down': release_port}
+    options = {
+        'marking_setup': assign_port,
+        'marking_tear_down': release_port,
+        'ld_preload': os.path.join(TEST_LOCATION, 'ass4protect.so')
+    }
     marks.main(options=options)
