@@ -1030,8 +1030,9 @@ class Server(marks.TestCase):
 
 if __name__ == '__main__':
     import multiprocessing
-    port_queue = multiprocessing.Queue()
+    port_queue = multiprocessing.JoinableQueue()
     available_ports = [str(i) for i in range(3000, 4000, 20)]
+
     for port in available_ports:
         port_queue.put(port)
 
@@ -1041,6 +1042,7 @@ if __name__ == '__main__':
 
     def release_port(options):
         port_queue.put(options['port'])
+        port_queue.task_done()
 
     options = {
         'marking_setup': assign_port,
