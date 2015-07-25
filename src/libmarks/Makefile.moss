@@ -1,6 +1,6 @@
 # moss
 .DEFAULT: all
-.PHONY: all clean
+.PHONY: all clean install
 
 CC = clang++
 CFLAGS = -Wall -Werror -pedantic
@@ -52,3 +52,7 @@ src/tracedProcess.o: src/traced_process.cpp src/process.hpp
 
 src/libprotect.so: src/protection.c
 	gcc -std=gnu99 $(CFLAGS) -ldl -shared -Wl,--export-dynamic -fPIC $< -o $@
+
+install:	all
+	install -m u=rw,g=r,o=r ../marks/*.pyc /local/courses/csse2310/lib/marks
+	install -m u=rw,g=r,o=r ../marks/*.so /local/courses/csse2310/lib/marks
