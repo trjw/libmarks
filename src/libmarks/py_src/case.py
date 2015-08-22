@@ -220,6 +220,7 @@ class TestCase(object):
                 # This is most likely due to the process already
                 # being dead, so ignore.
                 pass
+            del p
 
     def run(self, result=None, **kwargs):
         original_result = result
@@ -655,6 +656,15 @@ class TestCase(object):
             except:
                 self.fail(
                     "Failed to send signal {0} process {1}".format(sig, pid))
+
+    def explain(self, msg, fg=None, bg=None, attrs=None, **kwargs):
+        """
+        Print a message when the test is run in explain mode.
+        Message can include colour output and other formatting, which will be
+        displayed if the output location is a TTY.
+        """
+        if self.option('explain'):
+            self._print_coloured(msg, fg, bg, attrs, **kwargs)
 
 
 class ExplainProcess(object):
