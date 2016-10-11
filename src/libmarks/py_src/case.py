@@ -283,7 +283,7 @@ class TestCase(object):
     def _check_signal(self, process, msg):
         """Check if process was signalled, causing the current test to fail."""
         if process.check_signalled():
-            msg = "Process received unexpected signal: {0}".format(
+            msg += "Process received unexpected signal: {0}".format(
                 process.signal)
         self._check_timeout(process, msg)
 
