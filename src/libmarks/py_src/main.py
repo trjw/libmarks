@@ -104,6 +104,9 @@ class TestProgram(object):
             default=marking.NUM_PROCESSES,
             help='Number of processes to use during marking')
         parser_mark.add_argument(
+            '--resume', dest='resume', action='store_true',
+            help='Resume marking from a previous attempt')
+        parser_mark.add_argument(
             '-o', '--option', dest='options', action='append',
             help='Set custom options for this test run.')
         parser_mark.set_defaults(func=self.set_up_mark)
@@ -169,6 +172,7 @@ class TestProgram(object):
             self.runner_class = marking.MarkingRunner
             self.options['directory'] = args.directory
             self.options['processes'] = args.processes
+            self.options['resume'] = args.resume
         else:
             # Mark a single submission in the current directory.
             self.options['verbose'] = args.verbose

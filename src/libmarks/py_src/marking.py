@@ -7,6 +7,7 @@ import multiprocessing as mp
 from multiprocessing.pool import Pool
 import csv
 import json
+import datetime
 from .runner import BasicTestRunner, MarkingTestRunner
 
 
@@ -49,30 +50,41 @@ def mark_submission(path, test, options):
 
         print("-> Start marking submission:", submission)
 
-        # Set marking mode to be silent.
-        options['silent'] = True
+        details = None
+        if options.get('resume', False) and os.path.exists('results.json'):
+            # Attempt to load results
+            try:
+                with open('results.json', 'r') as f:
+                    details = json.load(f)
+            except ValueError:
+                # We will run the tests again for this one
+                pass
 
-        # Enable cleanup.
-        options['cleanup'] = True
+        if details is None:
+            # Set marking mode to be silent.
+            options['silent'] = True
 
-        # Allow custom setup to be performed via function callback
-        if options.get('marking_setup', False):
-            options['marking_setup'](options)
+            # Enable cleanup.
+            options['cleanup'] = True
 
-        # Run the tests.
-        runner = MarkingTestRunner(**options)
-        result = runner.run(test)
+            # Allow custom setup to be performed via function callback
+            if options.get('marking_setup', False):
+                options['marking_setup'](options)
 
-        # Allow custom teardown to be performed via function callback
-        if options.get('marking_tear_down', False):
-            options['marking_tear_down'](options)
+            # Run the tests.
+            runner = MarkingTestRunner(**options)
+            result = runner.run(test)
 
-        # Export the results and save them as JSON.
-        details = result.export()
-        details['submission'] = submission
+            # Allow custom teardown to be performed via function callback
+            if options.get('marking_tear_down', False):
+                options['marking_tear_down'](options)
 
-        with open('results.json', 'w') as f:
-            json.dump(details, f, indent=4)
+            # Export the results and save them as JSON.
+            details = result.export()
+            details['submission'] = submission
+
+            with open('results.json', 'w') as f:
+                json.dump(details, f, indent=4)
 
         print("-> Finished marking submission: {0} ({1})".format(
             submission, details['totals']['received_marks']))
@@ -104,6 +116,8 @@ class MarkingRunner(BasicTestRunner):
         marks.set_ld_preload(preload)
 
     def run(self, test):
+        start_time = datetime.datetime.now()
+
         # Protect against potentially bad system calls
         self._set_protection()
 
@@ -142,13 +156,18 @@ class MarkingRunner(BasicTestRunner):
 
         # Create paths to output files
         directory = self.options.get('directory')
+
+        run_time = start_time.strftime('%Y%m%d_%H%M%S')
+
         # Results JSON file
-        results_json_default = os.path.join(directory, 'overall_results.json')
+        results_json_filename = "overall_results_{0}.json".format(run_time)
+        results_json_default = os.path.join(directory, results_json_filename)
         results_json = self.options.get(
             'overall_results_json', results_json_default)
 
         # Results CSV file
-        results_csv_default = os.path.join(directory, 'marking_results.csv')
+        results_csv_default = "marking_results_{0}.csv".format(run_time)
+        results_csv_default = os.path.join(directory, results_csv_default)
         results_csv = self.options.get(
             'overall_results_csv', results_csv_default)
 
@@ -176,6 +195,9 @@ class MarkingRunner(BasicTestRunner):
                     info.update(res['tests'])
                     info.update(res['details'])
                     dw.writerow(info)
+
+        end_time = datetime.datetime.now()
+        print("Time taken: ", str(end_time - start_time))
 
 
 def _default_protection():
