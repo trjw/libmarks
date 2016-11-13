@@ -119,7 +119,15 @@ bool Process::finish_input()
         return false;
     }
 
-    return close_stream(&input);
+    // Obtain mutex.
+    pthread_mutex_lock(&finishMutex);
+
+    bool result = close_stream(&input);
+
+    // Release mutex.
+    pthread_mutex_unlock(&finishMutex);
+
+    return result;
 }
 
 bool Process::expect_stdout(const std::string& expected)
