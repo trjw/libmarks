@@ -45,6 +45,25 @@ boost::shared_ptr<TimeoutProcess> create_timeout_process(std::vector<std::string
     return p;
 }
 
+/* Helper to release the GIL */
+class ScopedGILRelease
+{
+public:
+    inline ScopedGILRelease()
+    {
+        m_thread_state = PyEval_SaveThread();
+    }
+
+    inline ~ScopedGILRelease()
+    {
+        PyEval_RestoreThread(m_thread_state);
+        m_thread_state = NULL;
+    }
+
+private:
+    PyThreadState * m_thread_state;
+};
+
 
 /* Public */
 Process::Process(std::vector<std::string> argv, std::string inputFile):
@@ -477,6 +496,9 @@ bool Process::expect_file(char *filePath, FILE **stream)
         throw StreamFinishedException();
     }
 
+    // Release the GIL before reading
+    ScopedGILRelease scoped;
+
     char expected, received;
 
     // Char by char, check expected output against received output.
@@ -503,6 +525,9 @@ bool Process::expect(const std::string& expected, FILE **stream)
         // Trying to access a stream after the process has finished.
         throw StreamFinishedException();
     }
+
+    // Release the GIL before reading
+    ScopedGILRelease scoped;
 
     if (expected.length() == 0) {
         // Expected string is 0 length, so expect EOF to be returned.
