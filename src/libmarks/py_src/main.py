@@ -107,6 +107,9 @@ class TestProgram(object):
             '--resume', dest='resume', action='store_true',
             help='Resume marking from a previous attempt')
         parser_mark.add_argument(
+            '--tally', dest='tally', action='store_true',
+            help='Tally the results from a previously marked directory')
+        parser_mark.add_argument(
             '-o', '--option', dest='options', action='append',
             help='Set custom options for this test run.')
         parser_mark.set_defaults(func=self.set_up_mark)
@@ -173,6 +176,7 @@ class TestProgram(object):
             self.options['directory'] = args.directory
             self.options['processes'] = args.processes
             self.options['resume'] = args.resume
+            self.options['tally'] = args.tally
         else:
             # Mark a single submission in the current directory.
             self.options['verbose'] = args.verbose
