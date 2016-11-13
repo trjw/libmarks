@@ -147,9 +147,9 @@ class TestCase(object):
         """
         return "{0}.{1}.err".format(self.id(), p.count)
 
-    def option(self, option):
-        """Retrieves the value of an option, or None if option not set."""
-        return self.__marks_options__.get(option, None)
+    def option(self, option, default=None):
+        """Retrieves the value of an option, or default if option not set."""
+        return self.__marks_options__.get(option, default)
 
     def _print_coloured(self, text, fg=None, bg=None, attrs=None, **kwargs):
         stream = kwargs.get('file', sys.stdout)
