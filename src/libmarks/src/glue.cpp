@@ -3,6 +3,7 @@
 #include <boost/python/stl_iterator.hpp>
 #include <vector>
 #include <string>
+#include <sstream>
 #include <boost/shared_ptr.hpp>
 
 #include "process.hpp"
@@ -85,7 +86,12 @@ void fdopen_exception_translator(const FdOpenException& e) {
 }
 
 void fork_exception_translator(const ForkException& e) {
-    PyErr_SetString(PyExc_RuntimeError, "MARKS: Call to fork() failed");
+    std::ostringstream oss;
+    oss << "MARKS: Call to fork() failed";
+    if (!e.message.empty()) {
+        oss << " [" << e.message << ']';
+    }
+    PyErr_SetString(PyExc_RuntimeError, oss.str().c_str());
 }
 
 void pipe_exception_translator(const PipeException& e) {

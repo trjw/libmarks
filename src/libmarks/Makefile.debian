@@ -8,20 +8,20 @@ CC = clang++
 CFLAGS = -Wall -Werror -pedantic $(BOOSTISMS)
 
 # location of the Python header files
-PYTHON_VERSION = 3.6
-PYTHON_INCLUDE = /usr/include/python3.6m
-PYTHON_LIBNAME = python3.6m
+PYTHON_VERSION = 3.7
+PYTHON_INCLUDE = /usr/include/python3.7m
+PYTHON_LIBNAME = python3.7m
 PYTHON_LIB = /usr/lib/python$(PYTHON_VERSION)
 
 PYTHON_INCLUDES = -I$(PYTHON_INCLUDE)
 PYTHON_LDFLAGS = -L$(PYTHON_LIB)/config -l$(PYTHON_LIBNAME)
 
 # location of the Boost Python include files and library
-BOOST_INC = /local/courses/csse2310/boost/current/include
-BOOST_LIB = /local/courses/csse2310/boost/current/lib
-BOOST_LIBNAME = boost_python36
+BOOST_INC = /usr/include/boost
+BOOST_LIB = /usr/lib/x86_64-linux-gnu
+BOOST_LIBNAME = boost_python3
 
-PROCESS_PARTIALS = src/glue.o src/process.o src/tracedProcess.o
+PROCESS_PARTIALS = src/glue.o src/process.o src/tracedProcess.o 
 TARGETS = $(PROCESS_PARTIALS) src/process.so src/libprotect.so
 
 DESTINATION = ../marks
@@ -53,9 +53,10 @@ src/process.o: src/process.cpp src/process.hpp
 
 src/tracedProcess.o: src/traced_process.cpp src/process.hpp
 	$(CC) $(CFLAGS) $(PYTHON_INCLUDES) -I$(BOOST_INC) -fPIC -pthread -c $< -o $@
-
+	
 src/InputStream.o: src/InputStream.cpp src/process.hpp
 	$(CC) $(CFLAGS) $(PYTHON_INCLUDES) -I$(BOOST_INC) -fPIC -pthread -c $< -o $@
+	
 
 src/libprotect.so: src/protection.c
 	gcc -std=gnu99 $(CFLAGS) -ldl -shared -Wl,--export-dynamic -fPIC $< -o $@

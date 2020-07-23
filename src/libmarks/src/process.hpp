@@ -138,7 +138,12 @@ boost::shared_ptr<TracedProcess> create_traced_process(std::vector<std::string> 
 struct CloseException {};
 struct ExecException {};
 struct FdOpenException {};
-struct ForkException {};
+struct ForkException {
+public:
+    ForkException(){}
+    ForkException(std::string msg):message(msg){}
+    std::string message;
+};
 struct PipeException {};
 struct SignalException {};
 struct StreamException {};

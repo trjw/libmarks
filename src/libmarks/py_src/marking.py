@@ -141,6 +141,9 @@ class MarkingRunner(BasicTestRunner):
         for f in os.listdir(root):
             if os.path.isdir(os.path.join(root, f)):
                 dirs.append(f)
+        if self.options.get('random_order'):
+            import random
+            random.shuffle(dirs)
         return dirs
 
     def _submissions(self, test):

@@ -81,7 +81,7 @@ class TestLoader(object):
             return self.load_tests_from_module(obj)
         elif isinstance(obj, type) and issubclass(obj, self.case_class):
             return self.load_tests_from_test_case(obj)
-        elif (isinstance(obj, types.UnboundMethodType) and
+        elif (isinstance(obj, types.FunctionType) and #Was UnboundMT in 2
               isinstance(parent, type) and
               issubclass(parent, self.case_class)):
             name = path[-1]

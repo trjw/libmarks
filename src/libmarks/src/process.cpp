@@ -87,7 +87,8 @@ Process::~Process()
             // Nothing can be done at this point, so ignore.
         }
     }
-
+    close_stream(&output);
+    close_stream(&error);
     // Destroy mutex.
     pthread_mutex_destroy(&finishMutex);
 }
@@ -311,7 +312,10 @@ void Process::init()
     childPid = fork();
 
     if (childPid < 0) {
-        throw ForkException();
+        char buff[100];
+        buff[0]='\0';
+        strerror_r(errno, buff, 99);
+        throw ForkException(std::string(buff));
     } else if (childPid == 0) {
         // Child process.
         setup_child();
@@ -496,9 +500,6 @@ bool Process::expect_file(char *filePath, FILE **stream)
         throw StreamFinishedException();
     }
 
-    // Release the GIL before reading
-    ScopedGILRelease scoped;
-
     char expected, received;
 
     // Char by char, check expected output against received output.
@@ -525,9 +526,6 @@ bool Process::expect(const std::string& expected, FILE **stream)
         // Trying to access a stream after the process has finished.
         throw StreamFinishedException();
     }
-
-    // Release the GIL before reading
-    ScopedGILRelease scoped;
 
     if (expected.length() == 0) {
         // Expected string is 0 length, so expect EOF to be returned.
@@ -629,8 +627,8 @@ void Process::finish_process(int status)
 
     // Close the files.
     close_stream(&input);
-    close_stream(&output);
-    close_stream(&error);
+    //close_stream(&output);
+    //close_stream(&error);
 
     finished = true;
 

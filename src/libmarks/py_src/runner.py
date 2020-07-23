@@ -5,7 +5,7 @@ import tempfile
 import shutil
 from . import result
 from .case import TestCase
-from .process import TracedProcess
+from .procs import xTracedProcess
 
 TEMP_PREFIX = 'testres'
 
@@ -114,7 +114,7 @@ class MarkingTestRunner(BasicTestRunner):
         self._apply_options(test)
 
         # Set the TestCase to use a TracedProcess.
-        TestCase.process_class = TracedProcess
+        TestCase.process_class = xTracedProcess
 
         # Create the result holder.
         result = self.result_class()
@@ -133,11 +133,15 @@ class MarkingTestRunner(BasicTestRunner):
             for category in result.marks:
                 info = result.marks[category]
                 total = info['total_marks'] or info['category_marks']
+                if total==0:
+                    fraction = 0
+                else:
+                    fraction = info['mark'] / total
                 print("{0:30}{1:15}{2:.2f}/{3:.2f} ({4:.2%})".format(
                     category,
                     '{0}/{1}'.format(info['passed'], len(info['tests'])),
                     info['mark'], total,
-                    info['mark'] / total))
+                    fraction))
 
             print("\n{0:30}{1:15}{2:.2f}/{3:.2f} ({4:.2%})".format(
                 'Total',

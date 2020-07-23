@@ -1,9 +1,10 @@
 import argparse
 import os
 import sys
+import multiprocessing as mp
 
 from . import loader, runner, marking, result
-from ._version import get_version
+from .version import get_version
 
 
 class TestProgram(object):
@@ -13,7 +14,7 @@ class TestProgram(object):
     def __init__(
             self, module='__main__', test_loader=loader.default_test_loader,
             options=None):
-        if isinstance(module, basestring):
+        if isinstance(module, str): #was basestring in py2
             self.module = __import__(module)
             # Load the module at the correct level
             for part in module.split('.')[1:]:
@@ -113,6 +114,9 @@ class TestProgram(object):
             '-o', '--option', dest='options', action='append',
             help='Set custom options for this test run.')
         parser_mark.set_defaults(func=self.set_up_mark)
+        parser_mark.add_argument(
+            '--random-order', action='store_true',
+            help='Test submissions in random order')
 
     def parse_arguments(self, argv):
         """Parse arguments received from the command line."""
@@ -131,6 +135,7 @@ class TestProgram(object):
         # Parse arguments
         self.parse_arguments(argv)
 
+        mp.set_start_method('spawn')
         # Create tests
         if self.tests:
             self.test_names = self.tests
@@ -177,6 +182,7 @@ class TestProgram(object):
             self.options['processes'] = args.processes
             self.options['resume'] = args.resume
             self.options['tally'] = args.tally
+            self.options['random_order'] = args.random_order
         else:
             # Mark a single submission in the current directory.
             self.options['verbose'] = args.verbose

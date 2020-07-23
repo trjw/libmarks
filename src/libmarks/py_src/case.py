@@ -8,7 +8,9 @@ import time
 
 from .result import TestResult
 from .util import strclass, safe_repr, coloured_text
-from .process import Process, TimeoutProcess, TracedProcess
+#from .process import Process, TimeoutProcess, TracedProcess
+from .procs import xProcess, xTimeoutProcess, xTracedProcess, ExplainProcess
+
 
 BUFFER_SIZE = 8 * 1024
 
@@ -61,7 +63,7 @@ class TestCase(object):
     """The exception to treat as a test failure"""
     default_test_method = 'run_test'
     """Default name for the test method"""
-    process_class = Process
+    process_class = xProcess
     """Class for a Process"""
     timeout = None
     """Timeout duration, in seconds"""
@@ -82,8 +84,8 @@ class TestCase(object):
 
         # Change the process class to one that supports timeout if
         # timeout is set.
-        if self.timeout and self.process_class == Process:
-            self.process_class = TimeoutProcess
+        if self.timeout and self.process_class == xProcess:
+            self.process_class = xTimeoutProcess
 
         # Keep track of processes within a test.
         self._process_count = 0
@@ -193,8 +195,10 @@ class TestCase(object):
                 if arg == '' or any(c.isspace() for c in arg):
                     argv[i] = '"{0}"'.format(arg)
                 # Ensure escape characters are visible when printed.
-                argv[i] = argv[i].encode('unicode_escape')
-
+                #argv[i] = argv[i].encode('unicode_escape')
+                # Todo: not sure if repr() would be better
+                argv[i] = argv[i].encode('unicode_escape').decode()
+                
             # Print out command for running the process, including streams.
             self._print_coloured(
                 'Start Process {0}:'.format(p.count), attrs=['bold'])
@@ -220,7 +224,6 @@ class TestCase(object):
                 # This is most likely due to the process already
                 # being dead, so ignore.
                 pass
-            del p
 
     def run(self, result=None, **kwargs):
         original_result = result
@@ -630,7 +633,7 @@ class TestCase(object):
                 "Get IDs of child processes of Process {0}".format(
                     parent.count),
                 attrs=['bold'])
-        elif isinstance(parent, TracedProcess):
+        elif isinstance(parent, xTracedProcess):
             pids = parent.child_pids()
         else:
             pgrep = self.process(['pgrep', '-P', str(parent.pid)])
@@ -667,73 +670,3 @@ class TestCase(object):
             self._print_coloured(msg, fg, bg, attrs, **kwargs)
 
 
-class ExplainProcess(object):
-
-    """A dummy process class, for use with the explain test functionality"""
-
-    def __init__(self, argv, input_file=None, **kwargs):
-        self.argv = argv
-        self.input_file = input_file
-
-        # Count how many times a message is sent.
-        self._send_count = 0
-
-    def _print_coloured(self, text, fg=None, bg=None, attrs=None, **kwargs):
-        stream = kwargs.get('file', sys.stdout)
-        if stream.isatty():
-            # Only add colours and attributes if stream is a TTY.
-            text = coloured_text(text, colour=fg, background=bg, attrs=attrs)
-        print(text, **kwargs)
-
-    def finish_input(self):
-        self._print_coloured(
-            'Finish input to Process {0} (ie. Ctrl+D)'.format(self.count),
-            attrs=['bold'])
-
-    def kill(self):
-        self._print_coloured(
-            'Kill Process {0}'.format(self.count), attrs=['bold'], end='')
-        print(' (send SIGKILL to process group)')
-
-    def readline_stderr(self):
-        return ''
-
-    def readline_stdout(self):
-        return ''
-
-    def send(self, message):
-        # Print out the first 10 messages that are sent to the process.
-        if self._send_count < 11:
-            # Show what is being sent to the process.
-            self._print_coloured(
-                'Send input to Process {0}: '.format(self.count),
-                attrs=['bold'], end='')
-            print(safe_repr(message))
-        elif self._send_count == 11:
-            # Instruct user to read test case, as lots of input being sent.
-            self._print_coloured(
-                'Further input sent to Process {0} -'
-                ' see test case for details'.format(self.count),
-                attrs=['bold'])
-
-        self._send_count += 1
-
-    def print_stdout(self):
-        pass
-
-    def print_stderr(self):
-        pass
-
-    def send_signal(self, signal):
-        # Print out the signal being sent to the process.
-        self._print_coloured(
-            "Send signal to Process {0}: ".format(self.count),
-            attrs=['bold'], end='')
-        print(signal)
-
-    def send_signal_group(self, signal):
-        # Print out the signal being sent to the process group.
-        self._print_coloured(
-            "Send signal to Process {0} (incl. children): ".format(self.count),
-            attrs=['bold'], end='')
-        print(signal)
