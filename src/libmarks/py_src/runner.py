@@ -170,7 +170,7 @@ class UpdateTestRunner(BasicTestRunner):
     def run(self, test):
         # Confirm that the update should proceed.
         print(CONFIRMATION_MESSAGE)
-        confirm = raw_input("Are you sure you want to update the files? (y/N)")
+        confirm = input("Are you sure you want to update the files? (y/N)")
 
         if confirm == 'y':
             # Set update flag.

@@ -343,7 +343,7 @@ class TestCase(object):
             with open(filename, 'wb') as f:
                 while True:
                     line = process.readline_stdout()
-                    f.write(line)
+                    f.write(line.encode())
                     if line == '':
                         break
 
@@ -391,7 +391,7 @@ class TestCase(object):
             with open(filename, 'wb') as f:
                 while True:
                     line = process.readline_stderr()
-                    f.write(line)
+                    f.write(line.encode())
                     if line == '':
                         break
 
@@ -569,8 +569,8 @@ class TestCase(object):
                 msg = msg or "file mismatch: contents do not exactly match"
                 if self.option('show_diff'):
                     # Add diff of output to message.
-                    f1 = open(file1, 'rb')
-                    f2 = open(file2, 'rb')
+                    f1 = open(file1, 'r')
+                    f2 = open(file2, 'r')
                     diff = difflib.unified_diff(
                         f1.readlines(), f2.readlines(),
                         fromfile=file1, tofile=file2)
@@ -594,7 +594,7 @@ class TestCase(object):
             with open(file_path, 'rb') as f:
                 while True:
                     p_line = stream_readline()
-                    f_line = f.readline()
+                    f_line = f.readline().decode('utf-8')
 
                     # Store history of output.
                     p_history.append(p_line)
