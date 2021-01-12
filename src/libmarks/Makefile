@@ -3,23 +3,23 @@
 .PHONY: all clean install
 
 # Disable warnings from boost files
-BOOSTISMS = -Wno-c++11-extra-semi -Wno-c++11-long-long
+BOOSTISMS = -Wno-c++11-extra-semi -Wno-c++11-long-long -Wno-c11-extensions
 CC = clang++
 CFLAGS = -Wall -Werror -pedantic $(BOOSTISMS)
 
 # location of the Python header files
-PYTHON_VERSION = 3.6
-PYTHON_INCLUDE = /usr/include/python3.6m
-PYTHON_LIBNAME = python3.6m
+PYTHON_VERSION = 3.8
+PYTHON_INCLUDE = /usr/include/python3.8
+PYTHON_LIBNAME = python3.8
 PYTHON_LIB = /usr/lib/python$(PYTHON_VERSION)
 
 PYTHON_INCLUDES = -I$(PYTHON_INCLUDE)
 PYTHON_LDFLAGS = -L$(PYTHON_LIB)/config -l$(PYTHON_LIBNAME)
 
 # location of the Boost Python include files and library
-BOOST_INC = /local/courses/csse2310/boost/current/include
-BOOST_LIB = /local/courses/csse2310/boost/current/lib
-BOOST_LIBNAME = boost_python36
+BOOST_INC = /home/danie/libmarks-testing/boost/1_73_0/include #/local/courses/csse2310/boost/current/include
+BOOST_LIB = /home/danie/libmarks-testing/boost/1_73_0/lib #/local/courses/csse2310/boost/current/lib
+BOOST_LIBNAME = boost_python38
 
 PROCESS_PARTIALS = src/glue.o src/process.o src/tracedProcess.o
 TARGETS = $(PROCESS_PARTIALS) src/process.so src/libprotect.so
@@ -58,5 +58,5 @@ src/libprotect.so: src/protection.c
 	gcc -std=gnu99 $(CFLAGS) -ldl -shared -Wl,--export-dynamic -fPIC $< -o $@
 
 install:	all
-	install -m u=rw,g=r,o=r ../marks/*.pyc /local/courses/csse2310/libtest/marks
-	install -m u=rw,g=r,o=r ../marks/*.so /local/courses/csse2310/libtest/marks
+	install -m u=rw,g=r,o=r ../marks/*.pyc /home/danie/libmarks-fork-test/marks
+	install -m u=rw,g=r,o=r ../marks/*.so /home/danie/libmarks-fork-test/marks

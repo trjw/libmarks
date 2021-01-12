@@ -1,4 +1,3 @@
-
 import sys
 from .case import _TestWrapper
 from .result import TestResult
@@ -6,13 +5,12 @@ from .util import strclass
 
 
 class TestSuite(object):
-
     def __init__(self, tests=()):
         self._tests = []
         self.add_tests(tests)
 
     def __repr__(self):
-        return "<{0} tests={1}>".format(strclass(self.__class__), list(self))
+        return f"<{strclass(self.__class__)} tests={list(self)}>"
 
     def __iter__(self):
         return iter(self._tests)
@@ -22,8 +20,8 @@ class TestSuite(object):
 
     def add_test(self, test):
         # sanity checks
-        if not hasattr(test, '__call__'):
-            raise TypeError("Test {0} is not callable".format(repr(test)))
+        if not hasattr(test, "__call__"):
+            raise TypeError(f"Test {repr(test)} is not callable")
 
         self._tests.append(test)
 
@@ -45,8 +43,10 @@ class TestSuite(object):
                 self._setup_module(test, result)
                 self._setup_class(test, result)
                 module_name = test.__class__.__module__
-                if not (result.module_setup_failed(module_name) or
-                        result.class_setup_failed(test.__class__)):
+                if not (
+                    result.module_setup_failed(module_name)
+                    or result.class_setup_failed(test.__class__)
+                ):
                     test.run(result, child=True)
 
             # Tear down classes
@@ -76,9 +76,9 @@ class TestSuite(object):
 
         wrapper = _TestWrapper()
 
-        if getattr(module, 'setup_module', None):
+        if getattr(module, "setup_module", None):
             with wrapper.test_executer(self):
-                options = getattr(self, '__marks_options__', {})
+                options = getattr(self, "__marks_options__", {})
                 module.setup_module(options)
 
         # Record result for module setup. If no setup_module() method
@@ -93,10 +93,10 @@ class TestSuite(object):
 
         wrapper = _TestWrapper()
 
-        if getattr(module, 'tear_down_module', None):
+        if getattr(module, "tear_down_module", None):
             # Perform tear down.
             with wrapper.test_executer(self):
-                options = getattr(self, '__marks_options__', {})
+                options = getattr(self, "__marks_options__", {})
                 module.tear_down_module(options)
 
             # TODO: Add error.
@@ -122,7 +122,7 @@ class TestSuite(object):
 
         wrapper = _TestWrapper()
 
-        if getattr(class_, 'setup_class', None):
+        if getattr(class_, "setup_class", None):
             # Perform setup.
             with wrapper.test_executer(self):
                 class_.setup_class()
@@ -136,7 +136,7 @@ class TestSuite(object):
     def _tear_down_class(self, class_, result):
         wrapper = _TestWrapper()
 
-        if getattr(class_, 'tear_down_class', None):
+        if getattr(class_, "tear_down_class", None):
             # Perform tear down.
             with wrapper.test_executer(self):
                 class_.tear_down_class()
@@ -151,4 +151,4 @@ class TestSuite(object):
 
     def _apply_options(self, class_):
         """Apply the appropriate options to the test class"""
-        class_.__marks_options__ = getattr(self, '__marks_options__', {})
+        class_.__marks_options__ = getattr(self, "__marks_options__", {})

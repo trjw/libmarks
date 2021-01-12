@@ -7,7 +7,7 @@ from . import result
 from .case import TestCase
 from .procs import xTracedProcess
 
-TEMP_PREFIX = 'testres'
+TEMP_PREFIX = "testres"
 
 DEFAULT_CLEANUP = True
 DEFAULT_SILENT = False
@@ -24,7 +24,7 @@ class BasicTestRunner(object):
             self.result_class = result_class
 
         # Store the working directory.
-        self.options['working_dir'] = os.getcwd()
+        self.options["working_dir"] = os.getcwd()
 
     def _apply_options(self, obj):
         """Apply the appropriate options to the object"""
@@ -36,20 +36,20 @@ class BasicTestRunner(object):
         Create a temporary directory to run tests from. Store location
         in options, so test cases can use this information.
         """
-        working_dir = self.options['working_dir']
-        if self.options.get('explain', False):
+        working_dir = self.options["working_dir"]
+        if self.options.get("explain", False):
             # No temporary directory required, as no tests are run.
             temp_dir = working_dir
         else:
             # Create the temporary directory, as tests are being run.
-            if not self.options.get('silent', DEFAULT_SILENT):
+            if not self.options.get("silent", DEFAULT_SILENT):
                 print("Setting up environment...")
 
             # Create temporary working directory.
-            prefix = self.options.get('temp_prefix', TEMP_PREFIX)
+            prefix = self.options.get("temp_prefix", TEMP_PREFIX)
             temp_dir = tempfile.mkdtemp(dir=working_dir, prefix=prefix)
 
-            if not self.options.get('cleanup', DEFAULT_CLEANUP):
+            if not self.options.get("cleanup", DEFAULT_CLEANUP):
                 print("Test output in", temp_dir)
                 print("Remember to clean up your test result folders.\n")
 
@@ -57,22 +57,22 @@ class BasicTestRunner(object):
             os.chdir(temp_dir)
 
         # Store temporary directory path.
-        self.options['temp_dir'] = temp_dir
+        self.options["temp_dir"] = temp_dir
 
     def tear_down_environment(self):
         """Tear down the environment after running the tests"""
-        if not self.options.get('explain', False):
+        if not self.options.get("explain", False):
             # Only remove temporary directory if it was created.
-            if not self.options.get('silent', DEFAULT_SILENT):
+            if not self.options.get("silent", DEFAULT_SILENT):
                 print("Tearing down environment...")
 
             # Ensure we are in the original working directory.
-            os.chdir(self.options['working_dir'])
+            os.chdir(self.options["working_dir"])
 
-            if self.options.get('cleanup', DEFAULT_CLEANUP):
+            if self.options.get("cleanup", DEFAULT_CLEANUP):
                 # Clean up the temporary folder.
                 try:
-                    shutil.rmtree(self.options['temp_dir'])
+                    shutil.rmtree(self.options["temp_dir"])
                 except OSError as e:
                     # Check for ENOENT: "No such file or directory." - Nothing
                     # more to do if directory has already been deleted.
@@ -125,29 +125,37 @@ class MarkingTestRunner(BasicTestRunner):
         result.stop_test_run()
 
         # Print results
-        if not self.options.get('silent', False):
-            if self.options.get('verbose', False):
+        if not self.options.get("silent", False):
+            if self.options.get("verbose", False):
                 print()
             print("Marking Results")
-            print("{0:30}{1:15}{2}".format('Category', 'Passed', 'Mark'))
+            print(f"{'Category':30}{'Passed':15}{'Mark'}")
             for category in result.marks:
                 info = result.marks[category]
-                total = info['total_marks'] or info['category_marks']
-                if total==0:
+                total = info["total_marks"] or info["category_marks"]
+                if total == 0:
                     fraction = 0
                 else:
-                    fraction = info['mark'] / total
-                print("{0:30}{1:15}{2:.2f}/{3:.2f} ({4:.2%})".format(
-                    category,
-                    '{0}/{1}'.format(info['passed'], len(info['tests'])),
-                    info['mark'], total,
-                    fraction))
+                    fraction = info["mark"] / total
+                print(
+                    "{0:30}{1:15}{2:.2f}/{3:.2f} ({4:.2%})".format(
+                        category,
+                        "{0}/{1}".format(info["passed"], len(info["tests"])),
+                        info["mark"],
+                        total,
+                        fraction,
+                    )
+                )
 
-            print("\n{0:30}{1:15}{2:.2f}/{3:.2f} ({4:.2%})".format(
-                'Total',
-                '{0}/{1}'.format(result.tests_passed, result.total_tests),
-                result.received_marks, result.total_marks,
-                result.received_marks / result.total_marks))
+            print(
+                "\n{0:30}{1:15}{2:.2f}/{3:.2f} ({4:.2%})".format(
+                    "Total",
+                    "{0}/{1}".format(result.tests_passed, result.total_tests),
+                    result.received_marks,
+                    result.total_marks,
+                    result.received_marks / result.total_marks,
+                )
+            )
 
         # Tear down the environment
         self.tear_down_environment()
@@ -172,7 +180,7 @@ class UpdateTestRunner(BasicTestRunner):
         print(CONFIRMATION_MESSAGE)
         confirm = input("Are you sure you want to update the files? (y/N)")
 
-        if confirm == 'y':
+        if confirm == "y":
             # Set update flag.
-            self.options['update'] = True
+            self.options["update"] = True
             super(UpdateTestRunner, self).run(test)

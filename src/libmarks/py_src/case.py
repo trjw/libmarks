@@ -8,7 +8,6 @@ import time
 
 from .result import TestResult
 from .util import strclass, safe_repr, coloured_text
-#from .process import Process, TimeoutProcess, TracedProcess
 from .procs import xProcess, xTimeoutProcess, xTracedProcess, ExplainProcess
 
 
@@ -17,6 +16,7 @@ BUFFER_SIZE = 8 * 1024
 
 def marks(category, mark=None, category_marks=None):
     """Assign marks to a test or suite of tests, grouped by a category."""
+
     def decorator(test_item):
         if mark is None and category_marks is None:
             raise ValueError("One of mark or category_marks must be defined")
@@ -24,6 +24,7 @@ def marks(category, mark=None, category_marks=None):
         test_item.__marks_mark__ = mark
         test_item.__marks_category_marks__ = category_marks
         return test_item
+
     return decorator
 
 
@@ -61,21 +62,22 @@ class TestCase(object):
 
     failure_exception = AssertionError
     """The exception to treat as a test failure"""
-    default_test_method = 'run_test'
+    default_test_method = "run_test"
     """Default name for the test method"""
     process_class = xProcess
     """Class for a Process"""
     timeout = None
     """Timeout duration, in seconds"""
 
-    def __init__(self, test_method_name='run_test', timeout=None):
+    def __init__(self, test_method_name="run_test", timeout=None):
         try:
             getattr(self, test_method_name)
         except AttributeError:
             if test_method_name != self.default_test_method:
                 raise ValueError(
-                    "test method %s does not exist in %s" %
-                    (strclass(self.__class__), test_method_name))
+                    f"test method {strclass(self.__class__)} "
+                    + f"does not exist in {test_method_name}"
+                )
         else:
             self._test_method = test_method_name
 
@@ -109,18 +111,17 @@ class TestCase(object):
         pass
 
     def id(self):
-        return "{0}.{1}".format(strclass(self.__class__), self._test_method)
+        return f"{strclass(self.__class__)}.{self._test_method}"
 
     def doc(self):
         """Return the docstring of the current test method"""
         return inspect.getdoc(self.test_method)
 
     def __str__(self):
-        return "{0} ({1})".format(self._test_method, strclass(self.__class__))
+        return f"{self._test_method} ({strclass(self.__class__)})"
 
     def __repr__(self):
-        return "<{0} test_method={1}>".format(
-            strclass(self.__class__), self._test_method)
+        return f"<{strclass(self.__class__)} test_method={self._test_method}>"
 
     def __call__(self, *args, **kwargs):
         return self.run(*args, **kwargs)
@@ -141,20 +142,20 @@ class TestCase(object):
         """
         Generate filename for standard out (stdout) output from a process.
         """
-        return "{0}.{1}.out".format(self.id(), p.count)
+        return f"{self.id()}.{p.count}.out"
 
     def _stderr_filename(self, p):
         """
         Generate filename for standard error (stderr) output from a process.
         """
-        return "{0}.{1}.err".format(self.id(), p.count)
+        return f"{self.id()}.{p.count}.err"
 
     def option(self, option, default=None):
         """Retrieves the value of an option, or default if option not set."""
         return self.__marks_options__.get(option, default)
 
     def _print_coloured(self, text, fg=None, bg=None, attrs=None, **kwargs):
-        stream = kwargs.get('file', sys.stdout)
+        stream = kwargs.get("file", sys.stdout)
         if stream.isatty():
             # Only add colours and attributes if stream is a TTY.
             text = coloured_text(text, colour=fg, background=bg, attrs=attrs)
@@ -164,18 +165,17 @@ class TestCase(object):
         """Create a Process of the type specified for this test case"""
         # Add the timeout to the init args.
         if self.timeout:
-            kwargs.setdefault('timeout', self.timeout)
+            kwargs.setdefault("timeout", self.timeout)
 
         # Ensure the timeout is an integer.
-        if (kwargs.get('timeout') is not None and
-                not isinstance(kwargs['timeout'], int)):
-            raise ValueError('Process timeout must be an integer.')
+        if kwargs.get("timeout") is not None and not isinstance(kwargs["timeout"], int):
+            raise ValueError("Process timeout must be an integer.")
 
         # Include the input file if it is set.
         if input_file is not None:
-            kwargs['input_file'] = input_file
+            kwargs["input_file"] = input_file
 
-        if self.option('explain'):
+        if self.option("explain"):
             # Ensure a real process is not created in export mode.
             self.process_class = ExplainProcess
 
@@ -189,30 +189,29 @@ class TestCase(object):
         self._process_count += 1
         self._processes.append(p)
 
-        if self.option('explain'):
+        if self.option("explain"):
             for i, arg in enumerate(argv):
                 # Put quotes around argument if it contains whitespace.
-                if arg == '' or any(c.isspace() for c in arg):
-                    argv[i] = '"{0}"'.format(arg)
+                if arg == "" or any(c.isspace() for c in arg):
+                    argv[i] = f'"{arg}"'
                 # Ensure escape characters are visible when printed.
-                #argv[i] = argv[i].encode('unicode_escape')
+                # argv[i] = argv[i].encode('unicode_escape')
                 # Todo: not sure if repr() would be better
-                argv[i] = argv[i].encode('unicode_escape').decode()
-                
+                # argv[i] = argv[i].encode('unicode_escape').decode()
+                argv[i] = repr(argv[i])
+
             # Print out command for running the process, including streams.
-            self._print_coloured(
-                'Start Process {0}:'.format(p.count), attrs=['bold'])
-            print("\t{0}".format(' '.join(argv)), end='')
+            self._print_coloured(f"Start Process {p.count}:", attrs=["bold"])
+            print("\t{0}".format(" ".join(argv)), end="")
             if input_file is not None:
-                print(' < {0}'.format(input_file), end='')
-            print(' > {0} 2> {1}'.format(
-                self._stdout_filename(p), self._stderr_filename(p)))
+                print(f" < {input_file}", end="")
+            print(f" > {self._stdout_filename(p)} 2> {self._stderr_filename(p)}")
 
         return p
 
     def _cleanup_processes(self):
         """Attempt to kill all processes started within a test"""
-        if self.option('explain'):
+        if self.option("explain"):
             # Do not cleanup, as no processes are running.
             return
 
@@ -232,7 +231,7 @@ class TestCase(object):
             result.start_test_run()
 
         # Check if test has its results being ignored.
-        ignored = getattr(self.test_method, '__marks_ignore_result__', False)
+        ignored = getattr(self.test_method, "__marks_ignore_result__", False)
 
         if not ignored:
             result.start_test(self)
@@ -286,13 +285,12 @@ class TestCase(object):
     def _check_signal(self, process, msg):
         """Check if process was signalled, causing the current test to fail."""
         if process.check_signalled():
-            msg += "Process received unexpected signal: {0}".format(
-                process.signal)
+            msg += "Process received unexpected signal: {0}".format(process.signal)
         self._check_timeout(process, msg)
 
     def _check_timeout(self, process, msg):
         """Check if process was timed out, causing the test to fail."""
-        if self.option('update'):
+        if self.option("update"):
             # Ignore errors when in update mode.
             return
 
@@ -300,7 +298,7 @@ class TestCase(object):
             msg = "Timeout occurred"
 
         # Kill process, to ensure it is not left around.
-        if not self.option('explain'):
+        if not self.option("explain"):
             process.kill()
 
         raise self.failure_exception(msg)
@@ -309,12 +307,12 @@ class TestCase(object):
         """Insert a delay into a test.
         Delay is in seconds, with fractions being acceptable.
         """
-        if not self.option('explain'):
+        if not self.option("explain"):
             time.sleep(secs)
 
     def fail(self, msg=None):
         """Fail immediately, with the given message."""
-        if self.option('update'):
+        if self.option("update"):
             # Ignore errors when in update mode.
             return
 
@@ -325,43 +323,43 @@ class TestCase(object):
         Assert that the standard output of the process matches the
         contents of the given file.
         """
-        if self.option('explain'):
+        if self.option("explain"):
             # Print out command to compare stdout.
             self._print_coloured(
-                'Compare stdout from Process {0}:'.format(process.count),
-                attrs=['bold'])
-            print("\tdiff {0} {1}".format(
-                self._stdout_filename(process), file_path))
+                "Compare stdout from Process {0}:".format(process.count), attrs=["bold"]
+            )
+            print(f"\tdiff {self._stdout_filename(process)} {file_path}")
             return
 
-        if self.option('update') or self.option('save'):
+        if self.option("update") or self.option("save"):
             # Save stdout output to file.
             filename = file_path
-            if self.option('save'):
+            if self.option("save"):
                 filename = self._stdout_filename(process)
 
-            with open(filename, 'wb') as f:
+            with open(filename, "wb") as f:
                 while True:
                     line = process.readline_stdout()
                     f.write(line.encode())
-                    if line == '':
+                    if line == "":
                         break
 
-        if self.option('update'):
-            print("\tstandard output file updated: {0}".format(file_path))
+        if self.option("update"):
+            print(f"\tstandard output file updated: {file_path}")
             return
 
         # Set error message, if not set already.
         msg = msg or "stdout mismatch"
         result = None
 
-        if self.option('save'):
+        if self.option("save"):
             result = self._compare_files(
-                self._stdout_filename(process), file_path, msg=msg)
-        elif self.option('show_diff'):
+                self._stdout_filename(process), file_path, msg=msg
+            )
+        elif self.option("show_diff"):
             result = self._verbose_compare(
-                process.readline_stdout, file_path,
-                self._stdout_filename(process), msg)
+                process.readline_stdout, file_path, self._stdout_filename(process), msg
+            )
         elif not process.expect_stdout_file(file_path):
             result = msg
 
@@ -373,43 +371,43 @@ class TestCase(object):
         Assert that the standard error of the process matches the
         contents of the given file.
         """
-        if self.option('explain'):
+        if self.option("explain"):
             # Print out command to compare stderr.
             self._print_coloured(
-                'Compare stderr from Process {0}:'.format(process.count),
-                attrs=['bold'])
-            print("\tdiff {0} {1}".format(
-                self._stderr_filename(process), file_path))
+                f"Compare stderr from Process {process.count}:", attrs=["bold"]
+            )
+            print("\tdiff {0} {1}".format(self._stderr_filename(process), file_path))
             return
 
-        if self.option('update') or self.option('save'):
+        if self.option("update") or self.option("save"):
             # Save stderr output to file.
             filename = file_path
-            if self.option('save'):
+            if self.option("save"):
                 filename = self._stderr_filename(process)
 
-            with open(filename, 'wb') as f:
+            with open(filename, "wb") as f:
                 while True:
                     line = process.readline_stderr()
                     f.write(line.encode())
-                    if line == '':
+                    if line == "":
                         break
 
-        if self.option('update'):
-            print("\tstandard error file updated: {0}".format(file_path))
+        if self.option("update"):
+            print(f"\tstandard error file updated: {file_path}")
             return
 
         # Set error message, if not set already.
         msg = msg or "stderr mismatch"
         result = None
 
-        if self.option('save'):
+        if self.option("save"):
             result = self._compare_files(
-                self._stderr_filename(process), file_path, msg=msg)
-        elif self.option('show_diff'):
+                self._stderr_filename(process), file_path, msg=msg
+            )
+        elif self.option("show_diff"):
             result = self._verbose_compare(
-                process.readline_stderr, file_path,
-                self._stderr_filename(process), msg)
+                process.readline_stderr, file_path, self._stderr_filename(process), msg
+            )
         elif not process.expect_stderr_file(file_path):
             result = msg
 
@@ -421,25 +419,26 @@ class TestCase(object):
         Assert that the standard output of the process contains the given
         output.
         """
-        if self.option('explain'):
+        if self.option("explain"):
             # Print out the expected output from stdout.
-            if output == '':
+            if output == "":
                 self._print_coloured(
-                    'Expect end of file (Process {0} [stdout])'.format(
-                        process.count),
-                    attrs=['bold'])
+                    f"Expect end of file (Process {process.count} [stdout])",
+                    attrs=["bold"],
+                )
             else:
                 self._print_coloured(
-                    'Expect output (Process {0} [stdout]): '.format(
-                        process.count),
-                    attrs=['bold'], end='')
+                    f"Expect output (Process {process.count} [stdout]): ",
+                    attrs=["bold"],
+                    end="",
+                )
                 print(safe_repr(output))
             return
 
-        if self.option('update'):
+        if self.option("update"):
             # Print message to remind user to check output
             # TODO: Include source code location
-            print("\tCheck assert_stdout({0})".format(safe_repr(output)))
+            print(f"\tCheck assert_stdout({safe_repr(output)})")
             return
 
         if not process.expect_stdout(output):
@@ -451,25 +450,26 @@ class TestCase(object):
         Assert that the standard error of the process contains the given
         output.
         """
-        if self.option('explain'):
+        if self.option("explain"):
             # Print out the expected output from stdout.
-            if output == '':
+            if output == "":
                 self._print_coloured(
-                    'Expect end of file (Process {0} [stderr])'.format(
-                        process.count),
-                    attrs=['bold'])
+                    f"Expect end of file (Process {process.count} [stderr])",
+                    attrs=["bold"],
+                )
             else:
                 self._print_coloured(
-                    'Expect output (Process {0} [stderr]): '.format(
-                        process.count),
-                    attrs=['bold'], end='')
+                    f"Expect output (Process {process.count} [stderr]): ",
+                    attrs=["bold"],
+                    end="",
+                )
                 print(safe_repr(output))
             return
 
-        if self.option('update'):
+        if self.option("update"):
             # Print message to remind user to check output
             # TODO: Include source code location
-            print("\tCheck assert_stderr({0})".format(safe_repr(output)))
+            print(f"\tCheck assert_stderr({safe_repr(output)})")
             return
 
         if not process.expect_stderr(output):
@@ -480,28 +480,32 @@ class TestCase(object):
         """
         Assert that the exit status of the process matches the given status.
         """
-        if self.option('explain'):
+        if self.option("explain"):
             # Print out the expected exit status for the process.
             self._print_coloured(
-                "Expect exit status (Process {0}): ".format(process.count),
-                attrs=['bold'], end='')
+                f"Expect exit status (Process {process.count}): ",
+                attrs=["bold"],
+                end="",
+            )
             print(status)
             return
 
         if not process.assert_exit_status(status):
-            msg = msg or "exit status mismatch: expected {0}, got {1}".format(
-                status, process.exit_status)
+            msg = (
+                msg
+                or f"exit status mismatch: expected {status}, got {process.exit_status}"
+            )
             self._check_signal(process, msg)
 
     def assert_signalled(self, process, msg=None):
         """
         Assert that the process received a signal.
         """
-        if self.option('explain'):
+        if self.option("explain"):
             # Print that the process is expected to receive a signal.
             self._print_coloured(
-                "Expect Process {0} to receive signal".format(process.count),
-                attrs=['bold'])
+                f"Expect Process {process.count} to receive signal", attrs=["bold"]
+            )
             return
 
         if not process.assert_signalled():
@@ -512,27 +516,26 @@ class TestCase(object):
         """
         Assert that the signal of the process matches the given signal.
         """
-        if self.option('explain'):
+        if self.option("explain"):
             # Print out the expected signal for the process.
             self._print_coloured(
-                "Expect signal (Process {0}): ".format(process.count),
-                attrs=['bold'], end='')
+                f"Expect signal (Process {process.count}): ", attrs=["bold"], end=""
+            )
             print(signal)
             return
 
         if not process.assert_signal(signal):
-            msg = msg or "signal mismatch: expected {0}, got {1}".format(
-                signal, process.signal)
+            msg = msg or f"signal mismatch: expected {signal}, got {process.signal}"
             self._check_timeout(process, msg)
 
     def assert_files_equal(self, file1, file2, msg=None):
         """
         Assert that the given files contain exactly the same contents.
         """
-        if self.option('explain'):
+        if self.option("explain"):
             # Print out the command to check the two files.
-            self._print_coloured("Check files are the same:", attrs=['bold'])
-            print("\tdiff {0} {1}".format(file1, file2))
+            self._print_coloured("Check files are the same:", attrs=["bold"])
+            print(f"\tdiff {file1} {file2}")
             return
 
         result = self._compare_files(file1, file2, msg=msg)
@@ -541,13 +544,13 @@ class TestCase(object):
 
     def _compare_files(self, file1, file2, msg1=None, msg2=None, msg=None):
         if not os.path.exists(file1):
-            return msg1 or "file missing: {0}".format(file1)
+            return msg1 or f"file missing: {file1}"
         elif not os.path.exists(file2):
-            return msg2 or "file missing: {0}".format(file1)
+            return msg2 or f"file missing: {file2}"
         else:
             # Files exist, so open and compare them
-            f1 = open(file1, 'rb')
-            f2 = open(file2, 'rb')
+            f1 = open(file1, "rb")
+            f2 = open(file2, "rb")
 
             different = False
             while True:
@@ -567,16 +570,15 @@ class TestCase(object):
 
             if different:
                 msg = msg or "file mismatch: contents do not exactly match"
-                if self.option('show_diff'):
+                if self.option("show_diff"):
                     # Add diff of output to message.
-                    f1 = open(file1, 'r')
-                    f2 = open(file2, 'r')
+                    f1 = open(file1, "r")
+                    f2 = open(file2, "r")
                     diff = difflib.unified_diff(
-                        f1.readlines(), f2.readlines(),
-                        fromfile=file1, tofile=file2)
+                        f1.readlines(), f2.readlines(), fromfile=file1, tofile=file2
+                    )
 
-                    msg += '\nDiff leading to failure:\n{0}'.format(
-                        ''.join(diff))
+                    msg += f"\nDiff leading to failure:\n{''.join(diff)}"
 
                     f1.close()
                     f2.close()
@@ -584,17 +586,17 @@ class TestCase(object):
 
     def _verbose_compare(self, stream_readline, file_path, stream_name, msg):
         if not os.path.exists(file_path):
-            return "file missing: {0}".format(file_path)
+            return f"file missing: {file_path}"
         else:
             # Files exist, so open and compare them
             different = False
             p_history = []
             f_history = []
 
-            with open(file_path, 'rb') as f:
+            with open(file_path, "rb") as f:
                 while True:
                     p_line = stream_readline()
-                    f_line = f.readline().decode('utf-8')
+                    f_line = f.readline().decode("utf-8")
 
                     # Store history of output.
                     p_history.append(p_line)
@@ -611,10 +613,10 @@ class TestCase(object):
             if different:
                 # Append diff to error message.
                 diff = difflib.unified_diff(
-                    p_history, f_history,
-                    fromfile=stream_name, tofile=file_path)
-                msg += '\nDiff leading to failure [truncated]:\n'
-                msg += ''.join(diff)
+                    p_history, f_history, fromfile=stream_name, tofile=file_path
+                )
+                msg += "\nDiff leading to failure [truncated]:\n"
+                msg += "".join(diff)
                 return msg
 
     def add_detail(self, name, data):
@@ -628,18 +630,17 @@ class TestCase(object):
     def child_pids(self, parent):
         """Get the process IDs of the children of the given parent process."""
         pids = []
-        if self.option('explain'):
+        if self.option("explain"):
             self._print_coloured(
-                "Get IDs of child processes of Process {0}".format(
-                    parent.count),
-                attrs=['bold'])
+                f"Get IDs of child processes of Process {parent.count}", attrs=["bold"]
+            )
         elif isinstance(parent, xTracedProcess):
             pids = parent.child_pids()
         else:
-            pgrep = self.process(['pgrep', '-P', str(parent.pid)])
+            pgrep = self.process(["pgrep", "-P", str(parent.pid)])
             while True:
                 pid = pgrep.readline_stdout()
-                if pid == '':
+                if pid == "":
                     break
                 pid = int(pid.strip())
                 pids.append(pid)
@@ -649,16 +650,15 @@ class TestCase(object):
 
     def signal_process(self, pid, sig, explain_process=None):
         """Send a signal to the process with the given ID."""
-        if self.option('explain'):
+        if self.option("explain"):
             proc = explain_process or "a process (determined at runtime)"
-            msg = "Send signal {0} to {1}".format(sig, proc)
-            self._print_coloured(msg, attrs=['bold'])
+            msg = f"Send signal {sig} to {proc}"
+            self._print_coloured(msg, attrs=["bold"])
         else:
             try:
                 os.kill(pid, sig)
             except:
-                self.fail(
-                    "Failed to send signal {0} process {1}".format(sig, pid))
+                self.fail(f"Failed to send signal {sig} process {pid}")
 
     def explain(self, msg, fg=None, bg=None, attrs=None, **kwargs):
         """
@@ -666,7 +666,5 @@ class TestCase(object):
         Message can include colour output and other formatting, which will be
         displayed if the output location is a TTY.
         """
-        if self.option('explain'):
+        if self.option("explain"):
             self._print_coloured(msg, fg, bg, attrs, **kwargs)
-
-

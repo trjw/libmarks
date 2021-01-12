@@ -9,9 +9,9 @@ def strclass(cls):
 
     Remove module '__main__' from the ID, as it is not useful in most cases.
     """
-    if cls.__module__ == '__main__':
+    if cls.__module__ == "__main__":
         return cls.__name__
-    return "{0}.{1}".format(cls.__module__, cls.__name__)
+    return f"{cls.__module__}.{cls.__name__}"
 
 
 def safe_repr(obj, length=None):
@@ -24,7 +24,7 @@ def safe_repr(obj, length=None):
         result = object.__repr__(obj)
     if len(result) <= length:
         return result
-    return result[:length] + ' [truncated]...'
+    return result[:length] + " [truncated]..."
 
 
 # Colours for terminal text
@@ -52,24 +52,25 @@ def safe_repr(obj, length=None):
 #
 # Author: Konstantin Lepa <konstantin.lepa@gmail.com>
 
-COLOUR_FORMAT = '\033[{0}m{1}'
+COLOUR_FORMAT = "\033[{0}m{1}"
 
-COLOURS = (
-    'grey', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white')
+COLOURS = ("grey", "red", "green", "yellow", "blue", "magenta", "cyan", "white")
 
 BACKGROUND = dict(list(zip(COLOURS, list(range(40, 48)))))
 
 FOREGROUND = dict(list(zip(COLOURS, list(range(30, 38)))))
 
 ATTRIBUTES = dict(
-    list(zip(
-        ('bold', 'dark', '', 'underline', 'blink', '', 'reverse', 'concealed'),
-        list(range(1, 9))
-    ))
+    list(
+        zip(
+            ("bold", "dark", "", "underline", "blink", "", "reverse", "concealed"),
+            list(range(1, 9)),
+        )
+    )
 )
-del ATTRIBUTES['']
+del ATTRIBUTES[""]
 
-RESET = '\033[0m'
+RESET = "\033[0m"
 
 
 def coloured_text(text, colour=None, background=None, attrs=None):
@@ -81,7 +82,7 @@ def coloured_text(text, colour=None, background=None, attrs=None):
     Available attributes:
         bold, dark, underline, blink, reverse, concealed.
     """
-    if os.getenv('ANSI_COLORS_DISABLED') is None:
+    if os.getenv("ANSI_COLORS_DISABLED") is None:
         if colour is not None:
             # Add foreground colour to the text.
             text = COLOUR_FORMAT.format(FOREGROUND[colour], text)

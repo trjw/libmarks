@@ -101,15 +101,18 @@ class TestResult(object):
 
     def __repr__(self):
         return "<{0} run={1} successes={2} errors={3} failures={4}>".format(
-            util.strclass(self.__class__), self.tests_run,
-            len(self.successes), len(self.errors), len(self.failures))
+            util.strclass(self.__class__),
+            self.tests_run,
+            len(self.successes),
+            len(self.errors),
+            len(self.failures),
+        )
 
     def _print_coloured(self, text, fg=None, bg=None, attrs=None, **kwargs):
-        stream = kwargs.get('file', sys.stdout)
+        stream = kwargs.get("file", sys.stdout)
         if stream.isatty():
             # Only add colours and attributes if stream is a TTY.
-            text = util.coloured_text(
-                text, colour=fg, background=bg, attrs=attrs)
+            text = util.coloured_text(text, colour=fg, background=bg, attrs=attrs)
         print(text, **kwargs)
 
     def option(self, option):
@@ -118,16 +121,15 @@ class TestResult(object):
 
 
 class PrintedTestResult(TestResult):
-
     def start_test_run(self):
         super(PrintedTestResult, self).start_test_run()
-        if not self.option('silent'):
+        if not self.option("silent"):
             print("Running tests\n")
 
     def start_test(self, test):
         super(PrintedTestResult, self).start_test(test)
-        if self.option('verbose'):
-            print("{0:60}".format(test.id()), end='')
+        if self.option("verbose"):
+            print(f"{test.id():60}", end="")
             sys.stdout.flush()
 
     def stop_test(self, test):
@@ -135,30 +137,33 @@ class PrintedTestResult(TestResult):
 
     def stop_test_run(self):
         super(PrintedTestResult, self).stop_test_run()
-        if self.option('verbose'):
+        if self.option("verbose"):
             results = RESULT_TEMPLATE.format(
-                self.tests_run, len(self.successes),
-                len(self.errors), len(self.failures))
+                self.tests_run,
+                len(self.successes),
+                len(self.errors),
+                len(self.failures),
+            )
             print()
-            print('-' * 70)
+            print("-" * 70)
             print(results)
 
     def add_failure(self, test, error):
         super(PrintedTestResult, self).add_failure(test, error)
-        if self.option('verbose'):
-            self._print_coloured('FAIL', fg='yellow', attrs=['bold'])
-            print("\t{0}".format(self._exc_info_pretty_print(error, test)))
+        if self.option("verbose"):
+            self._print_coloured("FAIL", fg="yellow", attrs=["bold"])
+            print(f"\t{self._exc_info_pretty_print(error, test)}")
 
     def add_error(self, test, error):
         super(PrintedTestResult, self).add_error(test, error)
-        if self.option('verbose'):
-            self._print_coloured('ERROR', fg='cyan', attrs=['bold'])
-            print("\t{0}".format(self._exc_info_pretty_print(error, test)))
+        if self.option("verbose"):
+            self._print_coloured("ERROR", fg="cyan", attrs=["bold"])
+            print(f"\t{self._exc_info_pretty_print(error, test)}")
 
     def add_success(self, test):
         super(PrintedTestResult, self).add_success(test)
-        if self.option('verbose'):
-            self._print_coloured('OK', fg='green', attrs=['bold'])
+        if self.option("verbose"):
+            self._print_coloured("OK", fg="green", attrs=["bold"])
 
 
 class MarkingTestResult(PrintedTestResult):
@@ -177,32 +182,37 @@ class MarkingTestResult(PrintedTestResult):
     def _record_test(self, test, outcome):
         test_method = test.test_method
         # Get mark information from test method, with class fallback.
-        category = (getattr(test_method, '__marks_category__', '')
-                    or getattr(test.__class__, '__marks_category__', ''))
-        cat_marks = (getattr(test_method, '__marks_category_marks__', 0)
-                     or getattr(test.__class__, '__marks_category_marks__', 0))
-        mark = (getattr(test_method, '__marks_mark__', 0)
-                or getattr(test.__class__, '__marks_mark__', 0))
+        category = getattr(test_method, "__marks_category__", "") or getattr(
+            test.__class__, "__marks_category__", ""
+        )
+        cat_marks = getattr(test_method, "__marks_category_marks__", 0) or getattr(
+            test.__class__, "__marks_category_marks__", 0
+        )
+        mark = getattr(test_method, "__marks_mark__", 0) or getattr(
+            test.__class__, "__marks_mark__", 0
+        )
 
         r = self.marks.setdefault(category, {})
 
-        r.setdefault('total_marks', 0)
-        category_marks = r.setdefault('category_marks', cat_marks)
+        r.setdefault("total_marks", 0)
+        category_marks = r.setdefault("category_marks", cat_marks)
 
         if not cat_marks:
             # Individual test marks being used.
-            r['total_marks'] += mark
+            r["total_marks"] += mark
         elif cat_marks != category_marks:
             raise ValueError(
-                "Differing total marks for category '{0}' ({1} vs {2})".format(
-                    category, category_marks, cat_marks))
+                f"Differing total marks for category '{category}'"
+                f" ({category_marks} vs {cat_marks})"
+            )
 
-        r.setdefault('tests', []).append(outcome)
+        r.setdefault("tests", []).append(outcome)
 
-        if r['total_marks'] and cat_marks:
+        if r["total_marks"] and cat_marks:
             raise ValueError(
-                "Category '{0}' cannot have both category marks and "
-                "individual test marks".format(category))
+                f"Category '{category}' cannot have both category marks and "
+                "individual test marks"
+            )
 
         # Store test result separately.
         self.tests[test.id()] = outcome
@@ -213,24 +223,24 @@ class MarkingTestResult(PrintedTestResult):
             info = self.marks[category]
 
             # Calculate how many tests were successful.
-            if info['category_marks']:
+            if info["category_marks"]:
                 # Overall category total marks used.
-                passed = info['tests'].count(RESULT_SUCCESS)
-                mark = (passed / len(info['tests'])) * info['category_marks']
-                self.total_marks += info['category_marks']
+                passed = info["tests"].count(RESULT_SUCCESS)
+                mark = (passed / len(info["tests"])) * info["category_marks"]
+                self.total_marks += info["category_marks"]
             else:
                 # Individual test marks used.
-                failed = (
-                    info['tests'].count(RESULT_FAILURE) +
-                    info['tests'].count(RESULT_ERROR))
-                passed = len(info['tests']) - failed
-                mark = sum(info['tests'])
-                self.total_marks += info['total_marks']
+                failed = info["tests"].count(RESULT_FAILURE) + info["tests"].count(
+                    RESULT_ERROR
+                )
+                passed = len(info["tests"]) - failed
+                mark = sum(info["tests"])
+                self.total_marks += info["total_marks"]
 
-            info['passed'] = passed
-            info['mark'] = mark
+            info["passed"] = passed
+            info["mark"] = mark
             self.tests_passed += passed
-            self.total_tests += len(info['tests'])
+            self.total_tests += len(info["tests"])
             self.received_marks += mark
 
     def module_setup_failed(self, module_name):
@@ -256,63 +266,61 @@ class MarkingTestResult(PrintedTestResult):
         super(MarkingTestResult, self).add_success(test)
 
         test_method = test.test_method
-        mark = (getattr(test_method, '__marks_mark__', 0)
-                or getattr(test.__class__, '__marks_mark__', RESULT_SUCCESS))
+        mark = getattr(test_method, "__marks_mark__", 0) or getattr(
+            test.__class__, "__marks_mark__", RESULT_SUCCESS
+        )
         self._record_test(test, mark)
 
     def export(self):
         """Export the test results and marks as a dictionary"""
         results = {
-            'tests': self.tests,
-            'results': {
-                'failures': [test.id() for test, err in self.failures],
-                'errors': [test.id() for test, err in self.errors],
-                'successes': [test.id() for test, err in self.successes],
+            "tests": self.tests,
+            "results": {
+                "failures": [test.id() for test, err in self.failures],
+                "errors": [test.id() for test, err in self.errors],
+                "successes": [test.id() for test, err in self.successes],
             },
-            'marks': self.marks,
-            'totals': {
-                'passed': self.tests_passed,
-                'test_count': self.total_tests,
-                'received_marks': self.received_marks,
-                'total_marks': self.total_marks,
+            "marks": self.marks,
+            "totals": {
+                "passed": self.tests_passed,
+                "test_count": self.total_tests,
+                "received_marks": self.received_marks,
+                "total_marks": self.total_marks,
             },
-            'details': self.get_details()
+            "details": self.get_details(),
         }
         return results
 
 
 class UpdateTestResult(TestResult):
-
     def start_test_run(self):
         super(UpdateTestResult, self).start_test_run()
         print("Updating tests\n")
 
     def start_test(self, test):
         super(UpdateTestResult, self).start_test(test)
-        self._print_coloured("==> {0}:".format(test.id()), attrs=['bold'])
+        self._print_coloured(f"==> {test.id()}:", attrs=["bold"])
 
     def stop_test(self, test):
         print()
 
 
 class ExplainTestResult(TestResult):
-
     def start_test_run(self):
         super(ExplainTestResult, self).start_test_run()
         print("Showing explanation for tests")
         message = "NOTE: THIS IS AN EXPLANATION ONLY. NO TESTS ARE RUN."
-        self._print_coloured(message, fg='yellow', attrs=['bold'])
+        self._print_coloured(message, fg="yellow", attrs=["bold"])
         print("To replicate a test, all given commands must be executed.\n")
 
     def start_test(self, test):
         super(ExplainTestResult, self).start_test(test)
-        self._print_coloured(
-            "==> {0}:".format(test.id()), fg='green', attrs=['bold'])
+        self._print_coloured(f"==> {test.id()}:", fg="green", attrs=["bold"])
         doc = test.doc()
         if doc:
-            self._print_coloured("About the test:", attrs=['bold'])
+            self._print_coloured("About the test:", attrs=["bold"])
             print(doc)
-        self._print_coloured("What the test runs and checks:", attrs=['bold'])
+        self._print_coloured("What the test runs and checks:", attrs=["bold"])
 
     def stop_test(self, test):
         super(ExplainTestResult, self).stop_test(test)
@@ -320,6 +328,6 @@ class ExplainTestResult(TestResult):
 
     def stop_test_run(self):
         super(ExplainTestResult, self).stop_test_run()
-        print("Explained {0} tests.".format(self.tests_run))
+        print(f"Explained {self.tests_run} tests.")
         message = "NOTE: THIS IS AN EXPLANATION ONLY. NO TESTS WERE RUN."
-        self._print_coloured(message, fg='yellow', attrs=['bold'])
+        self._print_coloured(message, fg="yellow", attrs=["bold"])
