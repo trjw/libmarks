@@ -125,7 +125,7 @@ def load_submission_results(path, test, options):
             # Generate empty results
             details = {"submission": submission}
 
-            print("-> Could not load results for submission: {0}".format(submission))
+            print(f"-> Could not load results for submission: {submission}")
 
         return details
     except KeyboardInterrupt:
@@ -285,6 +285,4 @@ def _default_protection():
     """Get the path to the included protection library"""
     import marks
 
-    return os.path.join(
-        os.path.dirname(os.path.abspath(marks.__file__)), "libprotect.so"
-    )
+    return str(pathlib.Path(marks.__file__).resolve().parent / "libprotect.so")

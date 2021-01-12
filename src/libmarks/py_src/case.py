@@ -202,7 +202,7 @@ class TestCase(object):
 
             # Print out command for running the process, including streams.
             self._print_coloured(f"Start Process {p.count}:", attrs=["bold"])
-            print("\t{0}".format(" ".join(argv)), end="")
+            print(f"\t{' '.join(argv)}", end="")
             if input_file is not None:
                 print(f" < {input_file}", end="")
             print(f" > {self._stdout_filename(p)} 2> {self._stderr_filename(p)}")
@@ -285,7 +285,7 @@ class TestCase(object):
     def _check_signal(self, process, msg):
         """Check if process was signalled, causing the current test to fail."""
         if process.check_signalled():
-            msg += "Process received unexpected signal: {0}".format(process.signal)
+            msg += f"Process received unexpected signal: {process.signal}"
         self._check_timeout(process, msg)
 
     def _check_timeout(self, process, msg):
@@ -326,7 +326,7 @@ class TestCase(object):
         if self.option("explain"):
             # Print out command to compare stdout.
             self._print_coloured(
-                "Compare stdout from Process {0}:".format(process.count), attrs=["bold"]
+                f"Compare stdout from Process {process.count}:", attrs=["bold"]
             )
             print(f"\tdiff {self._stdout_filename(process)} {file_path}")
             return
@@ -376,7 +376,7 @@ class TestCase(object):
             self._print_coloured(
                 f"Compare stderr from Process {process.count}:", attrs=["bold"]
             )
-            print("\tdiff {0} {1}".format(self._stderr_filename(process), file_path))
+            print(f"\tdiff {self._stderr_filename(process)} {file_path}")
             return
 
         if self.option("update") or self.option("save"):
