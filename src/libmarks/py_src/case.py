@@ -330,7 +330,6 @@ class TestCase(object):
             )
             print(f"\tdiff {self._stdout_filename(process)} {file_path}")
             return
-
         if self.option("update") or self.option("save"):
             # Save stdout output to file.
             filename = file_path
@@ -360,8 +359,10 @@ class TestCase(object):
             result = self._verbose_compare(
                 process.readline_stdout, file_path, self._stdout_filename(process), msg
             )
-        elif not process.expect_stdout_file(file_path):
-            result = msg
+        else:
+            ratio = self._output_match_ratio(process.readline_stdout, file_path)
+            if ratio != 1.0:
+                result = f"stdout_mismatch <<{round(ratio, 2)}>>"
 
         if result is not None:
             self._check_signal(process, result)
@@ -408,8 +409,10 @@ class TestCase(object):
             result = self._verbose_compare(
                 process.readline_stderr, file_path, self._stderr_filename(process), msg
             )
-        elif not process.expect_stderr_file(file_path):
-            result = msg
+        else:
+            ratio = self._output_match_ratio(process.readline_stderr, file_path)
+            if ratio != 1.0:
+                result = f"stderr_mismatch <<{round(ratio, 2)}>>"
 
         if result is not None:
             self._check_signal(process, result)
@@ -541,6 +544,24 @@ class TestCase(object):
         result = self._compare_files(file1, file2, msg=msg)
         if result is not None:
             raise self.failure_exception(result)
+
+    def _output_match_ratio(self, stream_readline, file):
+        proc_lines = []
+        while True:
+            line = stream_readline()
+            if not line:
+                break
+            proc_lines.append(line)
+        proc_lines = "".join(proc_lines)
+
+        file_lines = []
+        with open(file) as errfile:
+            for line in errfile:
+                file_lines.append(line)
+        file_lines = "".join(file_lines)
+
+        diff = difflib.SequenceMatcher(None, proc_lines, file_lines)
+        return diff.ratio()
 
     def _compare_files(self, file1, file2, msg1=None, msg2=None, msg=None):
         if not os.path.exists(file1):

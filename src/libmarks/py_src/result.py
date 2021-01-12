@@ -1,7 +1,7 @@
 from __future__ import division, print_function
 import sys
 from . import util
-
+import re
 
 RESULT_TEMPLATE = "Ran {0} tests: {1} success, {2} errors, {3} failures"
 RESULT_ERROR = 0
@@ -226,7 +226,9 @@ class MarkingTestResult(PrintedTestResult):
             if info["category_marks"]:
                 # Overall category total marks used.
                 passed = info["tests"].count(RESULT_SUCCESS)
-                mark = (passed / len(info["tests"])) * info["category_marks"]
+                mark = (sum(info["tests"]) / len(info["tests"])) * info[
+                    "category_marks"
+                ]
                 self.total_marks += info["category_marks"]
             else:
                 # Individual test marks used.
@@ -254,7 +256,13 @@ class MarkingTestResult(PrintedTestResult):
     def add_failure(self, test, error):
         """Record a test failure."""
         super(MarkingTestResult, self).add_failure(test, error)
-        self._record_test(test, RESULT_FAILURE)
+
+        fuzzy_pattern = re.compile(r".*<<(.*)>>.*")
+        match = fuzzy_pattern.match(str(error[1]))
+        mark = RESULT_FAILURE
+        if match:
+            mark = float(match.group(1))
+        self._record_test(test, mark)
 
     def add_error(self, test, error):
         """Record a test error."""
