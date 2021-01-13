@@ -52,7 +52,7 @@ correctly
 !#/usr/bin/env python3
 import sys
 
-sys.path[0:0] = ['/path/to/boost/install']
+sys.path[0:0] = ['/path/to/libmarks/install']
 import marks    # This must come after the sys.path line
 
 class TestClass(marks.TestCase):
