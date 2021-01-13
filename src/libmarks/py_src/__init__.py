@@ -5,9 +5,18 @@ Based on Python unittest framework.
 """
 
 __all__ = [
-    '__version__', 'ignore_result', 'main', 'marks', 'Process', 'TestCase',
-    'TestSuite', 'TestLoader', 'default_test_loader', 'TestResult',
-    'set_ld_preload', 'get_ld_preload'
+    "__version__",
+    "ignore_result",
+    "main",
+    "marks",
+    "Process",
+    "TestCase",
+    "TestSuite",
+    "TestLoader",
+    "default_test_loader",
+    "TestResult",
+    "set_ld_preload",
+    "get_ld_preload",
 ]
 
 from .version import get_version
@@ -19,8 +28,8 @@ from .loader import TestLoader, default_test_loader
 from .result import TestResult
 from .main import main
 
-Process=xProcess
-TracedProcess=xTracedProcess
-TimeoutProcess=xTimeoutProcess
+Process = xProcess
+TracedProcess = xTracedProcess
+TimeoutProcess = xTimeoutProcess
 
 __version__ = get_version()

@@ -3,48 +3,25 @@
 import os
 import fnmatch
 import py_compile
+import pathlib
 
 
 def compile(source_dir, dest_dir):
-    for root, dirs, files in os.walk(source_dir):
-        # Get path to file, relative to source_dir
-        curr_dir = os.path.relpath(root, source_dir)
-        if curr_dir == '.':
-            curr_dir = ''
 
-        # Ignore hidden directories (starting with .)
-        if curr_dir.startswith('.'):
-            continue
+    source_dir = pathlib.Path(source_dir).resolve()
+    dest_dir = pathlib.Path(dest_dir).resolve()
 
-        # Filter for Python files
-        py_files = fnmatch.filter(files, '*.py')
-        if len(py_files) == 0:
-           continue
+    for filepath in source_dir.rglob("*.py"):
+        relpath = filepath.relative_to(source_dir)
+        reldir = relpath.parent
 
-        # Directory contains Python files, so create in destination
-        try:
-            os.mkdir(os.path.join(dest_dir, curr_dir))
-        except OSError:
-            # Directory already exists
-            pass
-
-        # Compile all py files and put them in dest_dir
-        for f in py_files:
-            py_compile.compile(
-                os.path.join(root, f),
-                os.path.join(dest_dir, curr_dir, f + 'c'))
-
-        # Create all dirs within dest_dir
-        # for d in dirs:
-        #    try:
-        #        os.mkdir(os.path.join(dest_dir, curr_dir, d))
-        #    except OSError:
-        #        # Directory already exists
-        #        pass
+        (source_dir / reldir).mkdir(exist_ok=True)
+        py_compile.compile(str(filepath), str(dest_dir / relpath) + "c")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
+
     if len(sys.argv) < 3:
         sys.exit("Usage: compile_py.py source_dir dest_dir")
 
