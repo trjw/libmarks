@@ -21,7 +21,7 @@ class TestLoader(object):
             return self.is_test_method(name, test_case, prefix)
 
         def sort_by_test_name(name):
-            pattern = re.compile(f"({prefix}[A-Za-z_-]*)([0-9]*)")
+            pattern = re.compile(f"({prefix}[A-Za-z_-]*)([0-9]+)")
             match = pattern.match(name)
 
             if not match:
@@ -30,11 +30,11 @@ class TestLoader(object):
             return name
 
         def sort_by_test_number(name):
-            pattern = re.compile(f"({prefix}[A-Za-z_-]*)([0-9]*)")
+            pattern = re.compile(f"({prefix}[A-Za-z_-]*)([0-9]+)")
             match = pattern.match(name)
 
             if not match:
-                return name
+                return 0
             _, number = match.groups()
             return int(number)
 
