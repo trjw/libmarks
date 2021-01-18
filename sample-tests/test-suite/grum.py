@@ -11,7 +11,7 @@ import marks
 
 
 class LibmarksSampleTests(marks.TestCase):
-    timeout = 2
+    timeout = 5
 
     @classmethod
     def setup_class(cls):
@@ -21,6 +21,7 @@ class LibmarksSampleTests(marks.TestCase):
         temp_root = pathlib.Path(options["temp_dir"]).resolve()
 
         cls.helloworld = str(working_root / "helloworld.py")
+        cls.retcode = str(working_root / "retcode")
 
         # Create symlink to tests in working directory
         os.chdir(str(working_root))
@@ -35,11 +36,11 @@ class LibmarksSampleTests(marks.TestCase):
 
             # Compile the programs (if needed)
             os.chdir(str(working_root))
-            # p = marks.Process(["make"])
+            p = marks.Process(["make"])
             os.chdir(str(temp_root))
 
             # Don't run tests if compilation fails
-            # assert p.assert_exit_status(0)
+            assert p.assert_exit_status(0)
 
             # Create symlink to tests in temp directory
             try:
@@ -97,7 +98,7 @@ class LibmarksSampleTests(marks.TestCase):
         correctly when the files match exactly
         """
         proc = self.process([self.helloworld])
-        self.assert_stdout(proc, "HELLO world")
+        self.assert_stdout(proc, "HELLO world\n")
 
     @marks.marks(category="stdout-check", category_marks=5)
     def test_stdoutStringMatchDifferent(self):
@@ -106,7 +107,7 @@ class LibmarksSampleTests(marks.TestCase):
         correctly when the files don't match exactly
         """
         proc = self.process([self.helloworld, "--lower"])
-        self.assert_stdout(proc, "HELLO world")
+        self.assert_stdout(proc, "HELLO world\n")
 
     @marks.marks(category="stderr-check", category_marks=5)
     def test_stderrStringMatchExact(self):
@@ -115,7 +116,7 @@ class LibmarksSampleTests(marks.TestCase):
         correctly when the files match exactly
         """
         proc = self.process([self.helloworld, "--stderr"])
-        self.assert_stderr(proc, "HELLO world")
+        self.assert_stderr(proc, "HELLO world\n")
 
     @marks.marks(category="stderr-check", category_marks=5)
     def test_stderrStringMatchDifferent(self):
@@ -124,7 +125,7 @@ class LibmarksSampleTests(marks.TestCase):
         correctly when the files don't match exactly
         """
         proc = self.process([self.helloworld, "--lower", "--stderr"])
-        self.assert_stderr(proc, "HELLO world")
+        self.assert_stderr(proc, "HELLO world\n")
 
     @marks.marks(category="return-code-check", category_marks=5)
     def test_returnCodeMatch(self):
@@ -132,7 +133,7 @@ class LibmarksSampleTests(marks.TestCase):
         Check that the return code check works
         correctly when the code matches exactly
         """
-        proc = self.process([self.helloworld])
+        proc = self.process([self.retcode, "0"])
         self.assert_exit_status(proc, 0)
 
     @marks.marks(category="return-code-check", category_marks=5)
@@ -141,7 +142,7 @@ class LibmarksSampleTests(marks.TestCase):
         Check that the return code check works
         correctly when the code doesn't match
         """
-        proc = self.process([self.helloworld, "--returncode", "1"])
+        proc = self.process([self.retcode, "1"])
         self.assert_exit_status(proc, 0)
 
     @marks.marks(category="timeout-check", category_marks=5)
@@ -166,7 +167,7 @@ class LibmarksSampleTests(marks.TestCase):
         Check that the timeout works correctly
         """
         proc = self.process([self.helloworld, "--timeout"])
-        self.assert_stdout(proc, "hello WORLD")
+        self.assert_stdout(proc, "hello WORLD\n")
 
     @marks.marks(category="timeout-check", category_marks=5)
     def test_timeout4(self):
@@ -174,7 +175,7 @@ class LibmarksSampleTests(marks.TestCase):
         Check that the timeout works correctly
         """
         proc = self.process([self.helloworld, "--timeout"])
-        self.assert_stderr(proc, "hello WORLD")
+        self.assert_stderr(proc, "hello WORLD\n")
 
     @marks.marks(category="timeout-check", category_marks=5)
     def test_timeout5(self):

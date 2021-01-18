@@ -8,3 +8,7 @@ all: retcode
 
 retcode: retcode.o
 	$(CC) $(CFLAGS) retcode.o -o retcode
+
+clean:
+	rm -f *.o
+	rm -f retcode

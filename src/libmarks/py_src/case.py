@@ -5,6 +5,7 @@ import os
 import inspect
 import difflib
 import time
+import pathlib
 
 from .result import TestResult
 from .util import strclass, safe_repr, coloured_text
@@ -302,6 +303,117 @@ class TestCase(object):
 
         raise self.failure_exception(msg)
 
+    def _get_process_output(self, stream_readline):
+        """ Returns the full process output from the given process stream """
+        proc_lines = []
+        while True:
+            line = stream_readline()
+            if not line:
+                break
+            proc_lines.append(line)
+        return "".join(proc_lines)
+
+    def _file_output_match_ratio(self, stream_readline, file):
+        """ Returns the match ratio between a process and file """
+        proc_lines = self._get_process_output(stream_readline)
+        file_lines = pathlib.Path(file).resolve().read_text()
+        return self._match_ratio(proc_lines, file_lines)
+
+    def _string_output_match_ratio(self, stream_readline, string):
+        """ Returns the match ratio between a process and string """
+        proc_lines = self._get_process_output(stream_readline)
+        return self._match_ratio(proc_lines, string)
+
+    def _file_match_ratio(self, file1, file2):
+        """ Returns the match ratio between two files """
+        f1_lines = pathlib.Path(file1).resolve().read_text()
+        f2_lines = pathlib.Path(file2).resolve().read_text()
+        return self._match_ratio(f1_lines, f2_lines)
+
+    def _match_ratio(self, expected_output, actual_output):
+        """ Returns the match ratio between two strings """
+        diff = difflib.SequenceMatcher(
+            None, expected_output, actual_output, autojunk=False
+        )
+        return diff.ratio()
+
+    def _compare_files(self, file1, file2, msg1=None, msg2=None, msg=None, type="file"):
+        if not os.path.exists(file1):
+            return msg1 or f"file missing: {file1}"
+        elif not os.path.exists(file2):
+            return msg2 or f"file missing: {file2}"
+        else:
+            # Files exist, so open and compare them
+            f1 = open(file1, "rb")
+            f2 = open(file2, "rb")
+
+            different = False
+            while True:
+                b1 = f1.read(BUFFER_SIZE)
+                b2 = f2.read(BUFFER_SIZE)
+
+                if b1 != b2:
+                    different = True
+                    break
+
+                if not b1:
+                    # Reached end of file, and they are the same
+                    break
+
+            f1.close()
+            f2.close()
+
+            if different:
+                msg = msg or f"{type} mismatch"
+                if self.option("show_diff"):
+                    # Add diff of output to message.
+                    f1 = open(file1, "r")
+                    f2 = open(file2, "r")
+                    diff = difflib.unified_diff(
+                        f1.readlines(), f2.readlines(), fromfile=file1, tofile=file2
+                    )
+
+                    msg += f"\nDiff leading to failure:\n{''.join(diff)}"
+
+                    f1.close()
+                    f2.close()
+                return msg
+
+    def _verbose_compare(self, stream_readline, file_path, stream_name, msg):
+        if not os.path.exists(file_path):
+            return f"file missing: {file_path}"
+        else:
+            # Files exist, so open and compare them
+            different = False
+            p_history = []
+            f_history = []
+
+            with open(file_path, "rb") as f:
+                while True:
+                    p_line = stream_readline()
+                    f_line = f.readline().decode("utf-8")
+
+                    # Store history of output.
+                    p_history.append(p_line)
+                    f_history.append(f_line)
+
+                    if f_line != p_line:
+                        different = True
+                        break
+
+                    if not f_line:
+                        # Reached end of file, and they are the same
+                        break
+
+            if different:
+                # Append diff to error message.
+                diff = difflib.unified_diff(
+                    p_history, f_history, fromfile=stream_name, tofile=file_path
+                )
+                msg += "\nDiff leading to failure [truncated]:\n"
+                msg += "".join(diff)
+                return msg
+
     def delay(self, secs):
         """Insert a delay into a test.
         Delay is in seconds, with fractions being acceptable.
@@ -346,22 +458,20 @@ class TestCase(object):
             print(f"\tstandard output file updated: {file_path}")
             return
 
-        # Set error message, if not set already.
-        msg = msg or "stdout mismatch"
         result = None
 
         if self.option("save"):
             result = self._compare_files(
-                self._stdout_filename(process), file_path, msg=msg
+                self._stdout_filename(process), file_path, msg=msg, type="stdout"
             )
         elif self.option("show_diff"):
             result = self._verbose_compare(
                 process.readline_stdout, file_path, self._stdout_filename(process), msg
             )
         else:
-            ratio = self._output_match_ratio(process.readline_stdout, file_path)
+            ratio = self._file_output_match_ratio(process.readline_stdout, file_path)
             if ratio != 1.0:
-                result = f"stdout_mismatch <<{round(ratio, 2)}>>"
+                result = f"stdout mismatch <<{round(ratio, 2)}>>"
 
         if result is not None:
             self._check_signal(process, result)
@@ -396,22 +506,20 @@ class TestCase(object):
             print(f"\tstandard error file updated: {file_path}")
             return
 
-        # Set error message, if not set already.
-        msg = msg or "stderr mismatch"
         result = None
 
         if self.option("save"):
             result = self._compare_files(
-                self._stderr_filename(process), file_path, msg=msg
+                self._stderr_filename(process), file_path, msg=msg, type="stderr"
             )
         elif self.option("show_diff"):
             result = self._verbose_compare(
                 process.readline_stderr, file_path, self._stderr_filename(process), msg
             )
         else:
-            ratio = self._output_match_ratio(process.readline_stderr, file_path)
+            ratio = self._file_output_match_ratio(process.readline_stderr, file_path)
             if ratio != 1.0:
-                result = f"stderr_mismatch <<{round(ratio, 2)}>>"
+                result = f"stderr mismatch <<{round(ratio, 2)}>>"
 
         if result is not None:
             self._check_signal(process, result)
@@ -443,9 +551,30 @@ class TestCase(object):
             print(f"\tCheck assert_stdout({safe_repr(output)})")
             return
 
-        if not process.expect_stdout(output):
-            msg = msg or "stdout mismatch"
-            self._check_signal(process, msg)
+        result = None
+        if self.option("save"):
+            # Save stdout and expected output to file.
+            stdout_filename = self._stdout_filename(process)
+            expected_filename = stdout_filename + ".expected"
+            with open(stdout_filename, "wb") as f:
+                while True:
+                    line = process.readline_stdout()
+                    f.write(line.encode())
+                    if line == "":
+                        break
+            with open(expected_filename, "wb") as f:
+                f.write(output.encode())
+
+            result = self._compare_files(
+                stdout_filename, expected_filename, msg=msg, type="stdout"
+            )
+        else:
+            ratio = self._string_output_match_ratio(process.readline_stdout, output)
+            if ratio != 1.0:
+                result = f"stdout mismatch <<{round(ratio, 2)}>>"
+
+        if result is not None:
+            self._check_signal(process, result)
 
     def assert_stderr(self, process, output, msg=None):
         """
@@ -474,9 +603,30 @@ class TestCase(object):
             print(f"\tCheck assert_stderr({safe_repr(output)})")
             return
 
-        if not process.expect_stderr(output):
-            msg = msg or "stderr mismatch"
-            self._check_signal(process, msg)
+        result = None
+        if self.option("save"):
+            # Save stderr and expected output to file.
+            stderr_filename = self._stderr_filename(process)
+            expected_filename = stderr_filename + ".expected"
+            with open(stderr_filename, "wb") as f:
+                while True:
+                    line = process.readline_stderr()
+                    f.write(line.encode())
+                    if line == "":
+                        break
+            with open(expected_filename, "wb") as f:
+                f.write(output.encode())
+
+            result = self._compare_files(
+                stderr_filename, expected_filename, msg=msg, type="stderr"
+            )
+        else:
+            ratio = self._string_output_match_ratio(process.readline_stderr, output)
+            if ratio != 1.0:
+                result = f"stderr mismatch <<{round(ratio, 2)}>>"
+
+        if result is not None:
+            self._check_signal(process, result)
 
     def assert_exit_status(self, process, status, msg=None):
         """
@@ -540,104 +690,13 @@ class TestCase(object):
             print(f"\tdiff {file1} {file2}")
             return
 
-        result = self._compare_files(file1, file2, msg=msg)
+        ratio = self._file_match_ratio(file1, file2)
+        result = None
+        if ratio != 1.0:
+            result = f"file mismatch <<{round(ratio, 2)}>>"
+
         if result is not None:
             raise self.failure_exception(result)
-
-    def _output_match_ratio(self, stream_readline, file):
-        proc_lines = []
-        while True:
-            line = stream_readline()
-            if not line:
-                break
-            proc_lines.append(line)
-        proc_lines = "".join(proc_lines)
-
-        file_lines = []
-        with open(file) as errfile:
-            for line in errfile:
-                file_lines.append(line)
-        file_lines = "".join(file_lines)
-
-        diff = difflib.SequenceMatcher(None, proc_lines, file_lines)
-        return diff.ratio()
-
-    def _compare_files(self, file1, file2, msg1=None, msg2=None, msg=None):
-        if not os.path.exists(file1):
-            return msg1 or f"file missing: {file1}"
-        elif not os.path.exists(file2):
-            return msg2 or f"file missing: {file2}"
-        else:
-            # Files exist, so open and compare them
-            f1 = open(file1, "rb")
-            f2 = open(file2, "rb")
-
-            different = False
-            while True:
-                b1 = f1.read(BUFFER_SIZE)
-                b2 = f2.read(BUFFER_SIZE)
-
-                if b1 != b2:
-                    different = True
-                    break
-
-                if not b1:
-                    # Reached end of file, and they are the same
-                    break
-
-            f1.close()
-            f2.close()
-
-            if different:
-                msg = msg or "file mismatch: contents do not exactly match"
-                if self.option("show_diff"):
-                    # Add diff of output to message.
-                    f1 = open(file1, "r")
-                    f2 = open(file2, "r")
-                    diff = difflib.unified_diff(
-                        f1.readlines(), f2.readlines(), fromfile=file1, tofile=file2
-                    )
-
-                    msg += f"\nDiff leading to failure:\n{''.join(diff)}"
-
-                    f1.close()
-                    f2.close()
-                return msg
-
-    def _verbose_compare(self, stream_readline, file_path, stream_name, msg):
-        if not os.path.exists(file_path):
-            return f"file missing: {file_path}"
-        else:
-            # Files exist, so open and compare them
-            different = False
-            p_history = []
-            f_history = []
-
-            with open(file_path, "rb") as f:
-                while True:
-                    p_line = stream_readline()
-                    f_line = f.readline().decode("utf-8")
-
-                    # Store history of output.
-                    p_history.append(p_line)
-                    f_history.append(f_line)
-
-                    if f_line != p_line:
-                        different = True
-                        break
-
-                    if not f_line:
-                        # Reached end of file, and they are the same
-                        break
-
-            if different:
-                # Append diff to error message.
-                diff = difflib.unified_diff(
-                    p_history, f_history, fromfile=stream_name, tofile=file_path
-                )
-                msg += "\nDiff leading to failure [truncated]:\n"
-                msg += "".join(diff)
-                return msg
 
     def add_detail(self, name, data):
         """Record information related to the test"""
