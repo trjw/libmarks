@@ -180,7 +180,7 @@ class ExplainProcess(object):
             self._print_coloured(kwargs["explain"], attrs=["bold"], end="\n")
         else:
             self._print_coloured(
-                f"Dump the remainer of stdout ofof Process {self.count}: ",
+                f"Dump the remainer of stdout of Process {self.count}: ",
                 attrs=["bold"],
                 end="",
             )
