@@ -645,7 +645,7 @@ class TestCase(object):
         if not process.assert_exit_status(status):
             msg = (
                 msg
-                or f"exit status mismatch: expected {status}, got {process.exit_status}"
+                or f"exit status mismatch: expected {status}, got {process.exit_status()}"
             )
             self._check_signal(process, msg)
 
