@@ -70,13 +70,19 @@ Process::Process(std::vector<std::string> argv, std::string inputFile):
     argv(argv), inputFile(inputFile),
     input(NULL), output(NULL), error(NULL), finished(false),
     abnormalExit(false), signalled(false), timeout(false)
-{}
+{
+    signalNum = -1;
+    exitStatus = -1;
+}
 
 Process::Process(std::vector<std::string> argv):
     argv(argv), inputFile(""),
     input(NULL), output(NULL), error(NULL), finished(false),
     abnormalExit(false), signalled(false), timeout(false)
-{}
+{
+    signalNum = -1;
+    exitStatus = -1;
+}
 
 Process::~Process()
 {
@@ -729,7 +735,6 @@ void TimeoutProcess::timeout_process()
 void *TimeoutProcess::timeout_thread(void *arg)
 {
     TimeoutProcess *tp = (TimeoutProcess *) arg;
-
     tp->timeout_process();
 
     // End thread
