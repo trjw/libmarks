@@ -45,14 +45,16 @@ installation location.
 
 # Using the library
 The library uses python files in order to specify test cases.
-These python files should contain at least the following to function
-correctly
+These python files should contain at least the following:
 
 ```
 !#/usr/bin/env python3
 import sys
+import pathlib
 
-sys.path[0:0] = ['/path/to/libmarks/install']
+LIBMARKS_ROOT = pathlib.Path('/path/to/libmarks/install)
+
+sys.path[0:0] = [str(LIBMARKS_ROOT)]
 import marks    # This must come after the sys.path line
 
 class TestClass(marks.TestCase):
@@ -64,5 +66,45 @@ class TestClass(marks.TestCase):
         # Test cases are methods which start with test_
         # which are decorated using the marks.marks decorator
         ...
+        
+        # You can run a process using the self.process method
+        proc = self.process([process, args])
 
+        # And check its outputs / exit status
+        self.assert_stdout_matches_file(proc, 'path/to/file')
+        self.assert_stderr_matches_file(proc, 'path/to/file')
+        self.assert_exit_status(proc, status)
+
+if __name__ == "__main__":
+    marks.main()
+```
+
+To run your tests, run the following from the directory containing
+your source code:
+
+```
+$ /path/to/python/test/file test
+```
+
+You should see output similar to the following:
+
+```
+$ /path/to/test/file test
+Setting up environment...
+Running tests
+
+TestName                                                 OK/FAIL/ERROR
+...
+
+----------------------------------------------------------------------
+Ran X tests: X success, X errors, X failures
+Tearing down environment...
+```
+
+If you receive an `ImportError` regarding `libboost_python`
+you need to update your `LD_LIBRARY_PATH` variable to include
+your installed boost libraries. This can be done as follows:
+
+```
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/boost/root/builds/current/lib
 ```

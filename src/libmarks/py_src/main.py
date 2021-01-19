@@ -175,7 +175,11 @@ class TestProgram(object):
         """Parse arguments received from the command line."""
         self._init_arg_parsers()
         args = self._parser.parse_args(argv[1:])
+        
         # Process the arguments we received
+        if not 'func' in vars(args):
+            self._parser.print_help()
+            exit(0)
         args.func(args)
         self.parse_options(args)
 
