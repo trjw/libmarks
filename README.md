@@ -52,7 +52,7 @@ These python files should contain at least the following:
 import sys
 import pathlib
 
-LIBMARKS_ROOT = pathlib.Path('/path/to/libmarks/install)
+LIBMARKS_ROOT = pathlib.Path('/path/to/libmarks/install')
 
 sys.path[0:0] = [str(LIBMARKS_ROOT)]
 import marks    # This must come after the sys.path line
