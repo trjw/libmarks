@@ -335,7 +335,8 @@ class TestCase(object):
         diff = difflib.SequenceMatcher(
             None, expected_output, actual_output, autojunk=False
         )
-        return diff.ratio()
+        ratio = diff.quick_ratio()
+        return ratio
 
     def _compare_files(self, file1, file2, msg1=None, msg2=None, msg=None, type="file"):
         if not os.path.exists(file1):
@@ -470,7 +471,7 @@ class TestCase(object):
             )
         else:
             ratio = self._file_output_match_ratio(process.readline_stdout, file_path)
-            if ratio != 1.0:
+            if abs(ratio - 1.0) > 1e-03:
                 result = f"stdout mismatch <<{round(ratio, 2)}>>"
 
         if result is not None:
@@ -518,7 +519,7 @@ class TestCase(object):
             )
         else:
             ratio = self._file_output_match_ratio(process.readline_stderr, file_path)
-            if ratio != 1.0:
+            if abs(ratio - 1.0) > 1e-03:
                 result = f"stderr mismatch <<{round(ratio, 2)}>>"
 
         if result is not None:
@@ -570,7 +571,7 @@ class TestCase(object):
             )
         else:
             ratio = self._string_output_match_ratio(process.readline_stdout, output)
-            if ratio != 1.0:
+            if abs(ratio - 1.0) > 1e-03:
                 result = f"stdout mismatch <<{round(ratio, 2)}>>"
 
         if result is not None:
@@ -622,7 +623,7 @@ class TestCase(object):
             )
         else:
             ratio = self._string_output_match_ratio(process.readline_stderr, output)
-            if ratio != 1.0:
+            if abs(ratio - 1.0) > 1e-03:
                 result = f"stderr mismatch <<{round(ratio, 2)}>>"
 
         if result is not None:
@@ -692,7 +693,7 @@ class TestCase(object):
 
         ratio = self._file_match_ratio(file1, file2)
         result = None
-        if ratio != 1.0:
+        if abs(ratio - 1.0) > 1e-03:
             result = f"file mismatch <<{round(ratio, 2)}>>"
 
         if result is not None:
