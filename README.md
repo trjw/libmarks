@@ -4,12 +4,12 @@ Originally, this repository was created for Joel Addison's engineering
 major project in 2014 (Supervisors: Peter Sutton (EAIT) and Joel Fenwick).
 
 # Installation
-The tool has uses the Boost C++ library in order to function. 
+The tool uses the Boost C++ library in order to function. 
 Therefore, in order to install it, a version of Boost needs to be
 installed first. To install the Boost library, run the following:
 
 ```
-./install-boost install.boost.conf
+./install-boost.sh install.boost.conf
 ```
 
 The configuration file can be modified as required. Its purpose
@@ -44,9 +44,9 @@ to specify the python and boost libraries to use, as well as the
 installation location.
 
 # Using the library
-The library uses python files in order to specify test cases.
-These python files should contain at least the following to function
-correctly
+The library uses Python files in order to specify test cases.
+These files should contain at least the following to function
+correctly:
 
 ```
 !#/usr/bin/env python3
