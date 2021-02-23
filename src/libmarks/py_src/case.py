@@ -469,10 +469,13 @@ class TestCase(object):
             result = self._verbose_compare(
                 process.readline_stdout, file_path, self._stdout_filename(process), msg
             )
-        else:
+        elif self.option("fuzzy"):
             ratio = self._file_output_match_ratio(process.readline_stdout, file_path)
             if abs(ratio - 1.0) > 1e-03:
                 result = f"stdout mismatch <<{round(ratio, 2)}>>"
+        else:
+            if not process.expect_stdout_file(file_path):
+                result = "stdout mismatch"
 
         if result is not None:
             self._check_signal(process, result)
@@ -517,10 +520,13 @@ class TestCase(object):
             result = self._verbose_compare(
                 process.readline_stderr, file_path, self._stderr_filename(process), msg
             )
-        else:
+        elif self.option("fuzzy"):
             ratio = self._file_output_match_ratio(process.readline_stderr, file_path)
             if abs(ratio - 1.0) > 1e-03:
                 result = f"stderr mismatch <<{round(ratio, 2)}>>"
+        else:
+            if not process.expect_stderr_file(file_path):
+                result = "stderr mismatch"
 
         if result is not None:
             self._check_signal(process, result)
@@ -569,10 +575,13 @@ class TestCase(object):
             result = self._compare_files(
                 stdout_filename, expected_filename, msg=msg, type="stdout"
             )
-        else:
+        elif self.option("fuzzy"):
             ratio = self._string_output_match_ratio(process.readline_stdout, output)
             if abs(ratio - 1.0) > 1e-03:
                 result = f"stdout mismatch <<{round(ratio, 2)}>>"
+        else:
+            if not process.expect_stdout(output):
+                result = "stdout mismatch"
 
         if result is not None:
             self._check_signal(process, result)
@@ -621,10 +630,13 @@ class TestCase(object):
             result = self._compare_files(
                 stderr_filename, expected_filename, msg=msg, type="stderr"
             )
-        else:
+        elif self.option("fuzzy"):
             ratio = self._string_output_match_ratio(process.readline_stderr, output)
             if abs(ratio - 1.0) > 1e-03:
                 result = f"stderr mismatch <<{round(ratio, 2)}>>"
+        else:
+            if not process.expect_stderr(output):
+                result = "stderr mismatch"
 
         if result is not None:
             self._check_signal(process, result)
@@ -691,10 +703,14 @@ class TestCase(object):
             print(f"\tdiff {file1} {file2}")
             return
 
-        ratio = self._file_match_ratio(file1, file2)
         result = None
-        if abs(ratio - 1.0) > 1e-03:
-            result = f"file mismatch <<{round(ratio, 2)}>>"
+
+        if self.option("fuzzy"):
+            ratio = self._file_match_ratio(file1, file2)
+            if abs(ratio - 1.0) > 1e-03:
+                result = f"file mismatch <<{round(ratio, 2)}>>"
+        else:
+            result = self._compare_files(file1, file2, msg=msg)
 
         if result is not None:
             raise self.failure_exception(result)

@@ -73,6 +73,12 @@ class TestProgram(object):
             help="Show verbose output (incl. diff) for a test on failure",
         )
         parser_test.add_argument(
+            "--fuzzy",
+            dest="fuzzy",
+            action="store_true",
+            help="Whether or not to use fuzzy matching.",
+        )
+        parser_test.add_argument(
             "-o",
             "--option",
             dest="options",
@@ -158,6 +164,12 @@ class TestProgram(object):
             help="Tally the results from a previously marked directory",
         )
         parser_mark.add_argument(
+            "--fuzzy",
+            dest="fuzzy",
+            action="store_true",
+            help="Whether or not to use fuzzy matching",
+        )
+        parser_mark.add_argument(
             "-o",
             "--option",
             dest="options",
@@ -175,9 +187,9 @@ class TestProgram(object):
         """Parse arguments received from the command line."""
         self._init_arg_parsers()
         args = self._parser.parse_args(argv[1:])
-        
+
         # Process the arguments we received
-        if not 'func' in vars(args):
+        if not "func" in vars(args):
             self._parser.print_help()
             exit(0)
         args.func(args)
@@ -207,6 +219,7 @@ class TestProgram(object):
         self.tests = args.tests
         self.options["save"] = args.save_output
         self.options["verbose"] = True
+        self.options["fuzzy"] = args.fuzzy
         if args.save_output:
             self.options["cleanup"] = False
         if args.verbose:
@@ -227,11 +240,13 @@ class TestProgram(object):
         # Perform file updates
         self.tests = args.tests
         self.options["update"] = True
+        self.options["fuzzy"] = False
         self.runner_class = runner.UpdateTestRunner
 
     def set_up_mark(self, args):
         """Set up system to run tests and calculate a mark."""
         self.tests = args.tests
+        self.options["fuzzy"] = args.fuzzy
         if args.directory:
             # Mark directory full of submissions.
             self.runner_class = marking.MarkingRunner
