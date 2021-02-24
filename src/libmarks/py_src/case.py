@@ -661,6 +661,27 @@ class TestCase(object):
                 or f"exit status mismatch: expected {status}, got {process.exit_status()}"
             )
             self._check_signal(process, msg)
+    
+    def assert_exit_status_not(self, process, status, msg=None):
+        """
+        Assert that the exit status of the process is not the given status.
+        """
+        if self.option("explain"):
+            # Print out the unexpected exit status for the process.
+            self._print_coloured(
+                f"Expect exit status other than (Process {process.count}): ",
+                attrs=["bold"],
+                end="",
+            )
+            print(status)
+            return
+
+        if process.assert_exit_status(status):
+            msg = (
+                msg
+                or f"exit status mismatch: did not expect {status}"
+            )
+            self._check_signal(process, msg)
 
     def assert_signalled(self, process, msg=None):
         """
