@@ -16,7 +16,7 @@ fi
 source ${CONF_PATH}
 
 # Next, we need to check that the expected values have been set
-expected_vars=('boost_version' 'install_root')
+expected_vars=('boost_version' 'install_root' 'python_version' 'python_bin' 'python_include')
 for var in "${expected_vars[@]}"; do
     if [ -z "${var+x}" ]; then
         echo "Configuration does not specify variable: ${var}"
@@ -27,7 +27,7 @@ done
 echo "About to install boost with the following configuration"
 echo "----"
 for var in "${expected_vars[@]}"; do
-    printf "%13s: %s\n" ${var} ${!var}
+    printf "%14s: %s\n" ${var} ${!var}
 done
 echo "----"
 while true; do
@@ -60,9 +60,14 @@ if [ ! -f "${BOOST_ROOT}/releases/${FILE_NAME}.tar.bz2" ]; then
 fi
 
 # Now that we have our copy, we need to extract and build it
-# Note that if we've built it before, the old copy will be overwritten
 echo "Extracting boost library files."
-tar --bzip2 -xf ${BOOST_ROOT}/releases/${FILE_NAME}.tar.bz2 -C ${BOOST_ROOT}/extracted
+if [ -d ${BOOST_ROOT}/extracted/${FILE_NAME} ]; then
+    echo "Library files already extracted."
+else
+    tar --bzip2 \
+        -xf ${BOOST_ROOT}/releases/${FILE_NAME}.tar.bz2 \
+        -C ${BOOST_ROOT}/extracted
+fi
 
 # Once the files have been extracted, we need to run the bootstrap script
 # to generate the files we require. Note that the old files will be overwritten
@@ -75,10 +80,11 @@ rm -rf ${BOOST_ROOT}/builds/${FILE_VERSION}
 ./bootstrap.sh \
     --prefix=${BOOST_ROOT}/builds/${FILE_VERSION} \
     --exec-prefix=${BOOST_ROOT}/builds/${FILE_VERSION} \
-    --with-python=/usr/bin/python3 \
-    --with-libraries=system,thread,filesystem,exception,python
+    --with-python=${python_bin} \
+    --with-python-version=${python_version} \
+    --with-libraries=python,system,thread,filesystem,exception
 
-./b2 include='/usr/bin/python3.8' install
+./b2 include="'${python_include}'" install
 
 # Now that the build has been made, we also update the current build symlink
 echo "Updating symlinks."
