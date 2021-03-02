@@ -84,7 +84,7 @@ rm -rf ${BOOST_ROOT}/builds/${FILE_VERSION}
     --with-python-version=${python_version} \
     --with-libraries=python,system,thread,filesystem,exception
 
-./b2 include="'${python_include}'" install
+./b2 include=${python_include} install
 
 # Now that the build has been made, we also update the current build symlink
 echo "Updating symlinks."
