@@ -411,6 +411,7 @@ class TestCase(object):
                 diff = difflib.unified_diff(
                     p_history, f_history, fromfile=stream_name, tofile=file_path
                 )
+                msg = msg or ""
                 msg += "\nDiff leading to failure [truncated]:\n"
                 msg += "".join(diff)
                 return msg
