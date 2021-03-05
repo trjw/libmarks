@@ -199,7 +199,7 @@ class TestCase(object):
                 # argv[i] = argv[i].encode('unicode_escape')
                 # Todo: not sure if repr() would be better
                 # argv[i] = argv[i].encode('unicode_escape').decode()
-                argv[i] = repr(argv[i])
+                argv[i] = repr(argv[i]).lstrip("'").rstrip("'")
 
             # Print out command for running the process, including streams.
             self._print_coloured(f"Start Process {p.count}:", attrs=["bold"])
