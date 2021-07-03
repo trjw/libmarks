@@ -17,7 +17,7 @@ class BoostLibInstall(DistutilsInstall):
         print("post", file=sys.stderr);
 
 boostMacros = [('BOOST_BIND_GLOBAL_PLACEHOLDERS', '1')]
-boostLibs = ['boost_python38']
+boostLibs = ['boost_python-py36']
 
 moduleProcess = Extension('marks.process', sources=['src/process.cpp', 'src/glue.cpp', 
                                              'src/traced_process.cpp'],
